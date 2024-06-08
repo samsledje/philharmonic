@@ -20,6 +20,6 @@ If you used gdown and want to run the clustering algorithm on the SymbC1 data, r
 ```python recipe.py --network ../data/SymbC1_predictions_positive.tsv  --cluster-filepath ../results/SymbC1clusters.csv --lr .1 -cthresh 0.75 --outfile SymbC1.recipe_clusters.json --max 20 --metric degree```
 
 6. remove proteins added back more than 15 times and also convert the results from JSON format to CSV 
-python results_convert.py -icf ./results/SymbC1clusters.csv -rrf ./results/SymbC1.recipe_clusters.json --sep , --outfile ./results/SymbC1.recipe_clusters.csv
+```python results_convert.py -icf ./results/SymbC1clusters.csv -rrf ./results/SymbC1.recipe_clusters.json --sep , --outfile ./results/SymbC1.recipe_clusters.csv```
 
-7. Run the remaining cells in Philharmonic.ipynb to generate the final results.
+7. Run the remaining cells in Philharmonic.ipynb to generate output files and perform analysis on the clusters.
