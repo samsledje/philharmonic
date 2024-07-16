@@ -40,7 +40,7 @@ def RBF(D, sigma=None):
     return np.exp(-1 * (np.square(D) / (2 * sigma**2))) 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser("Coral network analysis")
+    parser = argparse.ArgumentParser("PHILHARMONIC network clustering")
     
     parser.add_argument("--network-id", type = str, required = True)
     parser.add_argument("--network-file", type = str, required = True)
