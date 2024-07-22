@@ -27,3 +27,22 @@ As another note, this process could be improved, and the recipe script would ide
 Again, in an ideal world, this code would be integrated into the recipe script, so the additional results_convert script wouldn't need to be run.
 
 6. Run the remaining cells in the file `Philharmonic.ipynb` to generate output files and perform analysis on the clusters.
+
+### Data prep for gene list
+
+* We look at list of GO names at level-2 (below BP/MF/CC) in GO and exclude the housekeeping and 'regular' categories (see process_GO_toplevel for list). We then select the remaining and do GO graph dfs walk to select all their children.
+
+     > source ./script-bag.sh; download_GO_data; process_GO_toplevel
+
+* This is then linked to PFAM terms using GO->PFAM mapping from GODomainMiner (https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-018-2380-2). A susbet of GO terms is thus created.
+
+     > ~/work/corals/src/subset_GO_graph.py  | grep -v ^Flag > ~/work/corals/data/processed/selected_GO_terms.csv
+
+* Run hmmscan on pdam seqs (do 4-way chunking for parallelization)
+
+     > source ./script-bag.sh; run_pfam_on_pdam
+
+* Short-list a set of pdam proteins whose matching PFAM domains are in the GODomainMiner list of GO terms that we have selected in.  Also, make a candidate set of 10M protein pairs by sampling from this shortlist; weigh manually annotated genes more heavily (100:1)
+
+     > ./shortlist_species_proteins.py --species pdam --paircount 10000000 --outsfx mwt100_asof_20200617
+     > ../data/processed/candidate_pairs_mwt100_asof_20200617.csv  ../data/processed/proteins_list_mwt100_asof_20200617.csv
