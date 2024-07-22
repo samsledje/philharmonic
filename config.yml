@@ -1,0 +1,47 @@
+# User Specified
+run_name: pdam
+work_dir: pdam_results
+sequence_path: data/protein_seqs.fasta
+protein_shortlist: data/pdam_shortlist.txt
+go_shortlist: data/pdam_shortlist_go.txt
+
+####################
+
+# General Parameters
+device: 0
+seed: 6191998
+
+# hmmscan Parameters
+hmmscan:
+  hmmscan_path: hmmscan
+
+# D-SCRIPT Parameters
+dscript:
+  model: human_v1.sav
+
+# DSD Parameters
+dsd:
+  t: 0.0
+
+# Clustering Parameters
+# clustering:
+#   init_k: 500
+#   min_cluster_size: 3
+#   cluster_divisor: 20
+clustering:
+  init_k: 3
+  min_cluster_size: 1
+  cluster_divisor: 2
+
+# ReCIPE Parameters
+recipe:
+  lr: 0.1
+  cthresh: 0.75
+  max: 20
+  metric: degree
+
+# Cytoscape Parameters
+
+# Langchain Parameters
+langchain:
+  model: gpt-4o
