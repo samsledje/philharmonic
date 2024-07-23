@@ -2,7 +2,7 @@
 import argparse
 import json
 
-from utils import parse_GO_database, parse_GO_map, load_cluster_json, log
+from utils import parse_GO_map, load_cluster_json, log
 
 def add_GO_function(cluster, go_map):
     """

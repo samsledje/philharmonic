@@ -1,8 +1,8 @@
 import hashlib
 import json
+import re
 import pandas as pd
 import networkx as nx
-
 
 class Cluster:
     def __init__(self,cluster_dict):
@@ -90,7 +90,7 @@ class Cluster:
         self.G = G.subgraph(self.members)
 
     def triangles(self):
-        return sum([i for i in nx.triangles(self.G).values()]) / 3
+        return int(sum([i for i in nx.triangles(self.G).values()]) / 3)
 
     # def draw_degree_histogram(self,draw_graph=True):
     #     if not hasattr(self,'G'):
@@ -143,18 +143,18 @@ def parse_GO_database(infile):
     terms = {}
     with open(infile,'r') as f:
         for line in f:
-            tDict = {}
             line = line.strip()
             if line == "[Term]":
-                line = f.readline().strip().split(': ')
-                while not line == ['']:
-                    tDict[line[0]] = ''.join(line[1:])
-                    line = f.readline().strip().split(': ')
-                for k,v in tDict.items():
-                    k = k.strip()
-                    v = v.strip()
-                    tDict[k] = v
-                terms[tDict['id']] = tDict
+                term_ids = []
+                line = f.readline().strip()
+                while not line == '':
+                    if line.startswith('id:') or line.startswith('alt_id:'):
+                        term_ids.append(line.split(': ')[1])
+                    elif line.startswith('name:'):
+                        main_name = line.split(': ')[1]
+                    line = f.readline().strip()
+                for tid in term_ids:
+                    terms[tid] = main_name
     return terms
 
 
