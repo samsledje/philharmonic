@@ -4,6 +4,8 @@ Pipeline for decoding the functional networks of non-model organisms
 Required Inputs: protein sequences
 Optional Inputs: shortlist proteins, shortlist GO terms
 
+![snakemake filegraph](filegraph.png)
+
 ## Steps
 
 ### Download necessary files
