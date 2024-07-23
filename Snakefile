@@ -68,8 +68,7 @@ rule annotate_seqs_go:
         pfam_gocc = f"{config['work_dir']}/pfam_gocc_most_specific.txt",
     output:
         go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
-    shell: "cp data_old/Pdam_GO_map.csv {output.go_map}"
-    # shell: "python src/build_go_map.py -o {output.go_map} --hhtblout {input.pfam_map} --pfam_go_files {input.pfam_gomf} {input.pfam_gobp} {input.pfam_gocc}"
+    shell: "python src/build_go_map.py -o {output.go_map} --hhtblout {input.pfam_map} --pfam_go_files {input.pfam_gomf} {input.pfam_gobp} {input.pfam_gocc}"
 
 rule generate_candidates:
     input:
