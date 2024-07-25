@@ -210,7 +210,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--species", help="species to analyze. Data should be in PROJ_DIR/data/proessed . Current choices are pdam , hvul, tpseud, symbc1, or cow ", type=str, default='pdam') #choices=['pdam','hvul','tpseud','symbc1', 'cow'], default='pdam')
-    parser.add_argument("--paircount", help="number of protein pairs to sample", type=int, default=10000000)
+    parser.add_argument("--paircount", help="number of protein pairs to sample", type=int, default=10_000_000)
     parser.add_argument("--outdir", help="output directory (can set to '.')", type=str, default=PROJ_DIR+"/data/processed/")
     parser.add_argument("--outsfx", help="suffix to use when producing output files")
     parser.add_argument("--manual_annot_wt", help="relative weight of proteins with manual annotation", type=float, default=100)

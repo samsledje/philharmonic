@@ -1,0 +1,54 @@
+GOID,desc
+GO:0002376,immune system process
+GO:0003774,cytoskeletal motor activity
+GO:0003824,catalytic activity
+GO:0005198,structural molecule activity
+GO:0005215,transporter activity
+GO:0005488,binding
+GO:0008152,metabolic process
+GO:0009055,electron transfer activity
+GO:0009987,cellular process
+GO:0016032,viral process
+GO:0016209,antioxidant activity
+GO:0022414,reproductive process
+GO:0032501,multicellular organismal process
+GO:0032502,developmental process
+GO:0032991,protein-containing complex
+GO:0038024,cargo receptor activity
+GO:0040007,growth
+GO:0040011,locomotion
+GO:0042592,homeostatic process
+GO:0043473,pigmentation
+GO:0044183,protein folding chaperone
+GO:0044419,biological process involved in interspecies interaction between organisms
+GO:0044423,virion component
+GO:0044848,biological phase
+GO:0045182,translation regulator activity
+GO:0045735,nutrient reservoir activity
+GO:0048511,rhythmic process
+GO:0050896,response to stimulus
+GO:0051179,localization
+GO:0051703,biological process involved in intraspecies interaction between organisms
+GO:0060089,molecular transducer activity
+GO:0060090,molecular adaptor activity
+GO:0065007,biological regulation
+GO:0090729,toxin activity
+GO:0098754,detoxification
+GO:0098772,molecular function regulator activity
+GO:0110165,cellular anatomical entity
+GO:0140104,molecular carrier activity
+GO:0140110,transcription regulator activity
+GO:0140223,general transcription initiation factor activity
+GO:0140299,small molecule sensor activity
+GO:0140313,molecular sequestering activity
+GO:0140489,molecular template activity
+GO:0140522,fusogenic activity
+GO:0140657,ATP-dependent activity
+GO:0140691,RNA folding chaperone
+GO:0140776,protein-containing complex destabilizing activity
+GO:0140777,protein-containing complex stabilizing activity
+GO:0140911,pore-forming activity
+GO:0140912,membrane destabilizing activity
+GO:0141047,molecular tag activity
+GO:0180020,membrane bending activity
+GO:0180024,membrane grommet activity

@@ -19,8 +19,6 @@ from scipy.sparse import csr_matrix, csc_matrix
 from sklearn.preprocessing import normalize
 from collections import defaultdict
 
-from base_config import *
-
 
 def parse_go_graph(go_graph_file):
 
@@ -58,16 +56,16 @@ def parse_go_graph(go_graph_file):
 
     if block: process_block(block)
 
-    dbg_print("Flag 231.40 ", len(go2children), len(go2desc))
+    # dbg_print("Flag 231.40 ", len(go2children), len(go2desc))
     return go2children, go2desc
 
 
         
 
 def subset_go_graph(go_graph_file, go_included_terms):
-    dbg_print("Flag 341.01 ")
+    # dbg_print("Flag 341.01 ")
     go2children, go2desc = parse_go_graph(go_graph_file)
-    dbg_print("Flag 341.05 ", len(go2children), len(go2desc))
+    # dbg_print("Flag 341.05 ", len(go2children), len(go2desc))
     
     visited_go_terms = set()
     
@@ -89,7 +87,7 @@ def subset_go_graph(go_graph_file, go_included_terms):
 
 def run():
     go_file = PROJ_DIR + "/data/raw/go/go.obo"
-    dbg_print ("Flag 469.01 ")
+    # dbg_print ("Flag 469.01 ")
     
     selected_go_terms = []
     go_markedup_file = PROJ_DIR + "/data/raw/go/go_level2_marked-up.csv"
@@ -97,11 +95,11 @@ def run():
         if r[2]!="useflag" and int(r[2])==1: 
             selected_go_terms.append(r[0].strip())
 
-    dbg_print ("Flag 469.10 ", selected_go_terms)
+    # dbg_print ("Flag 469.10 ", selected_go_terms)
     
     l = subset_go_graph(go_file, selected_go_terms)
 
-    dbg_print ("Flag 469.30 ", len(l))
+    # dbg_print ("Flag 469.30 ", len(l))
     csvout = csv.writer(sys.stdout)
     csvout.writerow("GOID,namespace,name,child_terms".split(","))
     csvout.writerows(l)

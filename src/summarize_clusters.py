@@ -109,6 +109,7 @@ if __name__ == "__main__":
     parser.add_argument('-cfp', '--cluster_file_path', required=True, type=str, help='Cluster file')
     parser.add_argument('--go_db', required=True, type=str, help='GO database')
     parser.add_argument('--llm_name', action='store_true', help='Use a large language model to name clusters')
+    parser.add_argument('--model', type=str, help='Language model to use')
     parser.add_argument('--api_key', type=str, help='OpenAI API key')
 
     args = parser.parse_args()

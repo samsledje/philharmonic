@@ -1,23 +1,28 @@
 # User Specified
 run_name: pdam
 work_dir: pdam_results
-sequence_path: data/protein_seqs.fasta
+sequence_path: data/protein_seqs_700.fasta
 protein_shortlist: data/pdam_shortlist.txt
 go_shortlist: data/pdam_shortlist_go.txt
+
+build_cytoscape: true
 
 ####################
 
 # General Parameters
-device: 0
 seed: 6191998
 
 # hmmscan Parameters
 hmmscan:
-  hmmscan_path: hmmscan
+  path: hmmscan
+  threads: 16
 
 # D-SCRIPT Parameters
+n_pairs: 500000
+manual_annot_wt: 100
 dscript:
   model: human_v1.sav
+  device: 0
 
 # DSD Parameters
 dsd:
@@ -44,4 +49,5 @@ recipe:
 
 # Langchain Parameters
 langchain:
+  do_llm: false
   model: gpt-4o

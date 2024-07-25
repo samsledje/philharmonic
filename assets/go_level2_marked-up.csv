@@ -1,0 +1,54 @@
+GOID,desc,useflag
+GO:0002376,immune system process,1
+GO:0003774,cytoskeletal motor activity,1
+GO:0003824,catalytic activity,1
+GO:0005198,structural molecule activity,1
+GO:0005215,transporter activity,1
+GO:0005488,binding,1
+GO:0008152,metabolic process,0
+GO:0009055,electron transfer activity,1
+GO:0009987,cellular process,0
+GO:0016032,viral process,1
+GO:0016209,antioxidant activity,1
+GO:0022414,reproductive process,0
+GO:0032501,multicellular organismal process,1
+GO:0032502,developmental process,0
+GO:0032991,protein-containing complex,0
+GO:0038024,cargo receptor activity,1
+GO:0040007,growth,0
+GO:0040011,locomotion,1
+GO:0042592,homeostatic process,1
+GO:0043473,pigmentation,1
+GO:0044183,protein folding chaperone,1
+GO:0044419,biological process involved in interspecies interaction between organisms,1
+GO:0044423,virion component,1
+GO:0044848,biological phase,1
+GO:0045182,translation regulator activity,0
+GO:0045735,nutrient reservoir activity,1
+GO:0048511,rhythmic process,1
+GO:0050896,response to stimulus,1
+GO:0051179,localization,0
+GO:0051703,biological process involved in intraspecies interaction between organisms,1
+GO:0060089,molecular transducer activity,1
+GO:0060090,molecular adaptor activity,1
+GO:0065007,biological regulation,0
+GO:0090729,toxin activity,1
+GO:0098754,detoxification,1
+GO:0098772,molecular function regulator activity,1
+GO:0110165,cellular anatomical entity,0
+GO:0140104,molecular carrier activity,1
+GO:0140110,transcription regulator activity,0
+GO:0140223,general transcription initiation factor activity,1
+GO:0140299,small molecule sensor activity,1
+GO:0140313,molecular sequestering activity,1
+GO:0140489,molecular template activity,1
+GO:0140522,fusogenic activity,1
+GO:0140657,ATP-dependent activity,1
+GO:0140691,RNA folding chaperone,1
+GO:0140776,protein-containing complex destabilizing activity,0
+GO:0140777,protein-containing complex stabilizing activity,0
+GO:0140911,pore-forming activity,1
+GO:0140912,membrane destabilizing activity,1
+GO:0141047,molecular tag activity,1
+GO:0180020,membrane bending activity,1
+GO:0180024,membrane grommet activity,1

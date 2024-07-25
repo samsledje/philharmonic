@@ -1,141 +1,37 @@
 # python src/philharmonic_candidates.py -o {output.candidates} --go_list {input.go_shortlist} --protein_list {input.protein_shortlist} {input.sequences}
 
 import argparse
-from pathlib import Path
+import numpy as np
 from Bio import SeqIO
 
+from utils import parse_GO_map
 from itertools import combinations
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate a list of candidate PPIs')
-    parser.add_argument('-o', '--output', type=str, help='Output file')
+    parser.add_argument('--sequences', required=True, type=str, help='Sequences file')
+    parser.add_argument('-o', '--output', required=True, type=str, help='Output file')
+    parser.add_argument('--paircount', type=int, help='Number of protein pairs to sample', default=10000000)
+    parser.add_argument('--go_map', type=str, help='GO map file')
     parser.add_argument('--go_list', type=str, help='GO shortlist')
+    parser.add_argument('--go_annot_wt', type=float, help='Relative weight of proteins with GO annotation', default=100)
     parser.add_argument('--protein_list', type=str, help='Protein shortlist')
-    parser.add_argument('sequences', type=str, help='Sequences file')
 
     args = parser.parse_args()
 
     sequences = SeqIO.to_dict(SeqIO.parse(args.sequences, 'fasta'))
+    protein_names = list(sequences.keys())
     candidates = list(combinations(sequences.keys(), 2))
+
+    shortlisted_proteins = [line.strip() for line in open(args.protein_list,"r")]
+    shortlisted_go = [line.strip() for line in open(args.go_list,"r")]
+    go_map = parse_GO_map(args.go_map)
+
+
 
     with open(args.output, 'w') as f:
         for candidate in candidates:
             f.write(f'{candidate[0]}\t{candidate[1]}\n')
-
-#!/usr/bin/env python
-
-
-###################################################################
-## Authors:  Rohit Singh rsingh@alum.mit.edu
-## License: MIT
-###################################################################
-
-# import argparse
-# import pandas as pd
-# import numpy as np
-# import glob, csv
-# from collections import defaultdict
-
-# from .utils import log
-
-# def identify_allowed_pfam_domains(go_shortlist, working_directory):
-#     df_go = pd.read_csv(go_shortlist, header=None)
-#     df_go.columns = ["GO"]
-
-#     godomain_miner_files = glob.glob(f"{working_directory}/pfam_go??_most_specific.txt")
-#     df_gopfam_map = pd.concat([ pd.read_csv(f, delimiter=";") for f in godomain_miner_files]).reset_index(drop=True)
-#     log(f"Flag 754.01 {df_go.shape}, {df_gopfam_map.shape}")
-
-#     dfx = pd.merge(df_go[["GO"]], df_gopfam_map[["GO","PFAM"]])
-#     dfx = dfx.sort_values("PFAM").drop_duplicates().reset_index()
-    
-#     log(f"Flag 754.10 {dfx.shape}") #, dfx.head().values)
-    
-#     allowed_pfam_domains = set(dfx["PFAM"].values)
-
-#     pfam2go_map = defaultdict(list)
-#     for i in range(dfx.shape[0]):
-#         pfam2go_map[ dfx["PFAM"].iat[i]].append("%s" % ( dfx["GO"].iat[i]))
-
-#     fh = open("/tmp/t.domainminer_allowed_pfam","w")
-#     for k in allowed_pfam_domains: print(k,file=fh)
-#     fh2 = open("/tmp/t.domainminer_pfam2go_map","w")
-#     for k,v in pfam2go_map.items(): print(k,v,file=fh2)
-    
-#     return allowed_pfam_domains, pfam2go_map
-
-
-
-
-# def collate_hmmscan_results(species):
-#     domtblout_files = glob.glob(PROJ_DIR + "/data/processed/{0}_hmmscan_chunk-*-*.domtblout".format(species))
-#     dbg_print("Flag 563.01 ", domtblout_files)
-            
-#     pfam2info = defaultdict(list)
-#     for f in domtblout_files:
-#         for line in open(f,'r'):
-#             try:
-#                 _ = int(line[70:76])
-#             except:
-#                 continue
-#             #if (species+"_") not in line[30:65]: continue
-#             pfamid = line[21:32].strip()
-#             pdamid = line[38:59].strip() #using "pdam" as a proxy name for generic species
-#             pdamlen = line[70:76].strip()
-#             #dbg_print("Flag 563.20 ", (pfamid, pdamid, pdamlen, line[:80]))
-#             try:
-#                 if 50 < int(pdamlen) <800:
-#                     pfam2info[pfamid.split(".")[0]].append((pfamid, pdamid))
-#             except:
-#                 print (line)
-#                 raise
-            
-#     fh = open("/tmp/t.collate_hmmscan","w")
-#     for k,v in pfam2info.items(): print(k,v,file=fh)
-    
-#     return pfam2info
-
-
-
-
-# def select_species_proteins(allowed_pfam_domains, pfam2go_map, pfam2hmmscan, manual_annot_proteins):
-#     dbg_print("Flag 842.10 ", len(allowed_pfam_domains), len(pfam2go_map), len(pfam2hmmscan), len(manual_annot_proteins))
-#     #using "pdam" as a proxy name for generic species
-    
-#     d = {}; n=m=0
-#     for pfamid_base, L in pfam2hmmscan.items():
-#         n += 1
-#         if pfamid_base not in allowed_pfam_domains: continue
-#         m += 1
-#         for pfamid, pdamid in L:
-#             if pdamid not in d:
-#                 special = ''
-#                 for c, pdamid_list in manual_annot_proteins.items():
-#                     if pdamid in pdamid_list:
-#                         special = c
-
-#                 d[pdamid] = (special, set([pfamid]), set(pfam2go_map[pfamid_base]))
-#             else:
-#                 d[pdamid][1].add(pfamid)
-#                 d[pdamid][2].update(pfam2go_map[pfamid_base])
-        
-#     for c, pdamid_list in manual_annot_proteins.items():
-#         for pdamid in pdamid_list:
-#             if pdamid in d: continue
-#             d[pdamid] = (c, set(), set())
-        
-#     dbg_print("Flag 842.50 ", len(d), m, n)
-    
-#     l = []
-#     for k,v in d.items(): 
-#         l.append( (k, v[0], ";".join(v[1]), ";".join(v[2])))
-
-#     hdr = "species_id,manual_annot,pfam_list,GO_list".split(",")
-
-#     return hdr, l
-
-
-
 
 # def write_candidate_pair_list(df, nPointPairs, outfile2):
 #     N = df.shape[0]

@@ -29,5 +29,5 @@ if __name__ == "__main__":
 
     p4c.collapse_group('all')
 
-    # p4c.save_session(args.output)
-    # # Path(args.output).touch()
+    p4c.save_session(args.output)
+    # Path(args.output).touch()
