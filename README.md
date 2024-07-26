@@ -1,5 +1,8 @@
-# philharmonic
-Pipeline for decoding the functional networks of non-model organisms
+# PHILHARMNONIC
+
+![philharmonic logo](philharmonic_logo.png)
+
+A pipeline for decoding the functional networks of non-model organisms
 
 ## Abstract
 
@@ -61,8 +64,6 @@ Snakemake -c {number of cores}
 ```
 
 ### Pipeline Outputs
-
-
 
 ### Viewing the Results
 
