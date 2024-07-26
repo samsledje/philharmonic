@@ -7,7 +7,7 @@ envvars:
 rule PHILHARMONIC:
     input:  
         clusters = f"{config['work_dir']}/{config['run_name']}_clusters.json",
-        cytoscape = f"{config['work_dir']}/{config['run_name']}_cytoscape_session.cys" if config["build_cytoscape"] else [],
+        cytoscape = f"{config['work_dir']}/{config['run_name']}_cytoscape_session.cys" if config["use_cytoscape"] else [],
         human_readable = f"{config['work_dir']}/{config['run_name']}_human_readable.txt",
 
 
@@ -73,7 +73,7 @@ rule annotate_seqs_pfam:
     log:
         "logs/annotate_seqs_pfam.log",
     conda:
-        "env.yml",
+        "environment.yml",
     shell:  "{params.hmmscan_path} --cpu {threads} -o {params.work_dir}/{params.run_name}_hmmscan.out --tblout {params.work_dir}/{params.run_name}_hmmscan.tblout --domtblout {params.work_dir}/{params.run_name}_hmmscan.domtblout --acc --noali --notextw --cut_ga {input.pfam_database} {input.sequences}"
 
 rule annotate_seqs_go:
@@ -86,6 +86,8 @@ rule annotate_seqs_go:
         go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
     log:
         "logs/annotate_seqs_go.log",
+    conda:
+        "environment.yml",
     shell:
         "python src/build_go_map.py -o {output.go_map} --hhtblout {input.hhtblout} --pfam_go_files {input.pfam_gomf} {input.pfam_gobp} {input.pfam_gocc}"
 
@@ -101,12 +103,12 @@ rule generate_candidates:
     output:
         candidates = f"{config['work_dir']}/{config['run_name']}_candidates.tsv",
     params:
-        n_pairs = config["n_pairs"],
-        manual_annot_wt = config["manual_annot_wt"],
+        n_pairs = config["dscript"]["n_pairs"],
+        manual_annot_wt = config["dscript"]["manual_annot_wt"],
     log:
         "logs/generate_candidates.log",
     conda:
-        "env.yml",
+        "environment.yml",
     shell:  "python src/generate_candidates.py --manual_annot_wt {params.manual_annot_wt} --paircount {params.n_pairs} -o {output.candidates} --go_map {input.go_map} --go_database {input.go_database} --go_filter {input.go_filter} --go_list {input.go_shortlist} --protein_list {input.protein_shortlist} --sequences {input.sequences}"
 
 rule predict_network:
@@ -117,17 +119,18 @@ rule predict_network:
     output:
         network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
     params:
+        dscript_path = config["dscript"]["path"],
         work_dir = config["work_dir"],
         run_name = config["run_name"],
         device = config["dscript"]["device"],
-        t = config["dsd"]["t"]
+        t = config["dsd"]["t"],
     resources:
         nvidia_gpu=1
     log:
         "logs/predict_network.log",
     conda:
-        "env.yml",
-    shell:  "dscript predict --pairs {input.candidates} --seqs {input.sequences} --model {input.dscript_model} --outfile {params.work_dir}/{params.run_name}_network --device {params.device} --thresh {params.t}"
+        "environment.yml",
+    shell:  "{params.dscript_path} predict --pairs {input.candidates} --seqs {input.sequences} --model {input.dscript_model} --outfile {params.work_dir}/{params.run_name}_network --device {params.device} --thresh {params.t}"
 
 
 rule compute_distances:
@@ -136,14 +139,16 @@ rule compute_distances:
     output:
         distances = temp(f"{config['work_dir']}/{config['run_name']}_distances.DSD1"),
     params:
+        dsd_path = config["dsd"]["path"],
         work_dir = config["work_dir"],
         run_name = config["run_name"],
-        t = config["dsd"]["t"]
+        t = config["dsd"]["t"],
+        confidence = "-c" if config["dsd"]["confidence"] else ""
     log:
         "logs/compute_distances.log",
     conda:
-        "env.yml",
-    shell: "fastdsd -c --converge -t {params.t} --outfile {params.work_dir}/{params.run_name}_distances {input.network}"
+        "environment.yml",
+    shell: "{params.dsd_path} {params.confidence} --converge -t {params.t} --outfile {params.work_dir}/{params.run_name}_distances {input.network}"
 
 
 rule cluster_network:
@@ -161,7 +166,7 @@ rule cluster_network:
     log:
         "logs/cluster_network.log",
     conda:
-        "env.yml",
+        "environment.yml",
     shell:  "python src/cluster_network.py --network_file {input.network} --dsd_file {input.distances} --output {output.clusters} --min_cluster_size {params.min_cluster_size} --cluster_divisor {params.cluster_divisor} --init_k {params.init_k}"
 
 
@@ -175,7 +180,7 @@ rule reconnect_recipe:
     log:
         "logs/reconnect_recipe.log",
     conda:
-        "env.yml",
+        "environment.yml",
     shell: "cp {input.clusters} {output.clusters_connected}"
 
 rule add_cluster_functions:
@@ -187,7 +192,7 @@ rule add_cluster_functions:
     log:
         "logs/add_cluster_functions.log",
     conda:
-        "env.yml",
+        "environment.yml",
     shell: "python src/add_cluster_functions.py -o {output.clusters_functional} -cfp {input.clusters} --go_map {input.go_map}"
 
 rule summarize_clusters:
@@ -200,14 +205,26 @@ rule summarize_clusters:
     params:
         api_key = os.environ["OPENAI_API_KEY"],
         langchain_model = config["langchain"]["model"],
-        do_llm_naming = "--llm_name" if config["langchain"]["do_llm"] else ""
+        do_llm_naming = "--llm_name" if config["use_langchain"] else ""
     log:
         "logs/summarize_clusters.log",
     conda:
-        "env.yml",
+        "environment.yml",
     shell:  "python src/summarize_clusters.py {params.do_llm_naming} --model {params.langchain_model} --api_key {params.api_key} -o {output.human_readable} --json {output.readable_json} --go_db {input.go_database} -cfp {input.clusters}"
 
-rule create_cytoscape_session:
+rule cluster_graph:
+    input:
+        clusters = f"{config['work_dir']}/{config['run_name']}_clusters.functional.json",
+        network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
+    output:
+        graph = f"{config['work_dir']}/{config['run_name']}_graph.json",
+    log:
+        "logs/cluster_graph.log",
+    conda:
+        "environment.yml",
+    shell:  "python src/build_cluster_graph.py -o {output.graph} -cfp {input.clusters} -nfp {input.network}"
+
+rule vizualize_network:
     input:
         clusters = f"{config['work_dir']}/{config['run_name']}_clusters.functional.json",
         network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
@@ -219,6 +236,6 @@ rule create_cytoscape_session:
     log:
         "logs/create_cytoscape_session.log",
     conda:
-        "env.yml",
+        "environment.yml",
     shell:  "python src/build_cytoscape.py -s {input.style} -o {output.cytoscape} -cfp {input.clusters} -nfp {input.network} --name {params.run_name}"
 

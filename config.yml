@@ -4,10 +4,10 @@ work_dir: pdam_results
 sequence_path: data/protein_seqs_700.fasta
 protein_shortlist: data/pdam_shortlist.txt
 go_shortlist: data/pdam_shortlist_go.txt
+use_cytoscape: false
+use_langchain: false
 
-build_cytoscape: true
-
-####################
+############################################
 
 # General Parameters
 seed: 6191998
@@ -18,25 +18,24 @@ hmmscan:
   threads: 16
 
 # D-SCRIPT Parameters
-n_pairs: 500000
-manual_annot_wt: 100
 dscript:
+  path: dscript
+  n_pairs: 500000
+  manual_annot_wt: 100
   model: human_v1.sav
   device: 0
 
 # DSD Parameters
 dsd:
+  path: fastdsd
   t: 0.0
+  confidence: true
 
 # Clustering Parameters
-# clustering:
-#   init_k: 500
-#   min_cluster_size: 3
-#   cluster_divisor: 20
 clustering:
-  init_k: 3
-  min_cluster_size: 1
-  cluster_divisor: 2
+  init_k: 500
+  min_cluster_size: 3
+  cluster_divisor: 20
 
 # ReCIPE Parameters
 recipe:
@@ -45,9 +44,6 @@ recipe:
   max: 20
   metric: degree
 
-# Cytoscape Parameters
-
 # Langchain Parameters
 langchain:
-  do_llm: false
   model: gpt-4o
