@@ -122,7 +122,11 @@ if __name__ == "__main__":
             # passwd = f.read().strip()
         os.environ["OPENAI_API_KEY"] = args.api_key
 
-        model = ChatOpenAI(model="gpt-4o")
+        model = ChatOpenAI(
+            model="gpt-4o",
+            temperature=0,
+            # max_tokens=200
+            )
 
         for k, clust in tqdm(clusters.items()):
             if not hasattr(clust, 'llm_name'):
