@@ -1,11 +1,11 @@
 # User Specified
 run_name: pdam
 work_dir: pdam_results
-sequence_path: data/protein_seqs_700.fasta
+sequence_path: data/protein_seqs.fasta
 protein_shortlist: data/pdam_shortlist.txt
 go_shortlist: data/pdam_shortlist_go.txt
 use_cytoscape: false
-use_langchain: false
+use_langchain: true
 
 ############################################
 
@@ -20,7 +20,7 @@ hmmscan:
 # D-SCRIPT Parameters
 dscript:
   path: dscript
-  n_pairs: 500000
+  n_pairs: 100
   manual_annot_wt: 100
   model: human_v1.sav
   device: 0
@@ -34,8 +34,8 @@ dsd:
 # Clustering Parameters
 clustering:
   init_k: 500
-  min_cluster_size: 3
-  cluster_divisor: 20
+  min_cluster_size: 0
+  cluster_divisor: 2
 
 # ReCIPE Parameters
 recipe:

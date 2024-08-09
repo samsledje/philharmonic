@@ -1,4 +1,5 @@
 OPENAI_API_KEY.txt
+results/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
