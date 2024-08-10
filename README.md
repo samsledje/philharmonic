@@ -16,6 +16,7 @@ We introduce PHILHARMONIC: Protein Human-Transferred Interactome Learns Homology
 4. [Detailed Configuration](#detailed-configuration)
 5. [Citation](#citation)
 6. [FAQ/Known Issues](#issues)
+7. [Contributing](#issues)
 
 ## Installation
 
@@ -95,3 +96,12 @@ TBD
 ## Issues
 
 - On Linux, the package `plac` may not install properly with the included `environment.yml`. If you are seeing the error `No module names 'asyncore'`, try running `pip install --upgrade plac`
+
+## Contributing
+
+```bash
+cd philharmonic
+mamba install -c conda-forge pre-commit
+pre-commit install
+git checkout -b [feature branch]
+```
