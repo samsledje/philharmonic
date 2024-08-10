@@ -52,40 +52,47 @@ request = """
 Please name the following cluster:
 """
 
-llm_system_template = task_instruction + confidence_score + format_instruction + analytical_approach + one_shot_example + request
+llm_system_template = (
+    task_instruction
+    + confidence_score
+    + format_instruction
+    + analytical_approach
+    + one_shot_example
+    + request
+)
+
 
 def llm_summarize(cluster, go_database, model, sys_template, api_key):
-    
     parser = StrOutputParser()
     prompt_template = ChatPromptTemplate.from_messages(
         [("system", sys_template), ("user", "{text}")]
     )
     chain = prompt_template | model | parser
-    r = chain.invoke({
-            "text": cluster_format(cluster, go_database)
-        })
-    
+    r = chain.invoke({"text": cluster_format(cluster, go_database)})
+
     # return r
-    
+
     return json.loads(r)
 
-def cluster_format(clust, go_database, n_terms = 5):
 
+def cluster_format(clust, go_database, n_terms=5):
     clust = Cluster(clust)
     description_string = ""
 
-    if hasattr(clust, 'llm_name'):
+    if hasattr(clust, "llm_name"):
         description_string += f"Cluster Name: {clust.llm_name}\n"
 
     members = clust._member_list()
-    description_string += f"Cluster of {len(clust.members)} proteins [{members}] (hash {hash(clust)})\n"
+    description_string += (
+        f"Cluster of {len(clust.members)} proteins [{members}] (hash {hash(clust)})\n"
+    )
 
-    if hasattr(clust, 'G'):
+    if hasattr(clust, "G"):
         description_string += f"Edges: {len(clust.G.edges())}\n"
         description_string += f"Triangles: {clust.triangles()}\n"
         description_string += f"Max Degree: {0 if not len(clust.G.edges()) else max(clust.G.degree(), key=lambda x: x[1])[1]}\n"
 
-    if hasattr(clust, 'GO_terms'):
+    if hasattr(clust, "GO_terms"):
         top_terms = clust.get_top_terms(n_terms)
         description_string += "Top Terms:\n"
         for gid, freq in top_terms:
@@ -95,7 +102,7 @@ def cluster_format(clust, go_database, n_terms = 5):
                 go_name = "Unknown"
             description_string += f"\t\t{gid} - <{go_name}> ({freq})\n"
 
-    if hasattr(clust, 'llm_explanation'):
+    if hasattr(clust, "llm_explanation"):
         description_string += f"LLM Explanation: {clust.llm_explanation}\n"
         description_string += f"LLM Confidence: {clust.llm_confidence}\n"
 
@@ -103,14 +110,22 @@ def cluster_format(clust, go_database, n_terms = 5):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Create a human readable summary for results of a cluster analysis')
-    parser.add_argument('-o', '--output', required=True, type=str, help='Output file')
-    parser.add_argument('--json', type=str, default=None, help='Output in JSON format')
-    parser.add_argument('-cfp', '--cluster_file_path', required=True, type=str, help='Cluster file')
-    parser.add_argument('--go_db', required=True, type=str, help='GO database')
-    parser.add_argument('--llm_name', action='store_true', help='Use a large language model to name clusters')
-    parser.add_argument('--model', type=str, help='Language model to use')
-    parser.add_argument('--api_key', type=str, help='OpenAI API key')
+    parser = argparse.ArgumentParser(
+        description="Create a human readable summary for results of a cluster analysis"
+    )
+    parser.add_argument("-o", "--output", required=True, type=str, help="Output file")
+    parser.add_argument("--json", type=str, default=None, help="Output in JSON format")
+    parser.add_argument(
+        "-cfp", "--cluster_file_path", required=True, type=str, help="Cluster file"
+    )
+    parser.add_argument("--go_db", required=True, type=str, help="GO database")
+    parser.add_argument(
+        "--llm_name",
+        action="store_true",
+        help="Use a large language model to name clusters",
+    )
+    parser.add_argument("--model", type=str, help="Language model to use")
+    parser.add_argument("--api_key", type=str, help="OpenAI API key")
 
     args = parser.parse_args()
 
@@ -119,15 +134,21 @@ if __name__ == "__main__":
 
     if args.llm_name:
         # with open("OPENAI_API_KEY.txt","r") as f:
-            # passwd = f.read().strip()
+        # passwd = f.read().strip()
         os.environ["OPENAI_API_KEY"] = args.api_key
 
-        model = ChatOpenAI(model="gpt-4o")
+        model = ChatOpenAI(
+            model="gpt-4o",
+            temperature=0,
+            # max_tokens=200
+        )
 
         for k, clust in tqdm(clusters.items()):
-            if not hasattr(clust, 'llm_name'):
+            if not hasattr(clust, "llm_name"):
                 try:
-                    llm_summary = llm_summarize(clust, go_database, model, llm_system_template, args.api_key)
+                    llm_summary = llm_summarize(
+                        clust, go_database, model, llm_system_template, args.api_key
+                    )
                     clust["llm_name"] = llm_summary["short_name"]
                     clust["llm_explanation"] = llm_summary["explanation"]
                     clust["llm_confidence"] = llm_summary["confidence_score"]
@@ -136,14 +157,14 @@ if __name__ == "__main__":
                     clust["llm_name"] = "Unknown"
                     clust["llm_explanation"] = "Unknown"
                     clust["llm_confidence"] = "Unknown"
-    
+
     if args.json:
         for k, clust in clusters.items():
             clust["human_readable"] = cluster_format(clust, go_database)
-        with open(args.json, 'w') as f:
+        with open(args.json, "w") as f:
             json.dump(clusters, f, indent=4)
-    
-    with open(args.output, 'w') as f:
+
+    with open(args.output, "w") as f:
         for k, clust in clusters.items():
             description_string = cluster_format(clust, go_database)
             f.write(description_string)
