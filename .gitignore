@@ -2,6 +2,7 @@ OPENAI_API_KEY.txt
 results/
 data/
 data_old/
+dev/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
