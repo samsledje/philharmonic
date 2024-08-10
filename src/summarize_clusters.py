@@ -1,10 +1,8 @@
 # python src/name_clusters.py --api_key {params.api_key} -o {output.human_readable} --go_db {input.go_database} -cfp {input.clusters}
 import os
-import re
 import json
 import argparse
 from tqdm import tqdm
-from pathlib import Path
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
