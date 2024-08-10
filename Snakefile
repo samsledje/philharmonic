@@ -176,11 +176,16 @@ rule reconnect_recipe:
         network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
     output:
         clusters_connected = temp(f"{config['work_dir']}/{config['run_name']}_clusters.recipe.json"),
-    # shell: "recipe --outfile {output.clusters_connected} -cfp {input.clusters}  -nfp {input.network}"
+    params:
+        lr = config["recipe"]["lr"],
+        cthresh = config["recipe"]["cthresh"],
+        max_proteins = config["recipe"]["max_proteins"],
+        metric = config["recipe"]["metric"]
     log:
         "logs/reconnect_recipe.log",
     conda:
         "environment.yml",
+    # shell: "python recipe.py --network {input.network}  --cluster-filepath {input.clusters} --lr {params.lr} -cthresh {params.cthresh} --max {params.max_proteins} --metric {params.metric} --outfile {output.clusters_connected}"
     shell: "cp {input.clusters} {output.clusters_connected}"
 
 rule add_cluster_functions:

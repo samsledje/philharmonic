@@ -41,7 +41,7 @@ clustering:
 recipe:
   lr: 0.1
   cthresh: 0.75
-  max: 20
+  max_proteins: 20
   metric: degree
 
 # Langchain Parameters
