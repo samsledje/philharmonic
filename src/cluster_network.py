@@ -1,6 +1,5 @@
 # python src/cluster_network.py --network_file {input.network} --dsd_file {input.distances} --output {output.clusters} --min_cluster_size {config[clustering][min_cluster_size]} --cluster_divisor {config[clustering][cluster_divisor]} --init_k {config[clustering][init_k]}
 
-import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import networkx as nx

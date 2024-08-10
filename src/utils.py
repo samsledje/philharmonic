@@ -1,6 +1,5 @@
 import hashlib
 import json
-import re
 import pandas as pd
 import networkx as nx
 
@@ -176,9 +175,9 @@ def parse_GO_map(f):
     seqDb["GO_str"] = seqDb["GO_list"]
     seqDb["GO_list"] = seqDb["GO_str"].str.split(";")
 
-    def extract_GO_id_from_list(l):
-        if isinstance(l, list):
-            return [i.split("|")[0] for i in l]
+    def extract_GO_id_from_list(go_list):
+        if isinstance(go_list, list):
+            return [i.split("|")[0] for i in go_list]
         else:
             return None
 
