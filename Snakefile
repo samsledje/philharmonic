@@ -29,7 +29,7 @@ rule download_required_files:
             "curl https://godm.loria.fr/data/pfam_gomf_most_specific.txt -o {config[work_dir]}/pfam_gomf_most_specific.txt",
             "curl https://godm.loria.fr/data/pfam_gobp_most_specific.txt -o {config[work_dir]}/pfam_gobp_most_specific.txt",
             "curl https://godm.loria.fr/data/pfam_gocc_most_specific.txt -o {config[work_dir]}/pfam_gocc_most_specific.txt",
-            "curl http://cb.csail.mit.edu/cb/dscript/data/models/{config[dscript][model]} -o {config[work_dir]}/{config[dscript][model]}",
+            "wget http://cb.csail.mit.edu/cb/dscript/data/models/{config[dscript][model]} -o {config[work_dir]}/{config[dscript][model]}",
         ]
         for c in commands:
             shell(c)
