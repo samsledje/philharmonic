@@ -15,6 +15,7 @@ We introduce PHILHARMONIC: Protein Human-Transferred Interactome Learns Homology
 3. [Workflow Overview](#workflow-overview)
 4. [Detailed Configuration](#detailed-configuration)
 5. [Citation](#citation)
+6. [FAQ/Known Issues](#issues)
 
 ## Installation
 
@@ -55,7 +56,7 @@ go_shortlist: [optional path to a list of GO terms to prioritize in the analysis
 Once your configuration file is set up, you can invoke the pipeline with
 
 ```bash
-Snakemake -c {number of cores}
+snakemake -c {number of cores} --configfile {config file}
 ```
 
 ### Pipeline Outputs
@@ -90,3 +91,7 @@ Each of these steps can be invoked independently by running `Snakemake -c {numbe
 ```
 TBD
 ```
+
+## Issues
+
+- On Linux, the package `plac` may not install properly with the included `environment.yml`. If you are seeing the error `No module names 'asyncore'`, try running `pip install --upgrade plac`
