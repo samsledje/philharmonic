@@ -5,7 +5,7 @@ envvars:
     "OPENAI_API_KEY"
 
 rule PHILHARMONIC:
-    input:  
+    input:
         clusters = f"{config['work_dir']}/{config['run_name']}_clusters.json",
         cytoscape = f"{config['work_dir']}/{config['run_name']}_cytoscape_session.cys" if config["use_cytoscape"] else [],
         human_readable = f"{config['work_dir']}/{config['run_name']}_human_readable.txt",
@@ -134,7 +134,7 @@ rule predict_network:
 
 
 rule compute_distances:
-    input: 
+    input:
         network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
     output:
         distances = temp(f"{config['work_dir']}/{config['run_name']}_distances.DSD1"),
@@ -243,4 +243,3 @@ rule vizualize_network:
     conda:
         "environment.yml",
     shell:  "python src/build_cytoscape.py -s {input.style} -o {output.cytoscape} -cfp {input.clusters} -nfp {input.network} --name {params.run_name}"
-

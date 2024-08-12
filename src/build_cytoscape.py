@@ -1,10 +1,8 @@
 # "python src/philharmonic_cytoscape.py -s {input.styles} -o {output} {input.clusters}
 
 import argparse
-import pandas
 import py4cytoscape as p4c
 import networkx as nx
-from pathlib import Path
 from utils import load_cluster_json
 
 if __name__ == "__main__":

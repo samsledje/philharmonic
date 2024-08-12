@@ -66,11 +66,11 @@ def subset_go_graph(go_graph_file, go_included_terms):
     for c1 in go_included_terms:
         dfs_visit(go2children, c1)
 
-    l = []
+    go_subset = []
     for c in visited_go_terms:
-        l.append((c, go2desc[c][0], go2desc[c][1], ";".join(go2children[c])))
+        go_subset.append((c, go2desc[c][0], go2desc[c][1], ";".join(go2children[c])))
 
-    return sorted(l)
+    return sorted(go_subset)
 
 
 if __name__ == "__main__":
