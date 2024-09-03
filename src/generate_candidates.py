@@ -86,7 +86,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--go_database", type=str, help="GO database file")
     parser.add_argument("--go_filter", type=str, help="GO terms to filter by")
-    parser.add_argument("--go_list", type=str, help="GO shortlist to include")
+    #    parser.add_argument("--go_list", type=str, help="GO shortlist to include")
     parser.add_argument(
         "--manual_annot_wt",
         type=float,
@@ -104,8 +104,8 @@ if __name__ == "__main__":
     # Create list of filtered GO terms
     go_filter = pd.read_csv(args.go_filter, sep=",")
     allowed_go = list(go_filter[go_filter["useflag"] == 1]["GOID"].values)
-    shortlisted_go = [line.strip() for line in open(args.go_list, "r")]
-    allowed_go.extend(shortlisted_go)
+    #    shortlisted_go = [line.strip() for line in open(args.go_list, "r")]
+    #    allowed_go.extend(shortlisted_go)
 
     # Get children of allowed GO terms
     allowed_go = [i[0] for i in subset_go_graph(args.go_database, allowed_go)]

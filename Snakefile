@@ -15,9 +15,9 @@ rule download_required_files:
     output:
         go_database = f"{config['work_dir']}/go.obo",
         pfam_database_zipped = f"{config['work_dir']}/Pfam-A.hmm.gz",
-        pfam_gomf = f"{config['work_dir']}/pfam_gomf_most_specific.txt",
+        # pfam_gomf = f"{config['work_dir']}/pfam_gomf_most_specific.txt",
         pfam_gobp = f"{config['work_dir']}/pfam_gobp_most_specific.txt",
-        pfam_gocc = f"{config['work_dir']}/pfam_gocc_most_specific.txt",
+        # pfam_gocc = f"{config['work_dir']}/pfam_gocc_most_specific.txt",
         dscript_model = f"{config['work_dir']}/{config['dscript']['model']}",
     log:
         "logs/download_required_files.log",
@@ -26,10 +26,15 @@ rule download_required_files:
             "mkdir -p {config[work_dir]}",
             "curl https://current.geneontology.org/ontology/go.obo -o {config[work_dir]}/go.obo",
             "curl ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz -o {config[work_dir]}/Pfam-A.hmm.gz",
-            "curl https://godm.loria.fr/data/pfam_gomf_most_specific.txt -o {config[work_dir]}/pfam_gomf_most_specific.txt",
+            # "curl https://godm.loria.fr/data/pfam_gomf_most_specific.txt -o {config[work_dir]}/pfam_gomf_most_specific.txt",
             "curl https://godm.loria.fr/data/pfam_gobp_most_specific.txt -o {config[work_dir]}/pfam_gobp_most_specific.txt",
+<<<<<<< Updated upstream
             "curl https://godm.loria.fr/data/pfam_gocc_most_specific.txt -o {config[work_dir]}/pfam_gocc_most_specific.txt",
             "wget http://cb.csail.mit.edu/cb/dscript/data/models/{config[dscript][model]} -o {config[work_dir]}/{config[dscript][model]}",
+=======
+            # "curl https://godm.loria.fr/data/pfam_gocc_most_specific.txt -o {config[work_dir]}/pfam_gocc_most_specific.txt",
+            "curl http://cb.csail.mit.edu/cb/dscript/data/models/{config[dscript][model]} -o {config[work_dir]}/{config[dscript][model]}",
+>>>>>>> Stashed changes
         ]
         for c in commands:
             shell(c)
@@ -79,9 +84,9 @@ rule annotate_seqs_pfam:
 rule annotate_seqs_go:
     input:
         hhtblout = f"{config['work_dir']}/{config['run_name']}_hmmscan.tblout",
-        pfam_gomf = f"{config['work_dir']}/pfam_gomf_most_specific.txt",
+        # pfam_gomf = f"{config['work_dir']}/pfam_gomf_most_specific.txt",
         pfam_gobp = f"{config['work_dir']}/pfam_gobp_most_specific.txt",
-        pfam_gocc = f"{config['work_dir']}/pfam_gocc_most_specific.txt",
+        # pfam_gocc = f"{config['work_dir']}/pfam_gocc_most_specific.txt",
     output:
         go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
     log:
@@ -89,7 +94,7 @@ rule annotate_seqs_go:
     conda:
         "environment.yml",
     shell:
-        "python src/build_go_map.py -o {output.go_map} --hhtblout {input.hhtblout} --pfam_go_files {input.pfam_gomf} {input.pfam_gobp} {input.pfam_gocc}"
+        "python src/build_go_map.py -o {output.go_map} --hhtblout {input.hhtblout} --pfam_go_files {input.pfam_gobp}"
 
 
 rule generate_candidates:
@@ -185,8 +190,8 @@ rule reconnect_recipe:
         "logs/reconnect_recipe.log",
     conda:
         "environment.yml",
-    # shell: "python recipe.py --network {input.network}  --cluster-filepath {input.clusters} --lr {params.lr} -cthresh {params.cthresh} --max {params.max_proteins} --metric {params.metric} --outfile {output.clusters_connected}"
-    shell: "cp {input.clusters} {output.clusters_connected}"
+    shell: "recipe-cluster cook --network-filepath {input.network}  --cluster-filepath {input.clusters} --lr {params.lr} -cthresh {params.cthresh} --max {params.max_proteins} --metric {params.metric} --output-prefix {output.clusters_connected}"
+    # shell: "cp {input.clusters} {output.clusters_connected}"
 
 rule add_cluster_functions:
     input:
