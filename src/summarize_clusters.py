@@ -3,9 +3,6 @@ import os
 import json
 import argparse
 from tqdm import tqdm
-from langchain_openai import ChatOpenAI
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate
 
 from utils import load_cluster_json, parse_GO_database, Cluster, log
 
@@ -131,6 +128,10 @@ if __name__ == "__main__":
     go_database = parse_GO_database(args.go_db)
 
     if args.llm_name:
+        from langchain_openai import ChatOpenAI
+        from langchain_core.output_parsers import StrOutputParser
+        from langchain_core.prompts import ChatPromptTemplate
+
         # with open("OPENAI_API_KEY.txt","r") as f:
         # passwd = f.read().strip()
         os.environ["OPENAI_API_KEY"] = args.api_key

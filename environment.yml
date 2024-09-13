@@ -17,14 +17,14 @@ dependencies:
   - omegaconf=2.3.0
   - pandas=2.1.1
   - pip=23.3
-  - python=3.12.2
+  - python=3.11.2
   - scikit-learn=1.3.0
   - scipy=1.11.3
   - seaborn=0.12.2
   - snakemake=8.10.0
   - tqdm=4.63.0
   - pip:
-    - dscript==0.2.6
+    - dscript==0.2.7
     - fastdsd==1.0.1
     - py4cytoscape==1.9.0
     - recipe-cluster==0.0.2
