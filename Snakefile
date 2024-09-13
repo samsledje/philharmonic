@@ -219,7 +219,7 @@ rule cluster_graph:
         graph = f"{config['work_dir']}/{config['run_name']}_graph.json",
     log:
         "logs/cluster_graph.log",
-    conda:
+    conda:d
         "environment.yml",
     shell:  "python src/build_cluster_graph.py -o {output.graph} -cfp {input.clusters} -nfp {input.network}"
 
