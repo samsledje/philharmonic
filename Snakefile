@@ -6,7 +6,9 @@
 
 rule PHILHARMONIC:
     input:
+        network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
         clusters = f"{config['work_dir']}/{config['run_name']}_clusters.json",
+        cluster_graph = f"{config['work_dir']}/{config['run_name']}_cluster_graph.json",
         cytoscape = f"{config['work_dir']}/{config['run_name']}_cytoscape_session.cys" if config["use_cytoscape"] else [],
         human_readable = f"{config['work_dir']}/{config['run_name']}_human_readable.txt",
 
@@ -14,6 +16,7 @@ rule PHILHARMONIC:
 rule download_required_files:
     output:
         go_database = f"{config['work_dir']}/go.obo",
+        go_slim = f"{config['work_dir]}/goslim_generic.obo",
         pfam_database_zipped = f"{config['work_dir']}/Pfam-A.hmm.gz",
         pfam_gobp = f"{config['work_dir']}/pfam_gobp_most_specific.txt",
     log:
@@ -22,6 +25,7 @@ rule download_required_files:
         commands = [
             "mkdir -p {config[work_dir]}",
             "curl https://current.geneontology.org/ontology/go.obo -o {config[work_dir]}/go.obo",
+            "curl https://current.geneontology.org/ontology/subsets/goslim_generic.obo -o {config[work_dir]}/goslim_generic.obo",
             "curl ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz -o {config[work_dir]}/Pfam-A.hmm.gz",
             "curl https://godm.loria.fr/data/pfam_gobp_most_specific.txt -o {config[work_dir]}/pfam_gobp_most_specific.txt",
         ]
@@ -194,6 +198,20 @@ rule add_cluster_functions:
         "environment.yml",
     shell: "python src/add_cluster_functions.py -o {output.clusters_functional} -cfp {input.clusters} --go_map {input.go_map}"
 
+rule cluster_graph:
+    input:
+        clusters = f"{config['work_dir']}/{config['run_name']}_clusters.functional.json",
+        network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
+        go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv"
+        go_database = f"{config['work_dir']}/go.obo"
+    output:
+        graph = f"{config['work_dir']}/{config['run_name']}_cluster_graph.json",
+    log:
+        "logs/cluster_graph.log",
+    conda:d
+        "environment.yml",
+    shell:  "python src/build_cluster_graph.py -o {output.graph} -cfp {input.clusters} -nfp {input.network}" --go_map {input.go_map} --go_db {input.go_database}"
+
 rule summarize_clusters:
     input:
         clusters = f"{config['work_dir']}/{config['run_name']}_clusters.functional.json",
@@ -210,18 +228,6 @@ rule summarize_clusters:
     conda:
         "environment.yml",
     shell:  "python src/summarize_clusters.py {params.do_llm_naming} --model {params.langchain_model} {params.api_key} -o {output.human_readable} --json {output.readable_json} --go_db {input.go_database} -cfp {input.clusters}"
-
-rule cluster_graph:
-    input:
-        clusters = f"{config['work_dir']}/{config['run_name']}_clusters.functional.json",
-        network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
-    output:
-        graph = f"{config['work_dir']}/{config['run_name']}_graph.json",
-    log:
-        "logs/cluster_graph.log",
-    conda:d
-        "environment.yml",
-    shell:  "python src/build_cluster_graph.py -o {output.graph} -cfp {input.clusters} -nfp {input.network}"
 
 rule vizualize_network:
     input:

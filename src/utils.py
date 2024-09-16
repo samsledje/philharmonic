@@ -1,7 +1,10 @@
 import hashlib
 import json
+import numpy as np
 import pandas as pd
 import networkx as nx
+from matplotlib import pyplot as plt
+import seaborn as sns
 
 
 class Cluster:
@@ -69,12 +72,13 @@ class Cluster:
         self.GO_terms = {}
         self.go_db = go_db.copy()
         for prot in self.members:
-            goIds = go_map[go_map["seq"] == prot]["GO_ids"].values[0]
+            goIds = go_map.get(prot, None)
             if goIds is None or len(goIds) == 0:
                 continue
             for gid in goIds:
-                goCount = self.GO_terms.setdefault(gid, 0)
-                self.GO_terms[gid] = goCount + 1
+                if gid in go_db:
+                    goCount = self.GO_terms.setdefault(gid, 0)
+                    self.GO_terms[gid] = goCount + 1
 
     # def get_proteins_by_GO(self, GO_id):
     #     return [p for p in self.members if GO_id in prot_go_db.loc[p,'GO_ids']]
@@ -190,7 +194,59 @@ def parse_GO_map(f):
             go_map[r.seq] = r.GO_ids
     return go_map
 
+def clean_top_terms(c, go_db, return_counts=True, n_filter=3):
+    csize = len(c)
+    tt = c.get_top_terms(1)
+    if len(tt):
+        if tt[0][1] < n_filter:
+            pass
+        elif return_counts:
+            return (go_db[tt[0][0]], tt[0][1], csize)
+        else:
+            return go_db[tt[0][0]]
+    if return_counts:
+        return ('', None, csize)
+    else:
+        return ''
 
-def repr_cluster(c):
+
+def repr_cluster(c, go_db = None):
     c = Cluster(c)
     return str(c)
+
+
+def plot_cluster_degree(cluster, full_graph, name="Graph", node_labels=False):
+    # From https://networkx.org/documentation/stable/auto_examples/drawing/plot_degree.html
+    G = nx.subgraph(full_graph, cluster["members"])
+    degree_sequence = sorted((d for n, d in G.degree()), reverse=True)
+    dmax = max(degree_sequence)
+    
+    fig = plt.figure("Degree of a random graph", figsize=(8, 8))
+    # Create a gridspec for adding subplots of different sizes
+    axgrid = fig.add_gridspec(5, 4)
+
+    ax0 = fig.add_subplot(axgrid[0:3, :])
+    Gcc = G.subgraph(sorted(nx.connected_components(G), key=len, reverse=True)[0])
+    pos = nx.spring_layout(Gcc, seed=10396953)
+    nx.draw_networkx_nodes(Gcc, pos, ax=ax0, node_size=20)
+    nx.draw_networkx_edges(Gcc, pos, ax=ax0, alpha=0.4)
+    if node_labels:
+        nx.draw_networkx_labels(Gcc, pos, ax=ax0)
+    ax0.set_axis_off()
+
+    ax1 = fig.add_subplot(axgrid[3:, :2])
+    ax1.plot(degree_sequence, "b-", marker="o")
+    ax1.set_title("Degree Rank Plot")
+    ax1.set_ylabel("Degree")
+    ax1.set_xlabel("Rank")
+
+    ax2 = fig.add_subplot(axgrid[3:, 2:])
+    ax2.bar(*np.unique(degree_sequence, return_counts=True))
+    ax2.set_title("Degree histogram")
+    ax2.set_xlabel("Degree")
+    ax2.set_ylabel("# of Nodes")
+
+    fig.tight_layout()
+    sns.despine()
+    plt.suptitle(f"{name} ({len(G)} nodes / {len(G.edges())} edges)")
+    plt.show()
