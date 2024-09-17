@@ -184,7 +184,7 @@ rule reconnect_recipe:
         "logs/reconnect_recipe.log",
     conda:
         "environment.yml",
-    shell: "recipe-cluster cook --network-filepath {input.network}  --cluster-filepath {input.clusters} --dsd-file {input.dsd} --protein-go-filepaths {input.go_map} --go-db-file {input.go_db} --lr {params.lr} -cthresh {params.cthresh} --max {params.max_proteins} --metric {params.metric} --cluster_outfile {output.clusters_connected}"
+    shell: "recipe-cluster cook --network-filepath {input.network} --cluster-filepath {input.clusters} --lr {params.lr} -cthresh {params.cthresh} --max {params.max_proteins} --metric {params.metric} --outfile {output.clusters_connected}"
 #    shell: "cp {input.clusters} {output.clusters_connected}"
 
 rule add_cluster_functions:
