@@ -1,9 +1,3 @@
-# configfile:
-#     "config.yml"
-
-#envvars:
-#    "OPENAI_API_KEY"
-
 rule PHILHARMONIC:
     input:
         network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
@@ -11,12 +5,17 @@ rule PHILHARMONIC:
         cluster_graph = f"{config['work_dir']}/{config['run_name']}_cluster_graph.json",
         cytoscape = f"{config['work_dir']}/{config['run_name']}_cytoscape_session.cys" if config["use_cytoscape"] else [],
         human_readable = f"{config['work_dir']}/{config['run_name']}_human_readable.txt",
+    output:
+        zipfile = f"{config['work_dir']}/{config['run_name']}.zip"
+    params:
+    shell:
+        "zip {output.zipfile} {input.network} {input.clusters} {input.cluster_graph} {input.human_readable} {input.cytoscape}"
 
 
 rule download_required_files:
     output:
         go_database = f"{config['work_dir']}/go.obo",
-        go_slim = f"{config['work_dir]}/goslim_generic.obo",
+        go_slim = f"{config['work_dir']}/goslim_generic.obo",
         pfam_database_zipped = f"{config['work_dir']}/Pfam-A.hmm.gz",
         pfam_gobp = f"{config['work_dir']}/pfam_gobp_most_specific.txt",
     log:
@@ -77,9 +76,7 @@ rule annotate_seqs_pfam:
 rule annotate_seqs_go:
     input:
         hhtblout = f"{config['work_dir']}/{config['run_name']}_hmmscan.tblout",
-        # pfam_gomf = f"{config['work_dir']}/pfam_gomf_most_specific.txt",
         pfam_gobp = f"{config['work_dir']}/pfam_gobp_most_specific.txt",
-        # pfam_gocc = f"{config['work_dir']}/pfam_gocc_most_specific.txt",
     output:
         go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
     log:
@@ -134,7 +131,7 @@ rule compute_distances:
     input:
         network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
     output:
-        distances = temp(f"{config['work_dir']}/{config['run_name']}_distances.DSD1"),
+        distances = f"{config['work_dir']}/{config['run_name']}_distances.DSD1",
     params:
         dsd_path = config["dsd"]["path"],
         work_dir = config["work_dir"],
@@ -159,12 +156,14 @@ rule cluster_network:
         run_name = config["run_name"],
         min_cluster_size = config["clustering"]["min_cluster_size"],
         cluster_divisor = config["clustering"]["cluster_divisor"],
-        init_k = config["clustering"]["init_k"]
+        init_k = config["clustering"]["init_k"],
+        sparsity = config["clustering"]["sparsity_thresh"],
+        seed = config["seed"]
     log:
         "logs/cluster_network.log",
     conda:
         "environment.yml",
-    shell:  "python src/cluster_network.py --network_file {input.network} --dsd_file {input.distances} --output {output.clusters} --min_cluster_size {params.min_cluster_size} --cluster_divisor {params.cluster_divisor} --init_k {params.init_k}"
+    shell:  "python src/cluster_network.py --network_file {input.network} --dsd_file {input.distances} --output {output.clusters} --min_cluster_size {params.min_cluster_size} --cluster_divisor {params.cluster_divisor} --init_k {params.init_k} --sparsity {params.sparsity} --random_seed {params.seed}"
 
 
 rule reconnect_recipe:
@@ -172,6 +171,8 @@ rule reconnect_recipe:
         clusters = f"{config['work_dir']}/{config['run_name']}_clusters.disconnected.json",
         network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
         dsd = f"{config['work_dir']}/{config['run_name']}_distances.DSD1",
+        go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
+        go_db = f"{config['work_dir']}/go.obo"
     output:
         clusters_connected = temp(f"{config['work_dir']}/{config['run_name']}_clusters.recipe.json"),
     params:
@@ -183,8 +184,8 @@ rule reconnect_recipe:
         "logs/reconnect_recipe.log",
     conda:
         "environment.yml",
-#    shell: "recipe-cluster cook --network-filepath {input.network}  --cluster-filepath {input.clusters} --nfp {input.network} --dsd-file {input.dsd} --lr {params.lr} -cthresh {params.cthresh} --max {params.max_proteins} --metric {params.metric} --output-prefix {output.clusters_connected}"
-    shell: "cp {input.clusters} {output.clusters_connected}"
+    shell: "recipe-cluster cook --network-filepath {input.network}  --cluster-filepath {input.clusters} --dsd-file {input.dsd} --protein-go-filepaths {input.go_map} --go-db-file {input.go_db} --lr {params.lr} -cthresh {params.cthresh} --max {params.max_proteins} --metric {params.metric} --cluster_outfile {output.clusters_connected}"
+#    shell: "cp {input.clusters} {output.clusters_connected}"
 
 rule add_cluster_functions:
     input:
@@ -202,15 +203,15 @@ rule cluster_graph:
     input:
         clusters = f"{config['work_dir']}/{config['run_name']}_clusters.functional.json",
         network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
-        go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv"
-        go_database = f"{config['work_dir']}/go.obo"
+        go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
+        go_database = f"{config['work_dir']}/go.obo",
     output:
         graph = f"{config['work_dir']}/{config['run_name']}_cluster_graph.json",
     log:
         "logs/cluster_graph.log",
-    conda:d
+    conda:
         "environment.yml",
-    shell:  "python src/build_cluster_graph.py -o {output.graph} -cfp {input.clusters} -nfp {input.network}" --go_map {input.go_map} --go_db {input.go_database}"
+    shell:  "python src/build_cluster_graph.py -o {output.graph} -cfp {input.clusters} -nfp {input.network} --go_map {input.go_map} --go_db {input.go_database}"
 
 rule summarize_clusters:
     input:

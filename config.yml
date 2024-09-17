@@ -25,14 +25,15 @@ dscript:
 # DSD Parameters
 dsd:
   path: fastdsd
-  t: 0.0
+  t: 0.5
   confidence: true
 
 # Clustering Parameters
 clustering:
-  init_k: 5
-  min_cluster_size: 5
-  cluster_divisor: 5
+  init_k: 500
+  min_cluster_size: 3
+  cluster_divisor: 20
+  sparsity_thresh: 1e-5
 
 # ReCIPE Parameters
 recipe:

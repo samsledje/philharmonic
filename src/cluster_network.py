@@ -59,11 +59,11 @@ def read_network_subset(network_file, protein_names, output_stats=True):
     fullG = nx.read_weighted_edgelist(network_file)
     log("Selecting subset proteins...")
     G = fullG.subgraph(protein_names)
-    degrees = [i[1] for i in list(G.degree())]
 
     if output_stats:
         # print a table of network statistics
         label = ["Nodes", "Edges", "Degree (Med)", "Degree (Avg)", "Sparsity"]
+        degrees = [i[1] for i in list(G.degree())]
         value = [
             len(G.nodes),
             len(G.edges),
