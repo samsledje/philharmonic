@@ -185,7 +185,6 @@ rule reconnect_recipe:
     conda:
         "environment.yml",
     shell: "recipe-cluster cook --network-filepath {input.network} --cluster-filepath {input.clusters} --lr {params.lr} -cthresh {params.cthresh} --max {params.max_proteins} --metric {params.metric} --outfile {output.clusters_connected}"
-#    shell: "cp {input.clusters} {output.clusters_connected}"
 
 rule add_cluster_functions:
     input:
