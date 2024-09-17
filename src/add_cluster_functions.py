@@ -12,7 +12,7 @@ def add_GO_function(cluster, go_map):
     go_terms = {}
     for protein in cluster["members"]:
         if protein in go_map:
-            for gid in go_map[protein]:
+            for gid in set(go_map[protein]):
                 go_terms[gid] = go_terms.setdefault(gid, 0) + 1
     return go_terms
 

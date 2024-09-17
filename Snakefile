@@ -103,7 +103,7 @@ rule generate_candidates:
         "logs/generate_candidates.log",
     conda:
         "environment.yml",
-    shell:  "python src/generate_candidates.py --paircount {params.n_pairs} -o {output.candidates} --seq-out {output.kept_proteins} --go_map {input.go_map} --go_database {input.go_database} --go_filter {input.go_filter} --sequences {input.sequences} --seed {params.seed}"
+    shell:  "python src/generate_candidates.py --paircount {params.n_pairs} -o {output.candidates} --seq_out {output.kept_proteins} --go_map {input.go_map} --go_database {input.go_database} --go_filter {input.go_filter} --sequences {input.sequences} --seed {params.seed}"
 
 rule predict_network:
     input:
@@ -113,7 +113,7 @@ rule predict_network:
         network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
     params:
         dscript_path = config["dscript"]["path"],
-        dscript_model = f"{config['work_dir']}/{config['dscript']['model']}",
+        dscript_model = config['dscript']['model'],
         work_dir = config["work_dir"],
         run_name = config["run_name"],
         device = config["dscript"]["device"],
