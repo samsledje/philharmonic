@@ -1,15 +1,17 @@
 # python src/cluster_network.py --network_file {input.network} --dsd_file {input.distances} --output {output.clusters} --min_cluster_size {config[clustering][min_cluster_size]} --cluster_divisor {config[clustering][cluster_divisor]} --init_k {config[clustering][init_k]}
 
+import typer
 import pandas as pd
 import numpy as np
 import networkx as nx
-import argparse
 import json
 from sklearn.cluster import SpectralClustering
 from queue import PriorityQueue
+from loguru import logger
 
-from utils import log, hash_cluster
+from .utils import hash_cluster
 
+app = typer.Typer()
 
 def RBF(D, sigma=None):
     """
@@ -41,7 +43,7 @@ def extract_clusters(
             to_print += "of sizes: "
             for subC in subCs:
                 to_print += f"{len(subC)}/"
-        log(to_print[:-1])
+        logger.info(to_print[:-1])
 
     # return list of tuples of priority of cluster and list of nodes in cluster
     return [(1 / len(subC), subC) for subC in subCs]
@@ -57,7 +59,7 @@ def read_network_subset(network_file, protein_names, output_stats=True):
     Read in the network and filter edges based on DSD confidence threshold
     """
     fullG = nx.read_weighted_edgelist(network_file)
-    log("Selecting subset proteins...")
+    logger.info("Selecting subset proteins...")
     G = fullG.subgraph(protein_names)
 
     if output_stats:
@@ -74,49 +76,39 @@ def read_network_subset(network_file, protein_names, output_stats=True):
         stats = pd.DataFrame([label, value]).T
         stats.columns = ["", "Value"]
         stats = stats.set_index("")
-        log(stats)
+        logger.info(stats)
         # save a histogram of protein degree
 
     return G
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Cluster PPI network")
-    parser.add_argument(
-        "--init_k", type=int, default=500, help="Initial number of clusters"
-    )
-    parser.add_argument(
-        "--min_cluster_size", type=int, default=3, help="Minimum cluster size"
-    )
-    parser.add_argument(
-        "--cluster_divisor", type=int, default=20, help="Cluster divisor"
-    )
-    parser.add_argument(
-        "--sparsity", type=float, default=1e-5, help="Sparsity threshold"
-    )
-    parser.add_argument("--random_seed", type=int, default=42, help="Random seed")
-    parser.add_argument("-o", "--output", type=str, required=True, help="Output file")
-    parser.add_argument("--dsd_file", type=str, required=True, help="Distances file")
-    parser.add_argument("--network_file", type=str, required=True, help="Network file")
-
-    args = parser.parse_args()
-
-    log(f"Reading DSD file: {args.dsd_file}")
-    dsd_df = pd.read_csv(args.dsd_file, sep="\t", index_col=0, header=0)
+@app.command()
+def main(
+    init_k: int = typer.Option(500, "--init_k", help="Initial number of clusters"),
+    min_cluster_size: int = typer.Option(3, "--min_cluster_size", help="Minimum cluster size"),
+    cluster_divisor: int = typer.Option(20, "--cluster_divisor", help="Cluster divisor"),
+    sparsity: float = typer.Option(1e-5, "--sparsity", help="Sparsity threshold"),
+    random_seed: int = typer.Option(42, "--random_seed", help="Random seed"),
+    output: str = typer.Option(..., "-o", "--output", help="Output file"),  
+    dsd_file: str = typer.Option(..., "--dsd_file", help="Distances file"),
+    network_file: str = typer.Option(..., "--network_file", help="Network file"),
+):
+    """Cluster a network using a DSD file"""
+    logger.info(f"Reading DSD file: {dsd_file}")
+    dsd_df = pd.read_csv(dsd_file, sep="\t", index_col=0, header=0)
     protein_names = [str(i) for i in dsd_df.index]
     dsd = dsd_df.values
 
-    log(f"Reading network file: {args.network_file}")
-    G = read_network_subset(args.network_file, protein_names)
+    logger.info(f"Reading network file: {network_file}")
+    G = read_network_subset(network_file, protein_names)
 
-    log(f"Converting DSD to similarity matrix with sparsity threshold: {args.sparsity}")
-    sim = dsd_to_similarity(dsd, sparsity_threshold=args.sparsity)
+    logger.info(f"Converting DSD to similarity matrix with sparsity threshold: {sparsity}")
+    sim = dsd_to_similarity(dsd, sparsity_threshold=sparsity)
 
-    log(f"Fitting {args.init_k} spectral clusters...")
+    logger.info(f"Fitting {init_k} spectral clusters...")
     SC = SpectralClustering(
-        n_clusters=args.init_k,
+        n_clusters=init_k,
         assign_labels="discretize",
-        random_state=args.random_seed,
+        random_state=random_seed,
         affinity="precomputed",
     )
     SC.fit(sim)
@@ -128,18 +120,18 @@ if __name__ == "__main__":
     ]
     clusts.sort(key=lambda x: len(x), reverse=True)
 
-    log(f"Initial Clustering: {len(clusts)} clusters")
+    logger.info(f"Initial Clustering: {len(clusts)} clusters")
     clustQ = PriorityQueue()
     for c in clusts:
         clustQ.put((1 / len(c), c))
 
-    log(f"Splitting large clusters into {args.cluster_divisor} clusters...")
+    logger.info(f"Splitting large clusters into {cluster_divisor} clusters...")
     while True:
         priority, c = clustQ.get()
         csize = int(1 / priority)
 
         n_clusters = int(
-            np.round(csize / args.cluster_divisor)
+            np.round(csize / cluster_divisor)
         )  # NOTE: this changed so that we are left with clusters of max size 30
 
         if n_clusters < 2:
@@ -149,7 +141,7 @@ if __name__ == "__main__":
         SC2 = SpectralClustering(
             n_clusters=n_clusters,
             assign_labels="discretize",
-            random_state=args.random_seed,
+            random_state=random_seed,
             affinity="precomputed",
         )
         SC2.fit(sim[c, :][:, c])
@@ -158,13 +150,13 @@ if __name__ == "__main__":
         for subClust in subClusts:
             clustQ.put(subClust)
 
-    log(f"Removing small clusters (<{args.min_cluster_size})...")
+    logger.info(f"Removing small clusters (<{min_cluster_size})...")
     filteredClusters = []
     while not clustQ.empty():
         wght, c = clustQ.get()
         filteredClusters.append(c)
-    filteredClusters = [i for i in filteredClusters if len(i) >= args.min_cluster_size]
-    log(f"Final Clustering: {len(filteredClusters)} clusters")
+    filteredClusters = [i for i in filteredClusters if len(i) >= min_cluster_size]
+    logger.info(f"Final Clustering: {len(filteredClusters)} clusters")
 
     clustsNames = [[protein_names[i] for i in cl] for cl in filteredClusters]
 
@@ -183,5 +175,9 @@ if __name__ == "__main__":
 
     # clustsDict = {hash_cluster(cl): {"members": cl} for cl in clustsNames}
 
-    log(f"Writing clusters to: {args.output}")
-    writeClusters(args.output, clustsDict)
+    logger.info(f"Writing clusters to: {output}")
+    writeClusters(output, clustsDict)
+   
+
+if __name__ == "__main__":
+    app()

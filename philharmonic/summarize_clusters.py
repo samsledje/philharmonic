@@ -1,10 +1,16 @@
 # python src/name_clusters.py --api_key {params.api_key} -o {output.human_readable} --go_db {input.go_database} -cfp {input.clusters}
 import os
 import json
-import argparse
+import typer
 from tqdm import tqdm
+from loguru import logger
+from langchain_openai import ChatOpenAI
+from langchain.schema import StrOutputParser
+from langchain.prompts import ChatPromptTemplate
 
-from utils import load_cluster_json, parse_GO_database, Cluster, log
+from .utils import load_cluster_json, parse_GO_database, Cluster
+
+app = typer.Typer()
 
 task_instruction = """
 You are an expert biologist with a deep understanding of the Gene Ontology. Your job is to give short, intuitive, high-level names to clusters of proteins, given a set of GO terms associated with the proteins and their frequencies.
@@ -103,38 +109,24 @@ def cluster_format(clust, go_database, n_terms=5):
 
     return description_string
 
+@app.command()
+def main(
+    output: str = typer.Option(..., help="Output file"),
+    json: str = typer.Option(None, help="Output in JSON format"),
+    cluster_file_path: str = typer.Option(..., help="Cluster file"),
+    go_db: str = typer.Option(..., help="GO database"),
+    llm_name: bool = typer.Option(False, help="Use a large language model to name clusters"),
+    model: str = typer.Option(None, help="Language model to use"),
+    api_key: str = typer.Option(None, help="OpenAI API key"),
+):
+    """Summarize clusters"""
+    clusters = load_cluster_json(cluster_file_path)
+    go_database = parse_GO_database(go_db)
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Create a human readable summary for results of a cluster analysis"
-    )
-    parser.add_argument("-o", "--output", required=True, type=str, help="Output file")
-    parser.add_argument("--json", type=str, default=None, help="Output in JSON format")
-    parser.add_argument(
-        "-cfp", "--cluster_file_path", required=True, type=str, help="Cluster file"
-    )
-    parser.add_argument("--go_db", required=True, type=str, help="GO database")
-    parser.add_argument(
-        "--llm_name",
-        action="store_true",
-        help="Use a large language model to name clusters",
-    )
-    parser.add_argument("--model", type=str, help="Language model to use")
-    parser.add_argument("--api_key", type=str, help="OpenAI API key")
-
-    args = parser.parse_args()
-
-    clusters = load_cluster_json(args.cluster_file_path)
-    go_database = parse_GO_database(args.go_db)
-
-    if args.llm_name:
-        from langchain_openai import ChatOpenAI
-        from langchain_core.output_parsers import StrOutputParser
-        from langchain_core.prompts import ChatPromptTemplate
-
+    if llm_name:
         # with open("OPENAI_API_KEY.txt","r") as f:
         # passwd = f.read().strip()
-        os.environ["OPENAI_API_KEY"] = args.api_key
+        os.environ["OPENAI_API_KEY"] = api_key
 
         model = ChatOpenAI(
             model="gpt-4o",
@@ -142,29 +134,33 @@ if __name__ == "__main__":
             # max_tokens=200
         )
 
-        for k, clust in tqdm(clusters.items()):
+        for _, clust in tqdm(clusters.items()):
             if not hasattr(clust, "llm_name"):
                 try:
                     llm_summary = llm_summarize(
-                        clust, go_database, model, llm_system_template, args.api_key
+                        clust, go_database, model, llm_system_template, api_key
                     )
                     clust["llm_name"] = llm_summary["short_name"]
                     clust["llm_explanation"] = llm_summary["explanation"]
                     clust["llm_confidence"] = llm_summary["confidence_score"]
                 except Exception as e:
-                    log(f"Error: {e}")
+                    logger.error(f"Error: {e}")
                     clust["llm_name"] = "Unknown"
                     clust["llm_explanation"] = "Unknown"
                     clust["llm_confidence"] = "Unknown"
 
-    if args.json:
-        for k, clust in clusters.items():
+    if json:
+        for _, clust in clusters.items():
             clust["human_readable"] = cluster_format(clust, go_database)
-        with open(args.json, "w") as f:
+        with open(json, "w") as f:
             json.dump(clusters, f, indent=4)
 
-    with open(args.output, "w") as f:
-        for k, clust in clusters.items():
+    with open(output, "w") as f:
+        for _, clust in clusters.items():
             description_string = cluster_format(clust, go_database)
             f.write(description_string)
             f.write("\n\n")
+
+
+if __name__ == "__main__":
+    app()

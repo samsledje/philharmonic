@@ -84,7 +84,7 @@ rule annotate_seqs_go:
     conda:
         "environment.yml",
     shell:
-        "python src/build_go_map.py -o {output.go_map} --hhtblout {input.hhtblout} --pfam_go_files {input.pfam_gobp}"
+        "philharmonic build-go-map -o {output.go_map} --hhtblout {input.hhtblout} --pfam_go_files {input.pfam_gobp}"
 
 
 rule generate_candidates:
@@ -103,7 +103,7 @@ rule generate_candidates:
         "logs/generate_candidates.log",
     conda:
         "environment.yml",
-    shell:  "python src/generate_candidates.py --paircount {params.n_pairs} -o {output.candidates} --seq_out {output.kept_proteins} --go_map {input.go_map} --go_database {input.go_database} --go_filter {input.go_filter} --sequences {input.sequences} --seed {params.seed}"
+    shell:  "philharmonic generate-candidates --paircount {params.n_pairs} -o {output.candidates} --seq_out {output.kept_proteins} --go_map {input.go_map} --go_database {input.go_database} --go_filter {input.go_filter} --sequences {input.sequences} --seed {params.seed}"
 
 rule predict_network:
     input:
@@ -163,7 +163,7 @@ rule cluster_network:
         "logs/cluster_network.log",
     conda:
         "environment.yml",
-    shell:  "python src/cluster_network.py --network_file {input.network} --dsd_file {input.distances} --output {output.clusters} --min_cluster_size {params.min_cluster_size} --cluster_divisor {params.cluster_divisor} --init_k {params.init_k} --sparsity {params.sparsity} --random_seed {params.seed}"
+    shell:  "philharmonic cluster-network --network_file {input.network} --dsd_file {input.distances} --output {output.clusters} --min_cluster_size {params.min_cluster_size} --cluster_divisor {params.cluster_divisor} --init_k {params.init_k} --sparsity {params.sparsity} --random_seed {params.seed}"
 
 
 rule reconnect_recipe:
@@ -196,7 +196,7 @@ rule add_cluster_functions:
         "logs/add_cluster_functions.log",
     conda:
         "environment.yml",
-    shell: "python src/add_cluster_functions.py -o {output.clusters_functional} -cfp {input.clusters} --go_map {input.go_map}"
+    shell: "philharmonic add-cluster-functions -o {output.clusters_functional} -cfp {input.clusters} --go_map {input.go_map}"
 
 rule cluster_graph:
     input:
@@ -210,7 +210,7 @@ rule cluster_graph:
         "logs/cluster_graph.log",
     conda:
         "environment.yml",
-    shell:  "python src/build_cluster_graph.py -o {output.graph} -cfp {input.clusters} -nfp {input.network} --go_map {input.go_map} --go_db {input.go_database}"
+    shell:  "philharmonic build-cluster-graph -o {output.graph} -cfp {input.clusters} -nfp {input.network} --go_map {input.go_map} --go_db {input.go_database}"
 
 rule summarize_clusters:
     input:
@@ -227,7 +227,7 @@ rule summarize_clusters:
         "logs/summarize_clusters.log",
     conda:
         "environment.yml",
-    shell:  "python src/summarize_clusters.py {params.do_llm_naming} --model {params.langchain_model} {params.api_key} -o {output.human_readable} --json {output.readable_json} --go_db {input.go_database} -cfp {input.clusters}"
+    shell:  "philharmonic summarize-clusters {params.do_llm_naming} --model {params.langchain_model} {params.api_key} -o {output.human_readable} --json {output.readable_json} --go_db {input.go_database} -cfp {input.clusters}"
 
 rule vizualize_network:
     input:
@@ -242,4 +242,4 @@ rule vizualize_network:
         "logs/create_cytoscape_session.log",
     conda:
         "environment.yml",
-    shell:  "python src/build_cytoscape.py -s {input.style} -o {output.cytoscape} -cfp {input.clusters} -nfp {input.network} --name {params.run_name}"
+    shell:  "philharmonic create-cytoscape-session -s {input.style} -o {output.cytoscape} -cfp {input.clusters} -nfp {input.network} --name {params.run_name}"
