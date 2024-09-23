@@ -13,7 +13,7 @@ app = typer.Typer()
 @app.command()
 def main(
     output: str = typer.Option(..., "-o", "--output", help="Output file"),
-    coc_functions: str = typer.Option(..., "--coc_functions", help="Function of clusters of clusters"),
+    coc_functions: str = typer.Option(..., "-coc", "--coc_functions", help="Function of clusters of clusters"),
     cluster_file_path: str = typer.Option(..., "-cfp", "--cluster_file_path", help="Cluster file path"),
     network_file_path: str = typer.Option(..., "-nfp", "--network_file_path", help="Network file path"),
     go_map: str = typer.Option(..., "--go_map", help="GO map file"),
@@ -72,10 +72,10 @@ def main(
     node_table = pd.merge(size_table, fn_table)
 
     n_singletons = len(subG.nodes) - len(set(edge_table['source'].values).union(edge_table['target'].values))
-    logger.info(f"There are {n_singletons} singleton clusters that don't have more than {args.n_crossing_edges} edges to any other cluster")
+    logger.info(f"There are {n_singletons} singleton clusters that don't have more than {n_crossing_edges} edges to any other cluster")
 
-    edge_table.to_csv(output, index=False)
-    node_table.to_csv(coc_functions, index=False)
+    edge_table.to_csv(output, index=False, sep="\t")
+    node_table.to_csv(coc_functions, index=False, sep="\t")
 
 if __name__ == "__main__":
     app()

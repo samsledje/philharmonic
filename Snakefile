@@ -2,7 +2,8 @@ rule PHILHARMONIC:
     input:
         network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
         clusters = f"{config['work_dir']}/{config['run_name']}_clusters.json",
-        cluster_graph = f"{config['work_dir']}/{config['run_name']}_cluster_graph.json",
+        cluster_graph = f"{config['work_dir']}/{config['run_name']}_cluster_graph.tsv",
+        cluster_functions = f"{config['work_dir']}/{config['run_name']}_cluster_graph_functions.tsv",
         cytoscape = f"{config['work_dir']}/{config['run_name']}_cytoscape_session.cys" if config["use_cytoscape"] else [],
         human_readable = f"{config['work_dir']}/{config['run_name']}_human_readable.txt",
     output:
@@ -203,14 +204,15 @@ rule cluster_graph:
         clusters = f"{config['work_dir']}/{config['run_name']}_clusters.functional.json",
         network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
         go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
-        go_database = f"{config['work_dir']}/go.obo",
+        go_database = f"{config['work_dir']}/goslim_generic.obo",
     output:
-        graph = f"{config['work_dir']}/{config['run_name']}_cluster_graph.json",
+        graph = f"{config['work_dir']}/{config['run_name']}_cluster_graph.tsv",
+        coc_functions = f"{config['work_dir']}/{config['run_name']}_cluster_graph_functions.tsv",
     log:
         "logs/cluster_graph.log",
     conda:
         "environment.yml",
-    shell:  "philharmonic build-cluster-graph -o {output.graph} -cfp {input.clusters} -nfp {input.network} --go_map {input.go_map} --go_db {input.go_database}"
+    shell:  "philharmonic build-cluster-graph -o {output.graph} -coc {output.coc_functions} -cfp {input.clusters} -nfp {input.network} --go_map {input.go_map} --go_db {input.go_database}"
 
 rule summarize_clusters:
     input:
