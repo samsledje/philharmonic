@@ -95,7 +95,7 @@ TBD
 
 ## Issues
 
-- On Linux, the package `plac` may not install properly with the included `environment.yml`. If you are seeing the error `No module names 'asyncore'`, try running `pip install --upgrade plac`
+- On Linux, the package `plac` may not install properly with the included `environment.yml`. If you are seeing the error `No module names 'asyncore'`, try running `mamba update plac`
 
 ## Contributing
 

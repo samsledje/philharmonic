@@ -1,0 +1,40 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "philharmonic"
+version = "0.4.0"
+description = "Decoding functional organization in non-model organisms"
+authors = ["Samuel Sledzieski <samsl@mit.edu>"]
+packages = [{ include = "philharmonic" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+biopython = "1.84"
+hmmer = "3.4"
+langchain = "0.2.7"
+langchain-openai = "0.1.16"
+matplotlib = "3.9.0"
+networkx = "3.2"
+numpy = "1.26.2"
+omegaconf = "2.3.0"
+pandas = "2.1.1"
+scikit-learn = "1.5.0"
+scipy = "1.11.3"
+seaborn = "0.13.2"
+snakemake = "8.10.0"
+tqdm = "4.66.5"
+dscript = "0.2.6"
+fastdsd = "1.0.1"
+py4cytoscape = "1.9.0"
+recipe-cluster = "0.0.2"
+typer = {extras = ["all"], version = "^0.9.0"}
+
+[tool.poetry.dev-dependencies]
+pip = "23.3"
+jupyter = "1.0.0"
+jupyterlab = "4.1.6"
+
+[tool.poetry.scripts]
+philharmonic = "philharmonic.__main__:app"

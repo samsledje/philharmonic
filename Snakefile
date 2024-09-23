@@ -1,35 +1,32 @@
-configfile:
-    "config.yml"
-
-envvars:
-    "OPENAI_API_KEY"
-
 rule PHILHARMONIC:
     input:
+        network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
         clusters = f"{config['work_dir']}/{config['run_name']}_clusters.json",
+        cluster_graph = f"{config['work_dir']}/{config['run_name']}_cluster_graph.json",
         cytoscape = f"{config['work_dir']}/{config['run_name']}_cytoscape_session.cys" if config["use_cytoscape"] else [],
         human_readable = f"{config['work_dir']}/{config['run_name']}_human_readable.txt",
+    output:
+        zipfile = f"{config['work_dir']}/{config['run_name']}.zip"
+    params:
+    shell:
+        "zip {output.zipfile} {input.network} {input.clusters} {input.cluster_graph} {input.human_readable} {input.cytoscape}"
 
 
 rule download_required_files:
     output:
         go_database = f"{config['work_dir']}/go.obo",
+        go_slim = f"{config['work_dir']}/goslim_generic.obo",
         pfam_database_zipped = f"{config['work_dir']}/Pfam-A.hmm.gz",
-        pfam_gomf = f"{config['work_dir']}/pfam_gomf_most_specific.txt",
         pfam_gobp = f"{config['work_dir']}/pfam_gobp_most_specific.txt",
-        pfam_gocc = f"{config['work_dir']}/pfam_gocc_most_specific.txt",
-        dscript_model = f"{config['work_dir']}/{config['dscript']['model']}",
     log:
         "logs/download_required_files.log",
     run:
         commands = [
             "mkdir -p {config[work_dir]}",
             "curl https://current.geneontology.org/ontology/go.obo -o {config[work_dir]}/go.obo",
+            "curl https://current.geneontology.org/ontology/subsets/goslim_generic.obo -o {config[work_dir]}/goslim_generic.obo",
             "curl ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz -o {config[work_dir]}/Pfam-A.hmm.gz",
-            "curl https://godm.loria.fr/data/pfam_gomf_most_specific.txt -o {config[work_dir]}/pfam_gomf_most_specific.txt",
             "curl https://godm.loria.fr/data/pfam_gobp_most_specific.txt -o {config[work_dir]}/pfam_gobp_most_specific.txt",
-            "curl https://godm.loria.fr/data/pfam_gocc_most_specific.txt -o {config[work_dir]}/pfam_gocc_most_specific.txt",
-            "curl http://cb.csail.mit.edu/cb/dscript/data/models/{config[dscript][model]} -o {config[work_dir]}/{config[dscript][model]}",
         ]
         for c in commands:
             shell(c)
@@ -64,7 +61,7 @@ rule annotate_seqs_pfam:
         pfam_h3f = f"{config['work_dir']}/Pfam-A.hmm.h3f",
         pfam_h3p = f"{config['work_dir']}/Pfam-A.hmm.h3p",
     output:
-        pfam_map = temp(f"{config['work_dir']}/{config['run_name']}_hmmscan.tblout"),
+        pfam_map = f"{config['work_dir']}/{config['run_name']}_hmmscan.tblout",
     threads: config["hmmscan"]["threads"]
     params:
         work_dir = config["work_dir"],
@@ -79,9 +76,7 @@ rule annotate_seqs_pfam:
 rule annotate_seqs_go:
     input:
         hhtblout = f"{config['work_dir']}/{config['run_name']}_hmmscan.tblout",
-        pfam_gomf = f"{config['work_dir']}/pfam_gomf_most_specific.txt",
         pfam_gobp = f"{config['work_dir']}/pfam_gobp_most_specific.txt",
-        pfam_gocc = f"{config['work_dir']}/pfam_gocc_most_specific.txt",
     output:
         go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
     log:
@@ -89,37 +84,36 @@ rule annotate_seqs_go:
     conda:
         "environment.yml",
     shell:
-        "python src/build_go_map.py -o {output.go_map} --hhtblout {input.hhtblout} --pfam_go_files {input.pfam_gomf} {input.pfam_gobp} {input.pfam_gocc}"
+        "philharmonic build-go-map -o {output.go_map} --hhtblout {input.hhtblout} --pfam_go_files {input.pfam_gobp}"
 
 
 rule generate_candidates:
     input:
         sequences = f"{config['sequence_path']}",
-        protein_shortlist = f"{config['protein_shortlist']}",
         go_database = f"{config['work_dir']}/go.obo",
-        go_shortlist = f"{config['go_shortlist']}",
-        go_filter = "assets/go_level2_marked-up.csv",
+        go_filter = "assets/go_filter.txt",
         go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
     output:
+        kept_proteins = f"{config['work_dir']}/{config['run_name']}_kept_proteins.txt",
         candidates = f"{config['work_dir']}/{config['run_name']}_candidates.tsv",
     params:
         n_pairs = config["dscript"]["n_pairs"],
-        manual_annot_wt = config["dscript"]["manual_annot_wt"],
+        seed = config["seed"],
     log:
         "logs/generate_candidates.log",
     conda:
         "environment.yml",
-    shell:  "python src/generate_candidates.py --manual_annot_wt {params.manual_annot_wt} --paircount {params.n_pairs} -o {output.candidates} --go_map {input.go_map} --go_database {input.go_database} --go_filter {input.go_filter} --go_list {input.go_shortlist} --protein_list {input.protein_shortlist} --sequences {input.sequences}"
+    shell:  "philharmonic generate-candidates --paircount {params.n_pairs} -o {output.candidates} --seq_out {output.kept_proteins} --go_map {input.go_map} --go_database {input.go_database} --go_filter {input.go_filter} --sequences {input.sequences} --seed {params.seed}"
 
 rule predict_network:
     input:
         sequences = f"{config['sequence_path']}",
         candidates = f"{config['work_dir']}/{config['run_name']}_candidates.tsv",
-        dscript_model = f"{config['work_dir']}/{config['dscript']['model']}",
     output:
         network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
     params:
         dscript_path = config["dscript"]["path"],
+        dscript_model = config['dscript']['model'],
         work_dir = config["work_dir"],
         run_name = config["run_name"],
         device = config["dscript"]["device"],
@@ -130,14 +124,14 @@ rule predict_network:
         "logs/predict_network.log",
     conda:
         "environment.yml",
-    shell:  "{params.dscript_path} predict --pairs {input.candidates} --seqs {input.sequences} --model {input.dscript_model} --outfile {params.work_dir}/{params.run_name}_network --device {params.device} --thresh {params.t}"
+    shell:  "{params.dscript_path} predict --pairs {input.candidates} --seqs {input.sequences} --model {params.dscript_model} --outfile {params.work_dir}/{params.run_name}_network --device {params.device} --thresh {params.t}"
 
 
 rule compute_distances:
     input:
         network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
     output:
-        distances = temp(f"{config['work_dir']}/{config['run_name']}_distances.DSD1"),
+        distances = f"{config['work_dir']}/{config['run_name']}_distances.DSD1",
     params:
         dsd_path = config["dsd"]["path"],
         work_dir = config["work_dir"],
@@ -162,18 +156,23 @@ rule cluster_network:
         run_name = config["run_name"],
         min_cluster_size = config["clustering"]["min_cluster_size"],
         cluster_divisor = config["clustering"]["cluster_divisor"],
-        init_k = config["clustering"]["init_k"]
+        init_k = config["clustering"]["init_k"],
+        sparsity = config["clustering"]["sparsity_thresh"],
+        seed = config["seed"]
     log:
         "logs/cluster_network.log",
     conda:
         "environment.yml",
-    shell:  "python src/cluster_network.py --network_file {input.network} --dsd_file {input.distances} --output {output.clusters} --min_cluster_size {params.min_cluster_size} --cluster_divisor {params.cluster_divisor} --init_k {params.init_k}"
+    shell:  "philharmonic cluster-network --network_file {input.network} --dsd_file {input.distances} --output {output.clusters} --min_cluster_size {params.min_cluster_size} --cluster_divisor {params.cluster_divisor} --init_k {params.init_k} --sparsity {params.sparsity} --random_seed {params.seed}"
 
 
 rule reconnect_recipe:
     input:
         clusters = f"{config['work_dir']}/{config['run_name']}_clusters.disconnected.json",
         network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
+        dsd = f"{config['work_dir']}/{config['run_name']}_distances.DSD1",
+        go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
+        go_db = f"{config['work_dir']}/go.obo"
     output:
         clusters_connected = temp(f"{config['work_dir']}/{config['run_name']}_clusters.recipe.json"),
     params:
@@ -185,8 +184,7 @@ rule reconnect_recipe:
         "logs/reconnect_recipe.log",
     conda:
         "environment.yml",
-    # shell: "python recipe.py --network {input.network}  --cluster-filepath {input.clusters} --lr {params.lr} -cthresh {params.cthresh} --max {params.max_proteins} --metric {params.metric} --outfile {output.clusters_connected}"
-    shell: "cp {input.clusters} {output.clusters_connected}"
+    shell: "recipe-cluster cook --network-filepath {input.network} --cluster-filepath {input.clusters} --lr {params.lr} -cthresh {params.cthresh} --max {params.max_proteins} --metric {params.metric} --outfile {output.clusters_connected}"
 
 rule add_cluster_functions:
     input:
@@ -198,7 +196,21 @@ rule add_cluster_functions:
         "logs/add_cluster_functions.log",
     conda:
         "environment.yml",
-    shell: "python src/add_cluster_functions.py -o {output.clusters_functional} -cfp {input.clusters} --go_map {input.go_map}"
+    shell: "philharmonic add-cluster-functions -o {output.clusters_functional} -cfp {input.clusters} --go_map {input.go_map}"
+
+rule cluster_graph:
+    input:
+        clusters = f"{config['work_dir']}/{config['run_name']}_clusters.functional.json",
+        network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
+        go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
+        go_database = f"{config['work_dir']}/go.obo",
+    output:
+        graph = f"{config['work_dir']}/{config['run_name']}_cluster_graph.json",
+    log:
+        "logs/cluster_graph.log",
+    conda:
+        "environment.yml",
+    shell:  "philharmonic build-cluster-graph -o {output.graph} -cfp {input.clusters} -nfp {input.network} --go_map {input.go_map} --go_db {input.go_database}"
 
 rule summarize_clusters:
     input:
@@ -208,26 +220,14 @@ rule summarize_clusters:
         human_readable = f"{config['work_dir']}/{config['run_name']}_human_readable.txt",
         readable_json = f"{config['work_dir']}/{config['run_name']}_clusters.json",
     params:
-        api_key = os.environ["OPENAI_API_KEY"],
+        api_key = f"--api_key {os.environ['OPENAI_API_KEY']}" if config["use_langchain"] else "",
         langchain_model = config["langchain"]["model"],
         do_llm_naming = "--llm_name" if config["use_langchain"] else ""
     log:
         "logs/summarize_clusters.log",
     conda:
         "environment.yml",
-    shell:  "python src/summarize_clusters.py {params.do_llm_naming} --model {params.langchain_model} --api_key {params.api_key} -o {output.human_readable} --json {output.readable_json} --go_db {input.go_database} -cfp {input.clusters}"
-
-rule cluster_graph:
-    input:
-        clusters = f"{config['work_dir']}/{config['run_name']}_clusters.functional.json",
-        network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
-    output:
-        graph = f"{config['work_dir']}/{config['run_name']}_graph.json",
-    log:
-        "logs/cluster_graph.log",
-    conda:
-        "environment.yml",
-    shell:  "python src/build_cluster_graph.py -o {output.graph} -cfp {input.clusters} -nfp {input.network}"
+    shell:  "philharmonic summarize-clusters {params.do_llm_naming} --model {params.langchain_model} {params.api_key} -o {output.human_readable} --json {output.readable_json} --go_db {input.go_database} -cfp {input.clusters}"
 
 rule vizualize_network:
     input:
@@ -242,4 +242,4 @@ rule vizualize_network:
         "logs/create_cytoscape_session.log",
     conda:
         "environment.yml",
-    shell:  "python src/build_cytoscape.py -s {input.style} -o {output.cytoscape} -cfp {input.clusters} -nfp {input.network} --name {params.run_name}"
+    shell:  "philharmonic create-cytoscape-session -s {input.style} -o {output.cytoscape} -cfp {input.clusters} -nfp {input.network} --name {params.run_name}"
