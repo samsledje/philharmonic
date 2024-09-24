@@ -11,6 +11,7 @@ dependencies:
   - jupyterlab=4.1.6
   - langchain=0.2.7
   - langchain-openai=0.1.16
+  - loguru=0.7.2
   - matplotlib=3.8.0
   - networkx=3.1
   - numpy=1.26.2
@@ -23,8 +24,9 @@ dependencies:
   - seaborn=0.12.2
   - snakemake=8.10.0
   - tqdm=4.63.0
+  - typer=0.9.4
   - pip:
     - dscript==0.2.8
     - fastdsd==1.0.1
     - py4cytoscape==1.9.0
-    - recipe-cluster==0.0.2
+    - recipe-cluster==0.0.4

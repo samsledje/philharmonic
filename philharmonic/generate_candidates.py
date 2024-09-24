@@ -8,7 +8,6 @@ from Bio import SeqIO
 from collections import defaultdict
 from pathlib import Path
 from itertools import combinations
-from loguru import logger
 
 from .utils import parse_GO_map
 
@@ -96,7 +95,7 @@ def main(
     allowed_proteins = protein_names
     if go_filter is not None:
         with open(go_filter, "r") as f:
-            allowed_go = [l.strip() for l in f]
+            allowed_go = [line.strip() for line in f]
 
         # Get children of allowed GO terms
         allowed_go = [i[0] for i in subset_go_graph(go_database, allowed_go)]
@@ -119,7 +118,7 @@ def main(
     g = np.random.Generator(np.random.PCG64(seed))
     protein_pairs = list(combinations(allowed_proteins, 2))
 
-    if args.paircount < 0:
+    if paircount < 0:
         sampled_pairs = protein_pairs
     elif paircount > scipy.special.comb(len(allowed_proteins), 2):
         raise ValueError("Pair count exceeds number of possible pairs")

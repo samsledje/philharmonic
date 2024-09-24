@@ -15,7 +15,7 @@ def main(styles: str, output: str, cluster_file_path: str, network_file_path: st
 
     p4c.create_network_from_networkx(netx, title=f"{name} Main", collection=name)
 
-    cluster_group_map = {}
+    # cluster_group_map = {}
     for k, clust in clusters.items():
         # p4c.create_network_from_networkx(netx.subgraph(clust["members"]), title=f"{args.name} Cluster {k}", collection=args.name)
         p4c.create_group(

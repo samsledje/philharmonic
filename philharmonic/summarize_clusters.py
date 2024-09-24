@@ -111,10 +111,10 @@ def cluster_format(clust, go_database, n_terms=5):
 
 @app.command()
 def main(
-    output: str = typer.Option(..., help="Output file"),
-    json: str = typer.Option(None, help="Output in JSON format"),
-    cluster_file_path: str = typer.Option(..., help="Cluster file"),
-    go_db: str = typer.Option(..., help="GO database"),
+    output: str = typer.Option(..., "-o", "--output", help="Output file"),
+    json_output: str = typer.Option(None, "-j", "--json", help="Output in JSON format"),
+    cluster_file_path: str = typer.Option(..., "-cfp", "--cluster-file-path", help="Cluster file"),
+    go_db: str = typer.Option(..., "--go_db", help="GO database"),
     llm_name: bool = typer.Option(False, help="Use a large language model to name clusters"),
     model: str = typer.Option(None, help="Language model to use"),
     api_key: str = typer.Option(None, help="OpenAI API key"),
@@ -149,10 +149,10 @@ def main(
                     clust["llm_explanation"] = "Unknown"
                     clust["llm_confidence"] = "Unknown"
 
-    if json:
+    if json_output:
         for _, clust in clusters.items():
             clust["human_readable"] = cluster_format(clust, go_database)
-        with open(json, "w") as f:
+        with open(json_output, "w") as f:
             json.dump(clusters, f, indent=4)
 
     with open(output, "w") as f:

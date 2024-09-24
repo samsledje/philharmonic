@@ -4,6 +4,11 @@
 
 # Decoding the Functional Networks of Non-Model Organisms
 
+[![PHILHARMONIC](https://img.shields.io/github/v/release/samsledje/philharmonic?include_prereleases)](https://github.com/samsledje/philharmonic/releases)
+[![License](https://img.shields.io/github/license/samsledje/philharmonic)](https://github.com/samsledje/philharmonic/blob/main/LICENSE)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+<!-- [![DOI](https://zenodo.org/badge/308463847.svg)](https://zenodo.org/badge/latestdoi/308463847) -->
+
 Protein interaction networks are a fundamental tool for modeling cellular and molecular function, and a large and  sophisticated toolbox has been developed to leverage the structure and topological organization of these networks to predict the functional roles of many under-studied genes, proteins and pathways. However, the overwhelming majority of experimental PPIs from which such networks are constructed come from  humans plus a small number of well-studied model organisms.
 
 We introduce PHILHARMONIC: Protein Human-Transferred Interactome Learns Homology And Recapitulates Model Organism Network Interaction Clusters: a novel computational pipeline for de novo network inference and functional annotation in non-model organisms. PHILHARMONIC uses the D-SCRIPT deep learning method, trained on human PPIs, to learn how to predict PPIs directly from amino acid sequence alone to predict interactions genome-wide, then employs DSD coupled with Spectral Clustering  followed by a new method, Recipe to reconnect clusters. While the predicted PPIs will not individually be completely accurate, the clustering step allows us to aggregate the weaker pairwise signal into confident higher-level organization. We show that these clusters have substantial functional coherence, and we apply our method to predict functionally meaningful modules of proteins in the Coral Holobiont, finding interesting clusters in both the coral animal and symbiont.
@@ -12,15 +17,16 @@ We introduce PHILHARMONIC: Protein Human-Transferred Interactome Learns Homology
 
 1. [Installation](#installation)
 2. [Usage](#usage)
-3. [Workflow Overview](#workflow-overview)
-4. [Detailed Configuration](#detailed-configuration)
-5. [Citation](#citation)
-6. [FAQ/Known Issues](#issues)
-7. [Contributing](#issues)
+3. [Interpreting Results](#interpreting-the-results)
+4. [Workflow Overview](#workflow-overview)
+5. [Detailed Configuration](#detailed-configuration)
+6. [Citation](#citation)
+7. [FAQ/Known Issues](#issues)
+8. [Contributing](#issues)
 
 ## Installation
 
-```
+```bash
 git clone https://github.com/samsledje/philharmonic.git
 cd philharmonic
 mamba create -f environment.yml
@@ -62,7 +68,98 @@ snakemake -c {number of cores} --configfile {config file}
 
 ### Pipeline Outputs
 
-### Viewing the Results
+We provide a zip of the most relevant output files in `[run].zip`, which contains the following files
+
+```bash
+run.zip
+|
+|-- run_human_readable.txt # Easily readable/scannable list of clusters
+|-- run_network.positive.tsv # All edges predicted by D-SCRIPT
+|-- run_clusters.json # Main result file, contains all clusters, edges, and functions
+|-- run_cluster_graph.tsv # Graph of clusters, where edges are weighted by the number of connections between clusters
+|-- run_cluster_graph_functions.tsv # Table of high-level cluster functions from GO Slim
+|-- run_GO_map.tsv # Mapping between proteins and GO function labels
+```
+
+## Interpreting the Results
+
+### 1. Result Summary
+
+<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/philharmonic/01_result_summary.ipynb">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
+
+Using the `clusters.json` file, the `network.positive.tsv` file, the `GO map.tsv` file, and a [GO Slim](https://current.geneontology.org/ontology/subsets/goslim_generic.obo) database, you can view the overall network, a summary of the clustering, and explore individual clusters.
+
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Network</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Nodes</th>
+      <td>8960</td>
+    </tr>
+    <tr>
+      <th>Edges</th>
+      <td>455490</td>
+    </tr>
+    <tr>
+      <th>Degree (Med)</th>
+      <td>37.0</td>
+    </tr>
+    <tr>
+      <th>Degree (Avg)</th>
+      <td>101.671875</td>
+    </tr>
+    <tr>
+      <th>Sparsity</th>
+      <td>0.005674</td>
+    </tr>
+  </tbody>
+</table>
+
+![sample_cluster](assets/sample_cluster.jpg)
+```bash
+Cluster of 15 [pdam_00002749-RA, pdam_00022926-RA, pdam_00017090-RA, ...] (hash 2065650738990954842)
+Triangles: 372
+Max Degree: 14
+Top Terms:
+	('GO:0009447', 14)
+	('GO:0017196', 14)
+	('GO:0060358', 14)
+	('GO:0006348', 14)
+	('GO:0018003', 14)
+```
+
+### 2. Functional Permutation Testing
+
+<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/philharmonic/02_functional_permutation_test.ipynb">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
+
+Using the same files, you can run a statistical test of cluster function by permuting cluster labels, and computing the [Jaccard similarity](https://en.wikipedia.org/wiki/Jaccard_index) between terms in the same cluster.
+
+### 3. Full network in Cytoscape
+
+1. Load `network.positive.tsv` using `File -> Import -> Network from File`
+
+### 4. Cluster graph in Cytoscape
+
+1. Load `cluster_graph.tsv` using `File -> Import -> Network from File`
+2. Load `cluster_graph_functions.tsv` using `File -> Import -> Table from File`
+3. Add a `Column filter` on the `Edge: weight` attribute, selecting edges greater than ~50-100 weight
+4. `Select -> Nodes -> Nodes Connected by Selected Edges` to subset the nodes
+5. Create the subgraph with `File -> New Network -> From Selected Nodes, Selected Edges`
+6. Layout the network with your layout of choice, we recommend `Layout -> Prefuse Force Directed Layout -> weight`
+7. Add node colors using the [PHILHARMONIC style](assets/philharmonic_styles.xml), imported with `File -> Import -> Styles from File`
 
 ## Workflow Overview
 
@@ -70,7 +167,7 @@ A detailed overview of PHILHARMNONIC can be found in the [manuscript](#citation)
 
 Each of these steps can be invoked independently by running `Snakemake -c {number of cores} {target}`. The `{target}` is shown in parentheses following each step below.
 
-![snakemake filegraph](filegraph.png)
+![snakemake pipeline](pipeline.png)
 
 1. Download necessary files (`download_required_files`)
 2. Run [hmmscan](http://hmmer.org/) on protein sequences to annotate pfam domains (`annotate_seqs_pfam`)
@@ -78,18 +175,20 @@ Each of these steps can be invoked independently by running `Snakemake -c {numbe
 4. Generate candidate pairs (`generate_candidates`)
 5. Use [D-SCRIPT](https://dscript.csail.mit.edu/) to predict network (`predict_network`)
 6. Compute node distances with [FastDSD](https://github.com/samsledje/fastDSD) (`compute_distances`)
-7. Cluster the network (`cluster_network`)
-8. Use [ReCIPE]() to reconnect clusters (`reconnect_recipe`)
+7. Cluster the network with [spectral clustering](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.SpectralClustering.html) (`cluster_network`)
+8. Use [ReCIPE](https://pypi.org/project/recipe-cluster/) to reconnect clusters (`reconnect_recipe`)
 9. Annotate clusters with functions (`add_cluster_functions`)
-10. Name and describe clusters with [Langchain](https://www.langchain.com/) (`summarize_clusters`)
-11. Compute cluster graph (`cluster_graph`)
-12. Visualize in [Cytoscape](https://cytoscape.org/) (`vizualize_network`)
+10. Compute cluster graph (`cluster_graph`)
+11. Name and describe clusters with [Langchain](https://www.langchain.com/) (`summarize_clusters`)
+<!-- 12. Visualize in [Cytoscape](https://cytoscape.org/) (`vizualize_network`) -->
 
 ## Detailed Configuration
 
+
+
 ## Citation
 
-```
+```bibtex
 TBD
 ```
 
@@ -100,7 +199,10 @@ TBD
 ## Contributing
 
 ```bash
+git clone https://github.com/samsledje/philharmonic.git
 cd philharmonic
+mamba create -f environment.yml
+mamba activate philharmonic
 mamba install -c conda-forge pre-commit
 pre-commit install
 git checkout -b [feature branch]

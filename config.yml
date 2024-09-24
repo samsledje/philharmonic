@@ -1,7 +1,7 @@
 # User Specified
-run_name: pdam
-work_dir: /mnt/home/ssledzieski/data/philharmonic/p_damicornis/results
-sequence_path: /mnt/ceph/users/ssledzieski/philharmonic/p_damicornis/pdam_toy.fasta
+run_name: philharmonic
+work_dir: results
+sequence_path: sample_sequences.fasta
 use_cytoscape: false
 use_langchain: false
 

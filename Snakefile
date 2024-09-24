@@ -6,6 +6,7 @@ rule PHILHARMONIC:
         cluster_functions = f"{config['work_dir']}/{config['run_name']}_cluster_graph_functions.tsv",
         cytoscape = f"{config['work_dir']}/{config['run_name']}_cytoscape_session.cys" if config["use_cytoscape"] else [],
         human_readable = f"{config['work_dir']}/{config['run_name']}_human_readable.txt",
+        go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
     output:
         zipfile = f"{config['work_dir']}/{config['run_name']}.zip"
     params:
@@ -197,7 +198,7 @@ rule add_cluster_functions:
         "logs/add_cluster_functions.log",
     conda:
         "environment.yml",
-    shell: "philharmonic add-cluster-functions -o {output.clusters_functional} -cfp {input.clusters} --go_map {input.go_map}"
+    shell: "philharmonic add-cluster-functions -o {output.clusters_functional} -cfp {input.clusters} --go-map {input.go_map}"
 
 rule cluster_graph:
     input:

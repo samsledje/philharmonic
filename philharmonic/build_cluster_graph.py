@@ -3,7 +3,6 @@ import networkx as nx
 import pandas as pd
 from collections import Counter
 from tqdm import tqdm
-from typing import Optional
 from loguru import logger
 
 from .utils import Cluster, parse_GO_map, parse_GO_database, load_cluster_json, clean_top_terms

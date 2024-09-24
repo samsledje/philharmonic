@@ -219,7 +219,6 @@ def plot_cluster_degree(cluster, full_graph, name="Graph", node_labels=False):
     # From https://networkx.org/documentation/stable/auto_examples/drawing/plot_degree.html
     G = nx.subgraph(full_graph, cluster["members"])
     degree_sequence = sorted((d for n, d in G.degree()), reverse=True)
-    dmax = max(degree_sequence)
     
     fig = plt.figure("Degree of a random graph", figsize=(8, 8))
     # Create a gridspec for adding subplots of different sizes
