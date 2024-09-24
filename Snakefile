@@ -11,7 +11,7 @@ rule PHILHARMONIC:
         zipfile = f"{config['work_dir']}/{config['run_name']}.zip"
     params:
     shell:
-        "zip {output.zipfile} {input.network} {input.clusters} {input.cluster_graph} {input.human_readable} {input.cytoscape}"
+        "zip --junk-paths {output.zipfile} {input.network} {input.clusters} {input.cluster_graph} {input.human_readable} {input.cytoscape}"
 
 
 rule download_required_files:
