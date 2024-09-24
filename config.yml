@@ -1,7 +1,7 @@
 # User Specified
 run_name: philharmonic
-work_dir: results
 sequence_path: sample_sequences.fasta
+work_dir: results
 use_cytoscape: false
 use_langchain: false
 

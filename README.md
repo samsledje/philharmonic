@@ -31,6 +31,7 @@ git clone https://github.com/samsledje/philharmonic.git
 cd philharmonic
 mamba create -f environment.yml
 mamba activate philharmonic
+pip install -e .
 ```
 
 You may also want to install [Cytoscape](https://cytoscape.org/) for visualizing the networks.
@@ -46,15 +47,13 @@ in the network (otherwise, we will subsample proteins when proposing candidate i
 ### Setting up the config
 
 The `config.yaml` file is where you will specify the parameters for the pipeline. We provide a sample config in this repository
-with recommended parameters. You will need to specify the paths to your protein sequences, GO terms, and seed proteins in this file. You can find an explanation for all parameters [below](#detailed-configuration). If you've installed Cytoscape, make sure it is open and running before you start the pipeline. Otherwise, set `build_cytoscape=false` in the configuration. If you use a different configuration file name or location, you can specify it with the `--configfile` flag when running Snakemake.
+with recommended parameters. You will need to specify the paths to your protein sequences. You can find an explanation for all parameters [below](#detailed-configuration). If you've installed Cytoscape, make sure it is open and running before you start the pipeline. Otherwise, set `build_cytoscape=false` in the configuration. If you use a different configuration file name or location, you can specify it with the `--configfile` flag when running Snakemake.
 
 ```yaml
 # User Specified
 run_name: [identifier for this run]
-work_dir: [path to working directory]
 sequence_path: [path to protein sequences in .fasta format]
-protein_shortlist:  [optional path to a list of proteins that must be included in the network]
-go_shortlist: [optional path to a list of GO terms to prioritize in the analysis]
+work_dir: [path to working directory]
 ...
 ```
 
@@ -184,7 +183,55 @@ Each of these steps can be invoked independently by running `Snakemake -c {numbe
 
 ## Detailed Configuration
 
+The `config.yml` file contains various parameters that control the behavior of the PHILHARMONIC pipeline. Below is a detailed explanation of each parameter, including default values:
 
+### User Specified
+
+- `run_name`: Identifier for this run [required]
+- `sequence_path`: Path to protein sequences in .fasta format [required]
+- `work_dir`: Path to the working directory where results will be stored (default: "results")
+- `use_cytoscape`: Boolean flag to enable/disable Cytoscape visualization (default: false)
+- `use_langchain`: Boolean flag to enable/disable Langchain for cluster summarization (default: false)
+
+### General Parameters
+
+- `seed`: Random seed for reproducibility (default: 6191998)
+
+### hmmscan Parameters
+
+- `hmmscan.path`: Path to the hmmscan executable (default: "hmmscan")
+- `hmmscan.threads`: Number of threads to use for hmmscan (default: 16)
+
+### D-SCRIPT Parameters
+
+- `dscript.path`: Path to the D-SCRIPT executable (default: "dscript")
+- `dscript.n_pairs`: Number of protein pairs to predict (-1 for all pairs) (default: -1)
+- `dscript.model`: Pre-trained D-SCRIPT model to use (default: "samsl/human_v1")
+- `dscript.device`: GPU device to use (-1 for CPU) (default: 0)
+
+### DSD Parameters
+
+- `dsd.path`: Path to the FastDSD executable (default: "fastdsd")
+- `dsd.t`: Diffusion time for DSD algorithm (default: 0.5)
+- `dsd.confidence`: Boolean flag to use confidence scores (default: true)
+
+### Clustering Parameters
+
+- `clustering.init_k`: Initial number of clusters for spectral clustering (default: 500)
+- `clustering.min_cluster_size`: Minimum size of a cluster (default: 3)
+- `clustering.cluster_divisor`: Divisor used to determine the final number of clusters (default: 20)
+- `clustering.sparsity_thresh`: Sparsity threshold for filtering edges (default: 1e-5)
+
+### ReCIPE Parameters
+
+- `recipe.lr`: Learning rate for ReCIPE algorithm (default: 0.1)
+- `recipe.cthresh`: Confidence threshold for ReCIPE (default: 0.75)
+- `recipe.max_proteins`: Maximum number of proteins to consider in ReCIPE (default: 20)
+- `recipe.metric`: Metric to use for ReCIPE (default: "degree")
+
+### Langchain Parameters
+
+- `langchain.model`: Language model to use for cluster summarization (default: "gpt-4o")
 
 ## Citation
 
@@ -203,6 +250,7 @@ git clone https://github.com/samsledje/philharmonic.git
 cd philharmonic
 mamba create -f environment.yml
 mamba activate philharmonic
+pip install -e .
 mamba install -c conda-forge pre-commit
 pre-commit install
 git checkout -b [feature branch]
