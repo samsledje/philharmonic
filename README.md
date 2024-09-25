@@ -46,7 +46,7 @@ in the network (otherwise, we will subsample proteins when proposing candidate i
 
 ### Setting up the config
 
-The `config.yaml` file is where you will specify the parameters for the pipeline. We provide a sample config in this repository
+The `config.yml` file is where you will specify the parameters for the pipeline. We provide a [sample config](config.yml) in this repository
 with recommended parameters. You will need to specify the paths to your protein sequences. You can find an explanation for all parameters [below](#detailed-configuration). If you've installed Cytoscape, make sure it is open and running before you start the pipeline. Otherwise, set `build_cytoscape=false` in the configuration. If you use a different configuration file name or location, you can specify it with the `--configfile` flag when running Snakemake.
 
 ```yaml
@@ -90,7 +90,7 @@ run.zip
 
 Using the `clusters.json` file, the `network.positive.tsv` file, the `GO map.tsv` file, and a [GO Slim](https://current.geneontology.org/ontology/subsets/goslim_generic.obo) database, you can view the overall network, a summary of the clustering, and explore individual clusters.
 
-<table border="0" class="dataframe">
+<table border="0" class="dataframe" align="center">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -124,8 +124,11 @@ Using the `clusters.json` file, the `network.positive.tsv` file, the `GO map.tsv
     </tr>
   </tbody>
 </table>
+ 
+<p align="center">
+ <img src="assets/sample_cluster.jpg" width="400"/>
+</p>
 
-![sample_cluster](assets/sample_cluster.jpg)
 ```bash
 Cluster of 15 [pdam_00002749-RA, pdam_00022926-RA, pdam_00017090-RA, ...] (hash 2065650738990954842)
 Triangles: 372
@@ -146,6 +149,8 @@ Top Terms:
 
 Using the same files, you can run a statistical test of cluster function by permuting cluster labels, and computing the [Jaccard similarity](https://en.wikipedia.org/wiki/Jaccard_index) between terms in the same cluster.
 
+![function enrichment](assets/pdam_functional_enrichment.png)
+
 ### 3. Full network in Cytoscape
 
 1. Load `network.positive.tsv` using `File -> Import -> Network from File`
@@ -160,11 +165,13 @@ Using the same files, you can run a statistical test of cluster function by perm
 6. Layout the network with your layout of choice, we recommend `Layout -> Prefuse Force Directed Layout -> weight`
 7. Add node colors using the [PHILHARMONIC style](assets/philharmonic_styles.xml), imported with `File -> Import -> Styles from File`
 
+![cluster graph](assets/20240917_pdam_clusterNetwork_100edge.svg)
+
 ## Workflow Overview
 
 A detailed overview of PHILHARMNONIC can be found in the [manuscript](#citation). We briefly outline the pipeline below.
 
-Each of these steps can be invoked independently by running `Snakemake -c {number of cores} {target}`. The `{target}` is shown in parentheses following each step below.
+Each of these steps can be invoked independently by running `snakemake -c {number of cores} {target}`. The `{target}` is shown in parentheses following each step below.
 
 ![snakemake pipeline](pipeline.png)
 
@@ -206,13 +213,13 @@ The `config.yml` file contains various parameters that control the behavior of t
 
 - `dscript.path`: Path to the D-SCRIPT executable (default: "dscript")
 - `dscript.n_pairs`: Number of protein pairs to predict (-1 for all pairs) (default: -1)
-- `dscript.model`: Pre-trained D-SCRIPT model to use (default: "samsl/human_v1")
+- `dscript.model`: Pre-trained D-SCRIPT model to use. (default: "samsl/human_v1")
 - `dscript.device`: GPU device to use (-1 for CPU) (default: 0)
 
 ### DSD Parameters
 
 - `dsd.path`: Path to the FastDSD executable (default: "fastdsd")
-- `dsd.t`: Diffusion time for DSD algorithm (default: 0.5)
+- `dsd.t`: Edge existence threshold for DSD algorithm (default: 0.5)
 - `dsd.confidence`: Boolean flag to use confidence scores (default: true)
 
 ### Clustering Parameters
@@ -224,9 +231,9 @@ The `config.yml` file contains various parameters that control the behavior of t
 
 ### ReCIPE Parameters
 
-- `recipe.lr`: Learning rate for ReCIPE algorithm (default: 0.1)
-- `recipe.cthresh`: Confidence threshold for ReCIPE (default: 0.75)
-- `recipe.max_proteins`: Maximum number of proteins to consider in ReCIPE (default: 20)
+- `recipe.lr`: Linear ratio for ReCIPE algorithm (default: 0.1)
+- `recipe.cthresh`: Connectivity threshold to add proteins until for ReCIPE (default: 0.75)
+- `recipe.max_proteins`: Maximum number of proteins to add to a cluster in ReCIPE (default: 20)
 - `recipe.metric`: Metric to use for ReCIPE (default: "degree")
 
 ### Langchain Parameters
