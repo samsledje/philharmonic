@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="philharmonic_logo.png" width="400"/>
+    <img src="img/philharmonic_logo.png" width="400"/>
 </p>
 
 # Decoding the Functional Networks of Non-Model Organisms
@@ -126,7 +126,7 @@ Using the `clusters.json` file, the `network.positive.tsv` file, the `GO map.tsv
 </table>
  
 <p align="center">
- <img src="assets/sample_cluster.jpg" width="400"/>
+ <img src="img/readme_sample_cluster.jpg" width="400"/>
 </p>
 
 ```bash
@@ -149,7 +149,7 @@ Top Terms:
 
 Using the same files, you can run a statistical test of cluster function by permuting cluster labels, and computing the [Jaccard similarity](https://en.wikipedia.org/wiki/Jaccard_index) between terms in the same cluster.
 
-![function enrichment](assets/pdam_functional_enrichment.png)
+![function enrichment](img/readme_function_enrichment.png)
 
 ### 3. Full network in Cytoscape
 
@@ -165,7 +165,7 @@ Using the same files, you can run a statistical test of cluster function by perm
 6. Layout the network with your layout of choice, we recommend `Layout -> Prefuse Force Directed Layout -> weight`
 7. Add node colors using the [PHILHARMONIC style](assets/philharmonic_styles.xml), imported with `File -> Import -> Styles from File`
 
-![cluster graph](assets/20240917_pdam_clusterNetwork_100edge.svg)
+![cluster graph](img/readme_cluster_graph.svg)
 
 ## Workflow Overview
 
@@ -173,7 +173,7 @@ A detailed overview of PHILHARMNONIC can be found in the [manuscript](#citation)
 
 Each of these steps can be invoked independently by running `snakemake -c {number of cores} {target}`. The `{target}` is shown in parentheses following each step below.
 
-![snakemake pipeline](pipeline.png)
+![snakemake pipeline](img/pipeline.png)
 
 1. Download necessary files (`download_required_files`)
 2. Run [hmmscan](http://hmmer.org/) on protein sequences to annotate pfam domains (`annotate_seqs_pfam`)
