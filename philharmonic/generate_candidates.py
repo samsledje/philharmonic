@@ -13,6 +13,7 @@ from .utils import parse_GO_map
 
 app = typer.Typer()
 
+
 def parse_go_graph(go_graph_file):
     go2children = defaultdict(list)
     go2desc = {}
@@ -75,15 +76,28 @@ def subset_go_graph(go_graph_file, go_included_terms):
 
     return sorted(go_subset)
 
+
 @app.command()
 def main(
     sequences: Path = typer.Option(..., "--sequences", help="Sequences file"),
     output: Path = typer.Option(..., "-o", "--output", help="Output file"),
-    seq_out: Path = typer.Option(None, "--seq_out", help="Optional output: report which sequences were kept after GO filtering"),
-    paircount: int = typer.Option(-1, "--paircount", help="Number of protein pairs to sample"),
-    go_filter: str = typer.Option(None, "--go_filter", help="GO terms by which to filter"),
-    go_map: str = typer.Option(..., "--go_map", help="GO map file. Required if --go_filter is set"),
-    go_database: str = typer.Option(..., "--go_database", help="GO database file. Required if --go_filter is set"),
+    seq_out: Path = typer.Option(
+        None,
+        "--seq_out",
+        help="Optional output: report which sequences were kept after GO filtering",
+    ),
+    paircount: int = typer.Option(
+        -1, "--paircount", help="Number of protein pairs to sample"
+    ),
+    go_filter: str = typer.Option(
+        None, "--go_filter", help="GO terms by which to filter"
+    ),
+    go_map: str = typer.Option(
+        ..., "--go_map", help="GO map file. Required if --go_filter is set"
+    ),
+    go_database: str = typer.Option(
+        ..., "--go_database", help="GO database file. Required if --go_filter is set"
+    ),
     seed: int = typer.Option(42, "--seed", help="Random seed"),
 ):
     """Generate candidate protein pairs from a sequences file"""
@@ -113,7 +127,7 @@ def main(
         with open(seq_out, "w") as f:
             for p in allowed_proteins:
                 f.write(f">{p}\n{sequences[p].seq}\n")
-    
+
     # Create DataFrame
     g = np.random.Generator(np.random.PCG64(seed))
     protein_pairs = list(combinations(allowed_proteins, 2))
@@ -124,14 +138,12 @@ def main(
         raise ValueError("Pair count exceeds number of possible pairs")
     else:
         sampled_pairs = g.choice(protein_pairs, paircount, replace=False)
-    
+
     candidates = pd.DataFrame(sampled_pairs, columns=["protein_A", "protein_B"])
     candidates = candidates.drop_duplicates().reset_index(drop=True)
 
     candidates.to_csv(output, index=False, header=None, sep="\t")
 
 
-
 if __name__ == "__main__":
     app()
-

@@ -4,13 +4,17 @@ from collections import defaultdict
 from Bio import SearchIO
 from typing import List
 from loguru import logger
+
 app = typer.Typer()
+
 
 @app.command()
 def main(
     output: str = typer.Option(..., "-o", "--output", help="Output file"),
     hhtblout: str = typer.Option(..., "--hhtblout", help="hhsearch tblout file"),
-    pfam_go_files: List[str] = typer.Option(..., "--pfam_go_files", help="Pfam GO files")
+    pfam_go_files: List[str] = typer.Option(
+        ..., "--pfam_go_files", help="Pfam GO files"
+    ),
 ):
     """Build a GO map from a hhsearch tblout file and a list of Pfam GO files"""
     logger.info("Building GO map...")
@@ -40,6 +44,7 @@ def main(
     )
 
     protein_go_map.to_csv(output, index=False)
+
 
 if __name__ == "__main__":
     app()

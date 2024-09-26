@@ -36,7 +36,10 @@ class Cluster:
             reprStr += "\nTop Terms:\n\t{}".format(
                 "\n\t".join(
                     # ['{} ({})'.format(i[0], i[1]) for i in self.get_top_terms(5)]
-                    [f"{i[0]} - <{self.go_db[i[0]]}> ({i[1]})" for i in self.get_top_terms(5)]
+                    [
+                        f"{i[0]} - <{self.go_db[i[0]]}> ({i[1]})"
+                        for i in self.get_top_terms(5)
+                    ]
                 )
             )
         return reprStr
@@ -71,7 +74,8 @@ class Cluster:
         G = self.G
         nx.draw_kamada_kawai(G, with_labels=True, node_size=600, font_size=8)
 
-def add_GO_function(cluster, go_map, go_db = None):
+
+def add_GO_function(cluster, go_map, go_db=None):
     """
     Keep track of how many proteins in the cluster have a given GO term
     """
@@ -85,8 +89,10 @@ def add_GO_function(cluster, go_map, go_db = None):
                 go_terms[gid] = go_terms.setdefault(gid, 0) + 1
     return go_terms
 
+
 def triangles(graph: nx.Graph):
     return int(sum([i for i in nx.triangles(graph).values()]) / 3)
+
 
 def get_top_terms(cluster, N=5, go_map=None):
     if (go_map is not None) and ("GO_terms" not in cluster):
@@ -94,7 +100,8 @@ def get_top_terms(cluster, N=5, go_map=None):
     term_dict = cluster["GO_terms"]
     if N == -1:
         N = len(term_dict)
-    return sorted(term_dict.items(), key=lambda x: x[1], reverse=True)[:N] 
+    return sorted(term_dict.items(), key=lambda x: x[1], reverse=True)[:N]
+
 
 def print_cluster(clust, go_database, n_terms=5, return_str=False):
     description_string = ""
@@ -104,9 +111,7 @@ def print_cluster(clust, go_database, n_terms=5, return_str=False):
 
     members = clust["members"]
     short_mem_string = ", ".join(members[:3])
-    description_string += (
-        f"Cluster of {len(members)} proteins [{short_mem_string}, ...] (hash {hash_cluster(members)})\n"
-    )
+    description_string += f"Cluster of {len(members)} proteins [{short_mem_string}, ...] (hash {hash_cluster(members)})\n"
 
     if "recipe" in clust:
         recipe_dict = clust["recipe"]
@@ -114,7 +119,9 @@ def print_cluster(clust, go_database, n_terms=5, return_str=False):
         for rm in recipe_metrics:
             for deg in recipe_dict[rm].keys():
                 nadded = len(recipe_dict[rm][deg])
-                description_string += f"{nadded} proteins re-added by ReCIPE ({rm}, {deg})\n"
+                description_string += (
+                    f"{nadded} proteins re-added by ReCIPE ({rm}, {deg})\n"
+                )
 
     if "graph" in clust:
         G = nx.Graph()
@@ -205,6 +212,7 @@ def parse_GO_map(f):
             go_map[r.seq] = r.GO_ids
     return go_map
 
+
 def clean_top_terms(c, go_db, return_counts=True, n_filter=3):
     csize = len(c)
     tt = get_top_terms(c, 1)
@@ -216,16 +224,16 @@ def clean_top_terms(c, go_db, return_counts=True, n_filter=3):
         else:
             return go_db[tt[0][0]]
     if return_counts:
-        return ('', None, csize)
+        return ("", None, csize)
     else:
-        return ''
+        return ""
 
 
 def plot_cluster(cluster, full_graph, name="Graph", node_labels=False, savefig=None):
     # From https://networkx.org/documentation/stable/auto_examples/drawing/plot_degree.html
     G = nx.subgraph(full_graph, cluster["members"])
     degree_sequence = sorted((d for n, d in G.degree()), reverse=True)
-    
+
     fig = plt.figure("Degree of a random graph", figsize=(8, 8))
     # Create a gridspec for adding subplots of different sizes
     axgrid = fig.add_gridspec(5, 4)
@@ -256,14 +264,14 @@ def plot_cluster(cluster, full_graph, name="Graph", node_labels=False, savefig=N
     plt.suptitle(f"{name} ({len(G)} nodes / {len(G.edges())} edges)")
 
     if savefig:
-        plt.savefig(savefig,dpi=300,bbox_inches="tight")
+        plt.savefig(savefig, dpi=300, bbox_inches="tight")
     plt.show()
 
 
-def write_cluster_fasta(cluster_file, sequence_file, directory = ".", prefix = "cluster"):
+def write_cluster_fasta(cluster_file, sequence_file, directory=".", prefix="cluster"):
     cluster_dict = load_cluster_json(cluster_file)
     seq_dict = SeqIO.to_dict(SeqIO.parse(sequence_file, "fasta"))
-    
+
     file_names = []
     for k, clust in cluster_dict.items():
         fname = f"{directory}/{prefix}_{k}.fasta"

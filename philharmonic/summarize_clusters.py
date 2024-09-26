@@ -75,13 +75,18 @@ def llm_summarize(cluster, go_database, model, sys_template, api_key):
 
     return json.loads(r)
 
+
 @app.command()
 def main(
     output: str = typer.Option(..., "-o", "--output", help="Output file"),
     json_output: str = typer.Option(None, "-j", "--json", help="Output in JSON format"),
-    cluster_file_path: str = typer.Option(..., "-cfp", "--cluster-file-path", help="Cluster file"),
+    cluster_file_path: str = typer.Option(
+        ..., "-cfp", "--cluster-file-path", help="Cluster file"
+    ),
     go_db: str = typer.Option(..., "--go_db", help="GO database"),
-    llm_name: bool = typer.Option(False, help="Use a large language model to name clusters"),
+    llm_name: bool = typer.Option(
+        False, help="Use a large language model to name clusters"
+    ),
     model: str = typer.Option(None, help="Language model to use"),
     api_key: str = typer.Option(None, help="OpenAI API key"),
 ):

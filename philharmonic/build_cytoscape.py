@@ -7,8 +7,11 @@ from .utils import load_cluster_json
 
 app = typer.Typer()
 
+
 @app.command()
-def main(styles: str, output: str, cluster_file_path: str, network_file_path: str, name: str):
+def main(
+    styles: str, output: str, cluster_file_path: str, network_file_path: str, name: str
+):
     """Build a Cytoscape network from a cluster file and a network file"""
     netx = nx.read_weighted_edgelist(network_file_path)
     clusters = load_cluster_json(cluster_file_path)

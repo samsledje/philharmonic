@@ -13,6 +13,7 @@ from .utils import hash_cluster
 
 app = typer.Typer()
 
+
 def RBF(D, sigma=None):
     """
     Convert distance matrix D into similarity matrix S using Radial Basis Function (RBF) Kernel
@@ -81,14 +82,19 @@ def read_network_subset(network_file, protein_names, output_stats=True):
 
     return G
 
+
 @app.command()
 def main(
     init_k: int = typer.Option(500, "--init_k", help="Initial number of clusters"),
-    min_cluster_size: int = typer.Option(3, "--min_cluster_size", help="Minimum cluster size"),
-    cluster_divisor: int = typer.Option(20, "--cluster_divisor", help="Cluster divisor"),
+    min_cluster_size: int = typer.Option(
+        3, "--min_cluster_size", help="Minimum cluster size"
+    ),
+    cluster_divisor: int = typer.Option(
+        20, "--cluster_divisor", help="Cluster divisor"
+    ),
     sparsity: float = typer.Option(1e-5, "--sparsity", help="Sparsity threshold"),
     random_seed: int = typer.Option(42, "--random_seed", help="Random seed"),
-    output: str = typer.Option(..., "-o", "--output", help="Output file"),  
+    output: str = typer.Option(..., "-o", "--output", help="Output file"),
     dsd_file: str = typer.Option(..., "--dsd_file", help="Distances file"),
     network_file: str = typer.Option(..., "--network_file", help="Network file"),
 ):
@@ -101,7 +107,9 @@ def main(
     logger.info(f"Reading network file: {network_file}")
     G = read_network_subset(network_file, protein_names)
 
-    logger.info(f"Converting DSD to similarity matrix with sparsity threshold: {sparsity}")
+    logger.info(
+        f"Converting DSD to similarity matrix with sparsity threshold: {sparsity}"
+    )
     sim = dsd_to_similarity(dsd, sparsity_threshold=sparsity)
 
     logger.info(f"Fitting {init_k} spectral clusters...")
@@ -177,7 +185,7 @@ def main(
 
     logger.info(f"Writing clusters to: {output}")
     writeClusters(output, clustsDict)
-   
+
 
 if __name__ == "__main__":
     app()

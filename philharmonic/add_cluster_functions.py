@@ -9,10 +9,13 @@ from .utils import parse_GO_map, load_cluster_json, add_GO_function
 
 app = typer.Typer()
 
+
 @app.command()
 def main(
     output: Path = typer.Option(..., "-o", "--output", help="Output file"),
-    clusters_file_path: Path = typer.Option(..., "-cfp", "--clusters-file-path", help="Clusters file path"),
+    clusters_file_path: Path = typer.Option(
+        ..., "-cfp", "--clusters-file-path", help="Clusters file path"
+    ),
     go_map: Path = typer.Option(..., "--go-map", help="GO map file"),
 ):
     """Add GO terms to clusters"""
@@ -28,6 +31,7 @@ def main(
 
     with open(output, "w") as f:
         json.dump(clusters, f, indent=4)
+
 
 if __name__ == "__main__":
     app()

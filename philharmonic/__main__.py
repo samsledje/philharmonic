@@ -1,22 +1,41 @@
 import typer
 from importlib.metadata import version as get_version
-from . import build_go_map, build_cytoscape, summarize_clusters, add_cluster_functions, cluster_network, build_cluster_graph, generate_candidates
+from . import (
+    build_go_map,
+    build_cytoscape,
+    summarize_clusters,
+    add_cluster_functions,
+    cluster_network,
+    build_cluster_graph,
+    generate_candidates,
+)
 
 app = typer.Typer()
 
 # ... existing imports ...
+
 
 def version_callback(value: bool):
     if value:
         typer.echo(f"Philharmonic version: {get_version('philharmonic')}")
         raise typer.Exit()
 
+
 @app.callback()
-def main(version: bool = typer.Option(None, "--version", "-v", callback=version_callback, 
-                                      is_eager=True, help="Show the version and exit.")):
+def main(
+    version: bool = typer.Option(
+        None,
+        "--version",
+        "-v",
+        callback=version_callback,
+        is_eager=True,
+        help="Show the version and exit.",
+    ),
+):
     """
     Philharmonic: Decoding functional organization in non-model organisms
     """
+
 
 # Register subcommands
 app.command("build-go-map")(build_go_map.main)
