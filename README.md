@@ -82,7 +82,7 @@ run.zip
 
 ### 1. Result Summary
 
-<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/philharmonic/01_result_summary.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/nb/01_result_summary.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
@@ -141,7 +141,7 @@ Top Terms:
 
 ### 2. Functional Permutation Testing
 
-<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/philharmonic/02_functional_permutation_test.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/nb/02_functional_permutation_test.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
