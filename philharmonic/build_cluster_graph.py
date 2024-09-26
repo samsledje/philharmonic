@@ -34,6 +34,13 @@ def main(
     n_crossing_edges: int = typer.Option(
         10, "--n_crossing_edges", help="Clusters with n crossing edges are connected"
     ),
+    include_recipe: bool = typer.Option(..., "--include_recipe", help="Include recipe"),
+    recipe_metric: str = typer.Option(
+        "degree", "--recipe_metric", help="Recipe metric"
+    ),
+    recipe_cthresh: str = typer.Option(
+        "0.75", "--recipe_cthresh", help="Recipe threshold"
+    ),
 ):
     """Build a graph of clusters"""
     # Load clusters
@@ -68,7 +75,16 @@ def main(
     for ckey, cdict in cluster_dict.items():
         clusG.add_node(ckey, size=len(cdict["members"]))
 
-    cgraphs = {k: nx_graph_cluster(v) for k, v in cluster_dict.items()}
+    cgraphs = {
+        k: nx_graph_cluster(
+            v,
+            use_recipe_nodes=include_recipe,
+            full_G=full_G,
+            recipe_metric=recipe_metric,
+            recipe_cthresh=recipe_cthresh,
+        )
+        for k, v in cluster_dict.items()
+    }
     for n in tqdm(clusG.nodes):
         for n2 in clusG.nodes:
             if n != n2:
@@ -83,11 +99,6 @@ def main(
     )
 
     edge_table = nx.to_pandas_edgelist(subG)
-    print(len(edge_table))
-    print(len(subG.edges))
-    print(len(subG.nodes))
-    print(list(subG.nodes)[:10])
-    print(list(cluster_dict.keys())[:10])
 
     # Nodes
     size_table = pd.DataFrame(
@@ -95,10 +106,7 @@ def main(
         columns=["key", "size"],
     )
     fn_table = pd.DataFrame(cluster_top_terms.items(), columns=["key", "go_fn"])
-    logger.debug(size_table.head())
-    logger.debug(fn_table.head())
     node_table = pd.merge(size_table, fn_table)
-    logger.debug(node_table)
 
     n_singletons = len(subG.nodes) - len(
         set(edge_table["source"].values).union(edge_table["target"].values)

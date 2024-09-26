@@ -209,11 +209,14 @@ rule cluster_graph:
     output:
         graph = f"{config['work_dir']}/{config['run_name']}_cluster_graph.tsv",
         coc_functions = f"{config['work_dir']}/{config['run_name']}_cluster_graph_functions.tsv",
+    params:
+        recipe_metric = config["recipe"]["metric"]
+        recipe_cthresh = config["recipe"]["cthresh"]
     log:
         "logs/cluster_graph.log",
     conda:
         "environment.yml",
-    shell:  "philharmonic build-cluster-graph -o {output.graph} -coc {output.coc_functions} -cfp {input.clusters} -nfp {input.network} --go_map {input.go_map} --go_db {input.go_database}"
+    shell:  "philharmonic build-cluster-graph -o {output.graph} -coc {output.coc_functions} -cfp {input.clusters} -nfp {input.network} --go_map {input.go_map} --go_db {input.go_database} --recipe_metric {params.recipe_metric} --recipe_cthresh {params.recipe_cthresh}"
 
 rule summarize_clusters:
     input:

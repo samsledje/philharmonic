@@ -31,7 +31,6 @@ def parse_go_graph(go_graph_file):
     for line in open(go_graph_file):
         if line.startswith("[Term]"):
             if block:
-                # dbg_print("Flag 231.20 ", block["id"])
                 process_block(block)
                 block = {}
         if line.startswith("id: "):
@@ -51,14 +50,11 @@ def parse_go_graph(go_graph_file):
     if block:
         process_block(block)
 
-    # dbg_print("Flag 231.40 ", len(go2children), len(go2desc))
     return go2children, go2desc
 
 
 def subset_go_graph(go_graph_file, go_included_terms):
-    # dbg_print("Flag 341.01 ")
     go2children, go2desc = parse_go_graph(go_graph_file)
-    # dbg_print("Flag 341.05 ", len(go2children), len(go2desc))
 
     visited_go_terms = set()
 

@@ -128,15 +128,17 @@ Using the `clusters.json` file, the `network.positive.tsv` file, the `GO map.tsv
 </p>
 
 ```bash
-Cluster of 15 [pdam_00002749-RA, pdam_00022926-RA, pdam_00017090-RA, ...] (hash 2065650738990954842)
-Triangles: 372
-Max Degree: 14
+Cluster of 21 proteins [pdam_00022258-RA, pdam_00005419-RA, pdam_00017455-RA, ...] (hash 549662403768153899)
+7 proteins re-added by ReCIPE (degree, 0.75)
+Edges: 0
+Triangles: 0
+Max Degree: 0
 Top Terms:
-	('GO:0009447', 14)
-	('GO:0017196', 14)
-	('GO:0060358', 14)
-	('GO:0006348', 14)
-	('GO:0018003', 14)
+		GO:0071380 - <cellular response to prostaglandin E stimulus> (14)
+		GO:0022900 - <electron transport chain> (14)
+		GO:0019233 - <sensory perception of pain> (14)
+		GO:0008542 - <visual learning> (13)
+		GO:0010759 - <positive regulation of macrophage chemotaxis> (13)
 ```
 
 ### 2. Functional Permutation Testing

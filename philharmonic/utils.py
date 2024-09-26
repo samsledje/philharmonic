@@ -6,6 +6,7 @@ import networkx as nx
 from matplotlib import pyplot as plt
 import seaborn as sns
 from Bio import SeqIO
+from loguru import logger
 
 
 class Cluster:
@@ -159,11 +160,27 @@ def hash_cluster(protein_list):
     )
 
 
-def nx_graph_cluster(cluster):
-    G = nx.Graph()
-    for edge in cluster["graph"]:
-        G.add_edge(edge[0], edge[1], weight=edge[2])
-    return G
+def nx_graph_cluster(
+    cluster,
+    full_G=None,
+    use_recipe_nodes=False,
+    recipe_metric="degree",
+    recipe_cthresh="0.75",
+):
+    if use_recipe_nodes:
+        if full_G is None:
+            logger.error("No full graph provided")
+        recipe_prots = cluster["recipe"][recipe_metric][recipe_cthresh]
+        if not isinstance(recipe_prots, list):
+            recipe_prots = list(recipe_prots)
+        base_prots = cluster["members"]
+        clustG = full_G.subgraph(base_prots + recipe_prots)
+    else:
+        clustG = nx.Graph()
+        for edge in cluster["graph"]:
+            clustG.add_edge(edge[0], edge[1], weight=edge[2])
+
+    return clustG
 
 
 def load_cluster_json(infile):
@@ -229,22 +246,51 @@ def clean_top_terms(c, go_db, return_counts=True, n_filter=3):
         return ""
 
 
-def plot_cluster(cluster, full_graph, name="Graph", node_labels=False, savefig=None):
+def get_node_colors(
+    cluster,
+    recipe_metric="degree",
+    recipe_thresh="0.75",
+    base_color="blue",
+    recipe_color="red",
+):
+    colors = {}
+    for k in cluster["members"]:
+        colors[k] = base_color
+    for k in cluster["recipe"][recipe_metric][recipe_thresh]:
+        colors[k] = recipe_color
+    return colors
+
+
+def plot_cluster(
+    cluster,
+    full_graph,
+    name="Graph",
+    node_labels=False,
+    use_recipe=True,
+    recipe_metric="degree",
+    recipe_cthresh="0.75",
+    savefig=None,
+):
     # From https://networkx.org/documentation/stable/auto_examples/drawing/plot_degree.html
-    G = nx.subgraph(full_graph, cluster["members"])
+
+    G = nx_graph_cluster(cluster, full_G=full_graph, use_recipe_nodes=use_recipe)
     degree_sequence = sorted((d for n, d in G.degree()), reverse=True)
+    node_colors = get_node_colors(
+        cluster, recipe_metric=recipe_metric, recipe_cthresh=recipe_cthresh
+    )
 
     fig = plt.figure("Degree of a random graph", figsize=(8, 8))
     # Create a gridspec for adding subplots of different sizes
     axgrid = fig.add_gridspec(5, 4)
 
     ax0 = fig.add_subplot(axgrid[0:3, :])
-    Gcc = G.subgraph(sorted(nx.connected_components(G), key=len, reverse=True)[0])
-    pos = nx.spring_layout(Gcc, seed=10396953)
-    nx.draw_networkx_nodes(Gcc, pos, ax=ax0, node_size=20)
-    nx.draw_networkx_edges(Gcc, pos, ax=ax0, alpha=0.4)
+    pos = nx.spring_layout(G, seed=10396953)
+    nx.draw_networkx_nodes(
+        G, pos, ax=ax0, node_size=20, node_color=[node_colors[n] for n in G.nodes()]
+    )
+    nx.draw_networkx_edges(G, pos, ax=ax0, alpha=0.4)
     if node_labels:
-        nx.draw_networkx_labels(Gcc, pos, ax=ax0)
+        nx.draw_networkx_labels(G, pos, ax=ax0)
     ax0.set_axis_off()
 
     ax1 = fig.add_subplot(axgrid[3:, :2])
