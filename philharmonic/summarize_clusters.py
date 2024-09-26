@@ -8,7 +8,7 @@ from langchain_openai import ChatOpenAI
 from langchain.schema import StrOutputParser
 from langchain.prompts import ChatPromptTemplate
 
-from .utils import load_cluster_json, parse_GO_database, Cluster
+from .utils import load_cluster_json, parse_GO_database, print_cluster
 
 app = typer.Typer()
 
@@ -69,45 +69,11 @@ def llm_summarize(cluster, go_database, model, sys_template, api_key):
         [("system", sys_template), ("user", "{text}")]
     )
     chain = prompt_template | model | parser
-    r = chain.invoke({"text": cluster_format(cluster, go_database)})
+    r = chain.invoke({"text": print_cluster(cluster, go_database, return_str=True)})
 
     # return r
 
     return json.loads(r)
-
-
-def cluster_format(clust, go_database, n_terms=5):
-    clust = Cluster(clust)
-    description_string = ""
-
-    if hasattr(clust, "llm_name"):
-        description_string += f"Cluster Name: {clust.llm_name}\n"
-
-    members = clust._member_list()
-    description_string += (
-        f"Cluster of {len(clust.members)} proteins [{members}] (hash {hash(clust)})\n"
-    )
-
-    if hasattr(clust, "G"):
-        description_string += f"Edges: {len(clust.G.edges())}\n"
-        description_string += f"Triangles: {clust.triangles()}\n"
-        description_string += f"Max Degree: {0 if not len(clust.G.edges()) else max(clust.G.degree(), key=lambda x: x[1])[1]}\n"
-
-    if hasattr(clust, "GO_terms"):
-        top_terms = clust.get_top_terms(n_terms)
-        description_string += "Top Terms:\n"
-        for gid, freq in top_terms:
-            try:
-                go_name = go_database[gid]
-            except KeyError:
-                go_name = "Unknown"
-            description_string += f"\t\t{gid} - <{go_name}> ({freq})\n"
-
-    if hasattr(clust, "llm_explanation"):
-        description_string += f"LLM Explanation: {clust.llm_explanation}\n"
-        description_string += f"LLM Confidence: {clust.llm_confidence}\n"
-
-    return description_string
 
 @app.command()
 def main(
@@ -151,13 +117,13 @@ def main(
 
     if json_output:
         for _, clust in clusters.items():
-            clust["human_readable"] = cluster_format(clust, go_database)
+            clust["human_readable"] = print_cluster(clust, go_database, return_str=True)
         with open(json_output, "w") as f:
             json.dump(clusters, f, indent=4)
 
     with open(output, "w") as f:
         for _, clust in clusters.items():
-            description_string = cluster_format(clust, go_database)
+            description_string = print_cluster(clust, go_database, return_str=True)
             f.write(description_string)
             f.write("\n\n")
 

@@ -40,9 +40,7 @@ You may also want to install [Cytoscape](https://cytoscape.org/) for visualizing
 
 ### Required data
 
-The only data that PHILHARMONIC requires is a set of protein sequences in `.fasta` format. You can optionally also provide
-a set of GO terms that you want to prioritize in the analsysis, and a subset of your proteins that will definitely be included
-in the network (otherwise, we will subsample proteins when proposing candidate interactions, and may not include all proteins in the final network).
+The only data that PHILHARMONIC requires is a set of protein sequences in `.fasta` format. We provide a set of high-level GO terms on which to filter proteins prior to candidate generation and network prediction. You may optionally provide your own set of GO terms, as the `go_filter_path` argument in the configuration file.
 
 ### Setting up the config
 

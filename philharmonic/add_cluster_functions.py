@@ -5,19 +5,7 @@ from pathlib import Path
 import json
 from loguru import logger
 
-from .utils import parse_GO_map, load_cluster_json
-
-
-def add_GO_function(cluster, go_map):
-    """
-    Keep track of how many proteins in the cluster have a given GO term
-    """
-    go_terms = {}
-    for protein in cluster["members"]:
-        if protein in go_map:
-            for gid in set(go_map[protein]):
-                go_terms[gid] = go_terms.setdefault(gid, 0) + 1
-    return go_terms
+from .utils import parse_GO_map, load_cluster_json, add_GO_function
 
 app = typer.Typer()
 

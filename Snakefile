@@ -93,7 +93,7 @@ rule generate_candidates:
     input:
         sequences = f"{config['sequence_path']}",
         go_database = f"{config['work_dir']}/go.obo",
-        go_filter = "assets/go_filter.txt",
+        go_filter = f"{config['go_filter_path']}",
         go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
     output:
         kept_proteins = f"{config['work_dir']}/{config['run_name']}_kept_proteins.txt",

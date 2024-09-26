@@ -5,6 +5,7 @@ import pandas as pd
 import networkx as nx
 from matplotlib import pyplot as plt
 import seaborn as sns
+from Bio import SeqIO
 
 
 class Cluster:
@@ -35,7 +36,7 @@ class Cluster:
             reprStr += "\nTop Terms:\n\t{}".format(
                 "\n\t".join(
                     # ['{} ({})'.format(i[0], i[1]) for i in self.get_top_terms(5)]
-                    ["{}".format(i) for i in self.get_top_terms(5)]
+                    [f"{i[0]} - <{self.go_db[i[0]]}> ({i[1]})" for i in self.get_top_terms(5)]
                 )
             )
         return reprStr
@@ -49,25 +50,6 @@ class Cluster:
         else:
             return "{}, ...".format(", ".join(self.members[:3]))
 
-    # def to_dict(self):
-    #     D = {}
-    #     D['id'] = hash(self)
-    #     D['proteins'] = []
-    #     for p in self.members:
-    #         pD = {}
-    #         pD['name'] = p
-    #         if hasattr(self, 'GO_DB'):
-    #             pD['go'] = self.GO_DB[self.GO_DB['seq'] == p]['GO_ids'].values[0]
-    #         D['proteins'].append(pD)
-    #     if hasattr(self, 'GO_DB'):
-    #         D['go'] = sorted([{"id": i.ID, "desc": i.name, "freq": self.GO_terms[i]} for i in self.GO_terms], key = lambda x: x['freq'], reverse=True)
-    #     if hasattr(self,'G'):
-    #         D['graph'] = list(self.G.edges())
-    #     return D
-
-    # def to_json(self):
-    #     return json.dumps(self.to_dict())
-
     def add_GO_terms(self, go_map, go_db):
         self.GO_terms = {}
         self.go_db = go_db.copy()
@@ -80,53 +62,8 @@ class Cluster:
                     goCount = self.GO_terms.setdefault(gid, 0)
                     self.GO_terms[gid] = goCount + 1
 
-    # def get_proteins_by_GO(self, GO_id):
-    #     return [p for p in self.members if GO_id in prot_go_db.loc[p,'GO_ids']]
-
-    # def get_GO_by_protein(self, protein):
-    #     assert protein in self.members, "{} not in cluster".format(protein)
-    #     return [gt for gt in coi.GO_terms if gt.ID in prot_go_db.loc[protein,'GO_ids']]
-
-    def get_top_terms(self, N):
-        if not hasattr(self, "GO_terms"):
-            raise NotImplementedError("GO Terms have not been added yet.")
-        GOlist = list(self.GO_terms.keys())
-        if N == -1:
-            N = len(GOlist)
-        sortedList = sorted(GOlist, key=lambda x: self.GO_terms[x], reverse=True)[:N]
-        return list(zip(sortedList, [self.GO_terms[i] for i in sortedList]))
-
     def set_graph(self, G):
         self.G = G.subgraph(self.members)
-
-    def triangles(self):
-        return int(sum([i for i in nx.triangles(self.G).values()]) / 3)
-
-    # def draw_degree_histogram(self,draw_graph=True):
-    #     if not hasattr(self,'G'):
-    #         raise ValueError('Run .set_graph() method on this cluster first')
-    #     G = self.G
-    #     degree_sequence = sorted([d for n, d in G.degree()], reverse=True)  # degree sequence
-    #     degreeCount = collections.Counter(degree_sequence)
-    #     deg, cnt = zip(*degreeCount.items())
-
-    #     fig, ax = plt.subplots()
-    #     plt.bar(deg, cnt, width=0.80, color='b')
-
-    #     plt.title("Degree Histogram")
-    #     plt.ylabel("Count")
-    #     plt.xlabel("Degree")
-    #     ax.set_xticks([d + 0.4 for d in deg])
-    #     ax.set_xticklabels(deg)
-
-    #     # draw graph in inset
-    #     if draw_graph:
-    #         plt.axes([0.4, 0.4, 0.5, 0.5])
-    #         pos = nx.spring_layout(G, k=0.15,iterations=10)
-    #         plt.axis('off')
-    #         nx.draw_networkx_nodes(G, pos, node_size=20)
-    #         nx.draw_networkx_edges(G, pos, alpha=0.4)
-    #     plt.show()
 
     def draw_graph(self):
         if not hasattr(self, "G"):
@@ -134,9 +71,79 @@ class Cluster:
         G = self.G
         nx.draw_kamada_kawai(G, with_labels=True, node_size=600, font_size=8)
 
+def add_GO_function(cluster, go_map, go_db = None):
+    """
+    Keep track of how many proteins in the cluster have a given GO term
+    """
+    go_terms = {}
+    for protein in cluster["members"]:
+        if protein in go_map:
+            for gid in set(go_map[protein]):
+                if go_db is not None:
+                    if gid not in go_db:
+                        continue
+                go_terms[gid] = go_terms.setdefault(gid, 0) + 1
+    return go_terms
 
-def log(x):
-    print(x)
+def triangles(graph: nx.Graph):
+    return int(sum([i for i in nx.triangles(graph).values()]) / 3)
+
+def get_top_terms(cluster, N=5, go_map=None):
+    if (go_map is not None) and ("GO_terms" not in cluster):
+        cluster["GO_terms"] = add_GO_function(cluster, go_map)
+    term_dict = cluster["GO_terms"]
+    if N == -1:
+        N = len(term_dict)
+    return sorted(term_dict.items(), key=lambda x: x[1], reverse=True)[:N] 
+
+def print_cluster(clust, go_database, n_terms=5, return_str=False):
+    description_string = ""
+
+    if "llm_name" in clust:
+        description_string += f"Cluster Name: {clust.llm_name}\n"
+
+    members = clust["members"]
+    short_mem_string = ", ".join(members[:3])
+    description_string += (
+        f"Cluster of {len(members)} proteins [{short_mem_string}, ...] (hash {hash_cluster(members)})\n"
+    )
+
+    if "recipe" in clust:
+        recipe_dict = clust["recipe"]
+        recipe_metrics = list(recipe_dict.keys())
+        for rm in recipe_metrics:
+            for deg in recipe_dict[rm].keys():
+                nadded = len(recipe_dict[rm][deg])
+                description_string += f"{nadded} proteins re-added by ReCIPE ({rm}, {deg})\n"
+
+    if "graph" in clust:
+        G = nx.Graph()
+        for edge in clust["graph"]:
+            G.add_edge(edge[0], edge[1], weight=edge[2])
+
+        description_string += f"Edges: {len(G.edges())}\n"
+        description_string += f"Triangles: {triangles(G)}\n"
+        description_string += f"Max Degree: {0 if not len(G.edges()) else max(G.degree(), key=lambda x: x[1])[1]}\n"
+
+    if "GO_terms" in clust:
+        top_terms = get_top_terms(clust, n_terms)
+        description_string += "Top Terms:\n"
+        for gid, freq in top_terms:
+            try:
+                go_name = go_database[gid]
+            except KeyError:
+                go_name = "Unknown"
+            description_string += f"\t\t{gid} - <{go_name}> ({freq})\n"
+
+    if "llm_explanation" in clust:
+        llm_desc = clust["llm_explanation"]
+        description_string += f"LLM Explanation: {llm_desc}\n"
+        # description_string += f"LLM Confidence: {llm_desc}\n"
+
+    if return_str:
+        return description_string
+    else:
+        print(description_string)
 
 
 def hash_cluster(protein_list):
@@ -145,13 +152,17 @@ def hash_cluster(protein_list):
     )
 
 
-def load_cluster_json(infile, return_objects=False):
+def nx_graph_cluster(cluster):
+    G = nx.Graph()
+    for edge in cluster["graph"]:
+        G.add_edge(edge[0], edge[1], weight=edge[2])
+    return G
+
+
+def load_cluster_json(infile):
     with open(infile, "r") as f:
         clusters = json.load(f)
-    if return_objects:
-        return {k: Cluster(v) for k, v in clusters.items()}
-    else:
-        return clusters
+    return clusters
 
 
 def parse_GO_database(infile):
@@ -196,7 +207,7 @@ def parse_GO_map(f):
 
 def clean_top_terms(c, go_db, return_counts=True, n_filter=3):
     csize = len(c)
-    tt = c.get_top_terms(1)
+    tt = get_top_terms(c, 1)
     if len(tt):
         if tt[0][1] < n_filter:
             pass
@@ -210,12 +221,7 @@ def clean_top_terms(c, go_db, return_counts=True, n_filter=3):
         return ''
 
 
-def repr_cluster(c, go_db = None):
-    c = Cluster(c)
-    return str(c)
-
-
-def plot_cluster_degree(cluster, full_graph, name="Graph", node_labels=False):
+def plot_cluster(cluster, full_graph, name="Graph", node_labels=False, savefig=None):
     # From https://networkx.org/documentation/stable/auto_examples/drawing/plot_degree.html
     G = nx.subgraph(full_graph, cluster["members"])
     degree_sequence = sorted((d for n, d in G.degree()), reverse=True)
@@ -248,4 +254,22 @@ def plot_cluster_degree(cluster, full_graph, name="Graph", node_labels=False):
     fig.tight_layout()
     sns.despine()
     plt.suptitle(f"{name} ({len(G)} nodes / {len(G.edges())} edges)")
+
+    if savefig:
+        plt.savefig(savefig,dpi=300,bbox_inches="tight")
     plt.show()
+
+
+def write_cluster_fasta(cluster_file, sequence_file, directory = ".", prefix = "cluster"):
+    cluster_dict = load_cluster_json(cluster_file)
+    seq_dict = SeqIO.to_dict(SeqIO.parse(sequence_file, "fasta"))
+    
+    file_names = []
+    for k, clust in cluster_dict.items():
+        fname = f"{directory}/{prefix}_{k}.fasta"
+        file_names.append(fname)
+        with open(fname, "w+") as f:
+            for p in clust["members"]:
+                f.write(f">{p}\n")
+                f.write(f"{seq_dict[k]}\n")
+    return None

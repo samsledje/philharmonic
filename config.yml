@@ -1,6 +1,7 @@
 # User Specified
 run_name: philharmonic
 sequence_path: sample_sequences.fasta
+go_filter_path: assets/go_filter.txt
 work_dir: results
 use_cytoscape: false
 use_langchain: false
@@ -13,7 +14,7 @@ seed: 6191998
 # hmmscan Parameters
 hmmscan:
   path: hmmscan
-  threads: 16
+  threads: 32
 
 # D-SCRIPT Parameters
 dscript:
