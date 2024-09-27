@@ -5,73 +5,12 @@ import scipy
 import pandas as pd
 import numpy as np
 from Bio import SeqIO
-from collections import defaultdict
 from pathlib import Path
 from itertools import combinations
 
-from .utils import parse_GO_map
+from .utils import filter_proteins_GO
 
 app = typer.Typer()
-
-
-def parse_go_graph(go_graph_file):
-    go2children = defaultdict(list)
-    go2desc = {}
-
-    def process_block(b):
-        if not ("id" in b and "name" in b and "namespace" in b):
-            return
-
-        go2desc[b["id"]] = (b["namespace"], b["name"])
-        if "parent" in b:
-            for c in b["parent"]:
-                go2children[c].append(b["id"])
-
-    block = {}
-    for line in open(go_graph_file):
-        if line.startswith("[Term]"):
-            if block:
-                process_block(block)
-                block = {}
-        if line.startswith("id: "):
-            block["id"] = line.split()[1]
-
-        if line.startswith("is_a: "):
-            if "parent" not in block:
-                block["parent"] = []
-            block["parent"].append(line.split()[1])
-
-        if line.startswith("name:"):
-            block["name"] = line[6:].strip()
-
-        if line.startswith("namespace:"):
-            block["namespace"] = line[11:].strip()
-
-    if block:
-        process_block(block)
-
-    return go2children, go2desc
-
-
-def subset_go_graph(go_graph_file, go_included_terms):
-    go2children, go2desc = parse_go_graph(go_graph_file)
-
-    visited_go_terms = set()
-
-    def dfs_visit(go2children, goid):
-        for c in go2children[goid]:
-            dfs_visit(go2children, c)
-        visited_go_terms.add(goid)
-
-    for c1 in go_included_terms:
-        dfs_visit(go2children, c1)
-
-    go_subset = []
-    for c in visited_go_terms:
-        go_subset.append((c, go2desc[c][0], go2desc[c][1], ";".join(go2children[c])))
-
-    return sorted(go_subset)
-
 
 @app.command()
 def main(
@@ -101,23 +40,7 @@ def main(
     protein_names = list(sequences.keys())
 
     # Create list of filtered GO terms
-    allowed_go = []
-    allowed_proteins = protein_names
-    if go_filter is not None:
-        with open(go_filter, "r") as f:
-            allowed_go = [line.strip() for line in f]
-
-        # Get children of allowed GO terms
-        allowed_go = [i[0] for i in subset_go_graph(go_database, allowed_go)]
-        allowed_go = set(allowed_go)
-
-        # Filter proteins by GO terms
-        go_map = parse_GO_map(go_map)
-        allowed_proteins = []
-        for protein, go_terms in go_map.items():
-            if go_terms is not None and any(gt in allowed_go for gt in go_terms):
-                allowed_proteins.append(protein)
-        allowed_proteins = set(allowed_proteins)
+    allowed_proteins = filter_proteins_GO(protein_names, go_map, go_database, go_filter)
 
     if seq_out is not None:
         with open(seq_out, "w") as f:
