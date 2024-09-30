@@ -353,7 +353,10 @@ def plot_degree(G, name="Graph", node_colors = None, savefig=None):
     ax0 = fig.add_subplot(axgrid[0:3, :])
     Gcc = G.subgraph(sorted(nx.connected_components(G), key=len, reverse=True)[0])
     pos = nx.spring_layout(Gcc, seed=10396953)
-    nx.draw_networkx_nodes(Gcc, pos, ax=ax0, node_size=20, node_color=[node_colors[n] for n in G.nodes()])
+    if node_colors is not None:
+        nx.draw_networkx_nodes(Gcc, pos, ax=ax0, node_size=20, node_color=[node_colors[n] for n in G.nodes()])
+    else:
+        nx.draw_networkx_nodes(Gcc, pos, ax=ax0, node_size=20)
     nx.draw_networkx_edges(Gcc, pos, ax=ax0, alpha=0.4)
     ax0.set_axis_off()
 
