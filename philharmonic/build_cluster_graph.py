@@ -5,6 +5,7 @@ from collections import Counter
 from tqdm import tqdm
 from loguru import logger
 
+from typing_extensions import Annotated
 from .utils import (
     parse_GO_map,
     parse_GO_database,
@@ -34,7 +35,7 @@ def main(
     n_crossing_edges: int = typer.Option(
         10, "--n_crossing_edges", help="Clusters with n crossing edges are connected"
     ),
-    include_recipe: bool = typer.Option(..., "--include_recipe", help="Include recipe"),
+    include_recipe: Annotated[bool, typer.Option(..., "--include_recipe", help="Include recipe")] = False,
     recipe_metric: str = typer.Option(
         "degree", "--recipe_metric", help="Recipe metric"
     ),

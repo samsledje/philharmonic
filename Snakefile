@@ -11,7 +11,7 @@ rule PHILHARMONIC:
         zipfile = f"{config['work_dir']}/{config['run_name']}.zip"
     params:
     shell:
-        "zip --junk-paths {output.zipfile} {input.network} {input.clusters} {input.cluster_graph} {input.human_readable} {input.cytoscape}"
+        "zip --junk-paths {output.zipfile} {input.network} {input.clusters} {input.go_map} {input.human_readable} {input.cluster_graph} {input.cluster_functions} {input.cytoscape}"
 
 
 rule download_required_files:
@@ -210,8 +210,8 @@ rule cluster_graph:
         graph = f"{config['work_dir']}/{config['run_name']}_cluster_graph.tsv",
         coc_functions = f"{config['work_dir']}/{config['run_name']}_cluster_graph_functions.tsv",
     params:
-        recipe_metric = config["recipe"]["metric"]
-        recipe_cthresh = config["recipe"]["cthresh"]
+        recipe_metric = config["recipe"]["metric"],
+        recipe_cthresh = config["recipe"]["cthresh"],
     log:
         "logs/cluster_graph.log",
     conda:
