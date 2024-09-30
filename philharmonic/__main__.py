@@ -1,13 +1,15 @@
-import typer
 from importlib.metadata import version as get_version
+
+import typer
+
 from . import (
-    build_go_map,
-    build_cytoscape,
-    summarize_clusters,
     add_cluster_functions,
-    cluster_network,
     build_cluster_graph,
+    build_cytoscape,
+    build_go_map,
+    cluster_network,
     generate_candidates,
+    summarize_clusters,
 )
 
 app = typer.Typer()

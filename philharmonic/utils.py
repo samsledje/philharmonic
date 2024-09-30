@@ -1,13 +1,14 @@
 import hashlib
 import json
+from collections import defaultdict
+
+import networkx as nx
 import numpy as np
 import pandas as pd
-import networkx as nx
-from matplotlib import pyplot as plt
 import seaborn as sns
 from Bio import SeqIO
 from loguru import logger
-from collections import defaultdict
+from matplotlib import pyplot as plt
 
 
 class Cluster:
@@ -189,6 +190,7 @@ def load_cluster_json(infile):
         clusters = json.load(f)
     return clusters
 
+
 def parse_GO_graph(go_graph_file):
     go2children = defaultdict(list)
     go2desc = {}
@@ -288,8 +290,8 @@ def parse_GO_map(f):
             go_map[r.seq] = r.GO_ids
     return go_map
 
-def filter_proteins_GO(proteins, go_map_f=None, go_database_f=None, go_filter_f=None):
 
+def filter_proteins_GO(proteins, go_map_f=None, go_database_f=None, go_filter_f=None):
     # Create list of filtered GO terms
     allowed_go = []
     allowed_proteins = proteins
@@ -343,7 +345,7 @@ def get_node_colors(
     return colors
 
 
-def plot_degree(G, name="Graph", node_colors = None, savefig=None):
+def plot_degree(G, name="Graph", node_colors=None, node_labels=None, savefig=None):
     # From https://networkx.org/documentation/stable/auto_examples/drawing/plot_degree.html
     degree_sequence = sorted((d for n, d in G.degree()), reverse=True)
     fig = plt.figure(name, figsize=(8, 8))
@@ -351,10 +353,17 @@ def plot_degree(G, name="Graph", node_colors = None, savefig=None):
     axgrid = fig.add_gridspec(5, 4)
 
     ax0 = fig.add_subplot(axgrid[0:3, :])
-    Gcc = G.subgraph(sorted(nx.connected_components(G), key=len, reverse=True)[0])
+    # Gcc = G.subgraph(sorted(nx.connected_components(G), key=len, reverse=True)[0])
+    Gcc = G
     pos = nx.spring_layout(Gcc, seed=10396953)
     if node_colors is not None:
-        nx.draw_networkx_nodes(Gcc, pos, ax=ax0, node_size=20, node_color=[node_colors[n] for n in G.nodes()])
+        nx.draw_networkx_nodes(
+            Gcc,
+            pos,
+            ax=ax0,
+            node_size=20,
+            node_color=[node_colors[n] for n in G.nodes()],
+        )
     else:
         nx.draw_networkx_nodes(Gcc, pos, ax=ax0, node_size=20)
     nx.draw_networkx_edges(Gcc, pos, ax=ax0, alpha=0.4)
@@ -397,7 +406,9 @@ def plot_cluster(
     node_colors = get_node_colors(
         cluster, recipe_metric=recipe_metric, recipe_cthresh=recipe_cthresh
     )
-    plot_degree(G, name=name, node_colors=node_colors, node_labels=node_labels, savefig=savefig)
+    plot_degree(
+        G, name=name, node_colors=node_colors, node_labels=node_labels, savefig=savefig
+    )
 
 
 def write_cluster_fasta(cluster_file, sequence_file, directory=".", prefix="cluster"):

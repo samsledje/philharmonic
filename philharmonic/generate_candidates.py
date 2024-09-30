@@ -1,16 +1,18 @@
 # python src/philharmonic_candidates.py -o {output.candidates} --go_list {input.go_shortlist} --protein_list {input.protein_shortlist} {input.sequences}
 
-import typer
-import scipy
-import pandas as pd
-import numpy as np
-from Bio import SeqIO
-from pathlib import Path
 from itertools import combinations
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import scipy
+import typer
+from Bio import SeqIO
 
 from .utils import filter_proteins_GO
 
 app = typer.Typer()
+
 
 @app.command()
 def main(

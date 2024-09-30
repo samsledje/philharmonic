@@ -1,8 +1,9 @@
 # "python src/philharmonic_cytoscape.py -s {input.styles} -o {output} {input.clusters}
 
-import typer
-import py4cytoscape as p4c
 import networkx as nx
+import py4cytoscape as p4c
+import typer
+
 from .utils import load_cluster_json
 
 app = typer.Typer()

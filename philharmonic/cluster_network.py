@@ -1,13 +1,14 @@
 # python src/cluster_network.py --network_file {input.network} --dsd_file {input.distances} --output {output.clusters} --min_cluster_size {config[clustering][min_cluster_size]} --cluster_divisor {config[clustering][cluster_divisor]} --init_k {config[clustering][init_k]}
 
-import typer
-import pandas as pd
-import numpy as np
-import networkx as nx
 import json
-from sklearn.cluster import SpectralClustering
 from queue import PriorityQueue
+
+import networkx as nx
+import numpy as np
+import pandas as pd
+import typer
 from loguru import logger
+from sklearn.cluster import SpectralClustering
 
 from .utils import hash_cluster
 
