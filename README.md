@@ -11,14 +11,16 @@
 
 Protein interaction networks are a fundamental tool for modeling cellular and molecular function, and a large and  sophisticated toolbox has been developed to leverage the structure and topological organization of these networks to predict the functional roles of many under-studied genes, proteins and pathways. However, the overwhelming majority of experimental PPIs from which such networks are constructed come from  humans plus a small number of well-studied model organisms.
 
-We introduce PHILHARMONIC: Protein Human-Transferred Interactome Learns Homology And Recapitulates Model Organism Network Interaction Clusters: a novel computational pipeline for de novo network inference and functional annotation in non-model organisms. PHILHARMONIC uses the D-SCRIPT deep learning method, trained on human PPIs, to learn how to predict PPIs directly from amino acid sequence alone to predict interactions genome-wide, then employs DSD coupled with Spectral Clustering  followed by a new method, Recipe to reconnect clusters. While the predicted PPIs will not individually be completely accurate, the clustering step allows us to aggregate the weaker pairwise signal into confident higher-level organization. We show that these clusters have substantial functional coherence, and we apply our method to predict functionally meaningful modules of proteins in the Coral Holobiont, finding interesting clusters in both the coral animal and symbiont.
+We introduce PHILHARMONIC (Protein Human-Transferred Interactome Learns Homology And Recapitulates Model Organism Network Interaction Clusters), a novel computational pipeline for de novo network inference and functional annotation in non-model organisms.
+
+PHILHARMONIC uses [D-SCRIPT](https://dscript.csail.mit.edu) to predict a *de novo* genome-wide PPI network from amino acid sequence alone, then employs [DSD](https://dsd.cs.tufts.edu/capdsd/) coupled with Spectral Clustering followed by a new method, [ReCIPE](https://pypi.org/project/recipe-cluster/) to reconnect clusters. While the predicted PPIs will not individually be completely accurate, the clustering step allows us to aggregate the weaker pairwise signal into confident higher-level organization. We show that these clusters have substantial functional coherence, and we apply our method to predict functionally meaningful modules of proteins in the Coral Holobiont, finding interesting clusters in both the coral animal and symbiont.
 
 ## Table of Contents
 
 1. [Installation](#installation)
 2. [Usage](#usage)
-3. [Interpreting Results](#interpreting-the-results)
-4. [Workflow Overview](#workflow-overview)
+3. [Workflow Overview](#workflow-overview)
+4. [Interpreting Results](#interpreting-the-results)
 5. [Detailed Configuration](#detailed-configuration)
 6. [Citation](#citation)
 7. [FAQ/Known Issues](#issues)
@@ -34,7 +36,7 @@ mamba activate philharmonic
 pip install -e .
 ```
 
-You may also want to install [Cytoscape](https://cytoscape.org/) for visualizing the networks.
+We also recommend installing [Cytoscape](https://cytoscape.org/) to visualizing the resulting networks.
 
 ## Usage
 
@@ -65,7 +67,7 @@ snakemake -c {number of cores} --configfile {config file}
 
 ### Pipeline Outputs
 
-We provide a zip of the most relevant output files in `[run].zip`, which contains the following files
+We provide a zip of the most relevant output files in `[run].zip`, which contains the following files:
 
 ```bash
 run.zip
@@ -77,6 +79,28 @@ run.zip
 |-- run_cluster_graph_functions.tsv # Table of high-level cluster functions from GO Slim
 |-- run_GO_map.tsv # Mapping between proteins and GO function labels
 ```
+
+Instructions for working with and evaluating these results can be found in [Interpreting the Results](#interpreting-the-results).
+
+## Workflow Overview
+
+A detailed overview of PHILHARMNONIC can be found in the [manuscript](#citation). We briefly outline the pipeline below.
+
+Each of these steps can be invoked independently by running `snakemake -c {number of cores} --configfile {config file} {target}`. The `{target}` is shown in parentheses following each step below.
+
+![snakemake pipeline](img/pipeline.png)
+
+1. Download necessary files (`download_required_files`)
+2. Run [hmmscan](http://hmmer.org/) on protein sequences to annotate pfam domains (`annotate_seqs_pfam`)
+3. Use pfam-go associations to add [GO terms](https://geneontology.org/) to sequences (`annotate_seqs_go`)
+4. Generate candidate pairs (`generate_candidates`)
+5. Use [D-SCRIPT](https://dscript.csail.mit.edu/) to predict network (`predict_network`)
+6. Compute node distances with [FastDSD](https://github.com/samsledje/fastDSD) (`compute_distances`)
+7. Cluster the network with [spectral clustering](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.SpectralClustering.html) (`cluster_network`)
+8. Use [ReCIPE](https://pypi.org/project/recipe-cluster/) to reconnect clusters (`reconnect_recipe`)
+9. Annotate clusters with functions (`add_cluster_functions`)
+10. Compute cluster graph (`cluster_graph`)
+11. Name and describe clusters for human readability (`summarize_clusters`)
 
 ## Interpreting the Results
 
@@ -246,27 +270,6 @@ You can view GO enrichments for each cluster using [`g:Profiler`](https://biit.c
 7. Add node colors using the [PHILHARMONIC style](assets/philharmonic_styles.xml), imported with `File -> Import -> Styles from File`
 
 ![cluster graph](img/readme_cluster_graph.svg)
-
-## Workflow Overview
-
-A detailed overview of PHILHARMNONIC can be found in the [manuscript](#citation). We briefly outline the pipeline below.
-
-Each of these steps can be invoked independently by running `snakemake -c {number of cores} {target}`. The `{target}` is shown in parentheses following each step below.
-
-![snakemake pipeline](img/pipeline.png)
-
-1. Download necessary files (`download_required_files`)
-2. Run [hmmscan](http://hmmer.org/) on protein sequences to annotate pfam domains (`annotate_seqs_pfam`)
-3. Use pfam-go associations to add [GO terms](https://geneontology.org/) to sequences (`annotate_seqs_go`)
-4. Generate candidate pairs (`generate_candidates`)
-5. Use [D-SCRIPT](https://dscript.csail.mit.edu/) to predict network (`predict_network`)
-6. Compute node distances with [FastDSD](https://github.com/samsledje/fastDSD) (`compute_distances`)
-7. Cluster the network with [spectral clustering](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.SpectralClustering.html) (`cluster_network`)
-8. Use [ReCIPE](https://pypi.org/project/recipe-cluster/) to reconnect clusters (`reconnect_recipe`)
-9. Annotate clusters with functions (`add_cluster_functions`)
-10. Compute cluster graph (`cluster_graph`)
-11. Name and describe clusters with [Langchain](https://www.langchain.com/) (`summarize_clusters`)
-<!-- 12. Visualize in [Cytoscape](https://cytoscape.org/) (`vizualize_network`) -->
 
 ## Detailed Configuration
 
