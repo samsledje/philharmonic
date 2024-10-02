@@ -255,6 +255,16 @@ You can view GO enrichments for each cluster using [`g:Profiler`](https://biit.c
   </tbody>
 </table>
 
+### 4. Gene Expression Analysis
+
+<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/nb/04_gene_expression_analysis.ipynb">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
+
+If gene expression data is available for the target species, we can check that proteins clustered together have correlated expression, and we can visualize where differentially expressed genes localize within the networks and clusters. Here, we use *Pocillopora* transcriptomic data from [Connelly et al. 2022](https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2021.814124/full).
+
+![gene expression](img/readme_expression_correlation.png)
+
 ### 4. View the full network in Cytoscape
 
 1. Load `network.positive.tsv` using `File -> Import -> Network from File`
