@@ -1,12 +1,14 @@
 import hashlib
 import json
+from collections import defaultdict
+
+import networkx as nx
 import numpy as np
 import pandas as pd
-import networkx as nx
-from matplotlib import pyplot as plt
 import seaborn as sns
 from Bio import SeqIO
 from loguru import logger
+from matplotlib import pyplot as plt
 
 
 class Cluster:
@@ -189,6 +191,65 @@ def load_cluster_json(infile):
     return clusters
 
 
+def parse_GO_graph(go_graph_file):
+    go2children = defaultdict(list)
+    go2desc = {}
+
+    def process_block(b):
+        if not ("id" in b and "name" in b and "namespace" in b):
+            return
+
+        go2desc[b["id"]] = (b["namespace"], b["name"])
+        if "parent" in b:
+            for c in b["parent"]:
+                go2children[c].append(b["id"])
+
+    block = {}
+    for line in open(go_graph_file):
+        if line.startswith("[Term]"):
+            if block:
+                process_block(block)
+                block = {}
+        if line.startswith("id: "):
+            block["id"] = line.split()[1]
+
+        if line.startswith("is_a: "):
+            if "parent" not in block:
+                block["parent"] = []
+            block["parent"].append(line.split()[1])
+
+        if line.startswith("name:"):
+            block["name"] = line[6:].strip()
+
+        if line.startswith("namespace:"):
+            block["namespace"] = line[11:].strip()
+
+    if block:
+        process_block(block)
+
+    return go2children, go2desc
+
+
+def subset_GO_graph(go_graph_file, go_included_terms):
+    go2children, go2desc = parse_GO_graph(go_graph_file)
+
+    visited_go_terms = set()
+
+    def dfs_visit(go2children, goid):
+        for c in go2children[goid]:
+            dfs_visit(go2children, c)
+        visited_go_terms.add(goid)
+
+    for c1 in go_included_terms:
+        dfs_visit(go2children, c1)
+
+    go_subset = []
+    for c in visited_go_terms:
+        go_subset.append((c, go2desc[c][0], go2desc[c][1], ";".join(go2children[c])))
+
+    return sorted(go_subset)
+
+
 def parse_GO_database(infile):
     terms = {}
     with open(infile, "r") as f:
@@ -230,6 +291,29 @@ def parse_GO_map(f):
     return go_map
 
 
+def filter_proteins_GO(proteins, go_map_f=None, go_database_f=None, go_filter_f=None):
+    # Create list of filtered GO terms
+    allowed_go = []
+    allowed_proteins = proteins
+
+    with open(go_filter_f, "r") as f:
+        allowed_go = [line.strip() for line in f]
+
+        # Get children of allowed GO terms
+        allowed_go = [i[0] for i in subset_GO_graph(go_database_f, allowed_go)]
+        allowed_go = set(allowed_go)
+
+        # Filter proteins by GO terms
+        go_map = parse_GO_map(go_map_f)
+        allowed_proteins = []
+        for protein, go_terms in go_map.items():
+            if go_terms is not None and any(gt in allowed_go for gt in go_terms):
+                allowed_proteins.append(protein)
+        allowed_proteins = set(allowed_proteins).intersection(proteins)
+
+    return allowed_proteins
+
+
 def clean_top_terms(c, go_db, return_counts=True, n_filter=3):
     csize = len(c)
     tt = get_top_terms(c, 1)
@@ -249,48 +333,40 @@ def clean_top_terms(c, go_db, return_counts=True, n_filter=3):
 def get_node_colors(
     cluster,
     recipe_metric="degree",
-    recipe_thresh="0.75",
+    recipe_cthresh="0.75",
     base_color="blue",
     recipe_color="red",
 ):
     colors = {}
     for k in cluster["members"]:
         colors[k] = base_color
-    for k in cluster["recipe"][recipe_metric][recipe_thresh]:
+    for k in cluster["recipe"][recipe_metric][recipe_cthresh]:
         colors[k] = recipe_color
     return colors
 
 
-def plot_cluster(
-    cluster,
-    full_graph,
-    name="Graph",
-    node_labels=False,
-    use_recipe=True,
-    recipe_metric="degree",
-    recipe_cthresh="0.75",
-    savefig=None,
-):
+def plot_degree(G, name="Graph", node_colors=None, node_labels=None, savefig=None):
     # From https://networkx.org/documentation/stable/auto_examples/drawing/plot_degree.html
-
-    G = nx_graph_cluster(cluster, full_G=full_graph, use_recipe_nodes=use_recipe)
     degree_sequence = sorted((d for n, d in G.degree()), reverse=True)
-    node_colors = get_node_colors(
-        cluster, recipe_metric=recipe_metric, recipe_cthresh=recipe_cthresh
-    )
-
-    fig = plt.figure("Degree of a random graph", figsize=(8, 8))
+    fig = plt.figure(name, figsize=(8, 8))
     # Create a gridspec for adding subplots of different sizes
     axgrid = fig.add_gridspec(5, 4)
 
     ax0 = fig.add_subplot(axgrid[0:3, :])
-    pos = nx.spring_layout(G, seed=10396953)
-    nx.draw_networkx_nodes(
-        G, pos, ax=ax0, node_size=20, node_color=[node_colors[n] for n in G.nodes()]
-    )
-    nx.draw_networkx_edges(G, pos, ax=ax0, alpha=0.4)
-    if node_labels:
-        nx.draw_networkx_labels(G, pos, ax=ax0)
+    # Gcc = G.subgraph(sorted(nx.connected_components(G), key=len, reverse=True)[0])
+    Gcc = G
+    pos = nx.spring_layout(Gcc, seed=10396953)
+    if node_colors is not None:
+        nx.draw_networkx_nodes(
+            Gcc,
+            pos,
+            ax=ax0,
+            node_size=20,
+            node_color=[node_colors[n] for n in G.nodes()],
+        )
+    else:
+        nx.draw_networkx_nodes(Gcc, pos, ax=ax0, node_size=20)
+    nx.draw_networkx_edges(Gcc, pos, ax=ax0, alpha=0.4)
     ax0.set_axis_off()
 
     ax1 = fig.add_subplot(axgrid[3:, :2])
@@ -312,6 +388,27 @@ def plot_cluster(
     if savefig:
         plt.savefig(savefig, dpi=300, bbox_inches="tight")
     plt.show()
+
+
+def plot_cluster(
+    cluster,
+    full_graph,
+    name="Graph",
+    node_labels=False,
+    use_recipe=True,
+    recipe_metric="degree",
+    recipe_cthresh="0.75",
+    savefig=None,
+):
+    # From https://networkx.org/documentation/stable/auto_examples/drawing/plot_degree.html
+
+    G = nx_graph_cluster(cluster, full_G=full_graph, use_recipe_nodes=use_recipe)
+    node_colors = get_node_colors(
+        cluster, recipe_metric=recipe_metric, recipe_cthresh=recipe_cthresh
+    )
+    plot_degree(
+        G, name=name, node_colors=node_colors, node_labels=node_labels, savefig=savefig
+    )
 
 
 def write_cluster_fasta(cluster_file, sequence_file, directory=".", prefix="cluster"):

@@ -1,8 +1,9 @@
-import typer
-import pandas as pd
 from collections import defaultdict
-from Bio import SearchIO
 from typing import List
+
+import pandas as pd
+import typer
+from Bio import SearchIO
 from loguru import logger
 
 app = typer.Typer()

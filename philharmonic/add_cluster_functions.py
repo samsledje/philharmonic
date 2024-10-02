@@ -1,11 +1,12 @@
 # python src/add_cluster_functions.py -o {output.clusters_functional} -cfp {input.clusters} --go_map {input.go_map}
 
-import typer
-from pathlib import Path
 import json
+from pathlib import Path
+
+import typer
 from loguru import logger
 
-from .utils import parse_GO_map, load_cluster_json, add_GO_function
+from .utils import add_GO_function, load_cluster_json, parse_GO_map
 
 app = typer.Typer()
 

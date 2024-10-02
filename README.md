@@ -11,14 +11,16 @@
 
 Protein interaction networks are a fundamental tool for modeling cellular and molecular function, and a large and  sophisticated toolbox has been developed to leverage the structure and topological organization of these networks to predict the functional roles of many under-studied genes, proteins and pathways. However, the overwhelming majority of experimental PPIs from which such networks are constructed come from  humans plus a small number of well-studied model organisms.
 
-We introduce PHILHARMONIC: Protein Human-Transferred Interactome Learns Homology And Recapitulates Model Organism Network Interaction Clusters: a novel computational pipeline for de novo network inference and functional annotation in non-model organisms. PHILHARMONIC uses the D-SCRIPT deep learning method, trained on human PPIs, to learn how to predict PPIs directly from amino acid sequence alone to predict interactions genome-wide, then employs DSD coupled with Spectral Clustering  followed by a new method, Recipe to reconnect clusters. While the predicted PPIs will not individually be completely accurate, the clustering step allows us to aggregate the weaker pairwise signal into confident higher-level organization. We show that these clusters have substantial functional coherence, and we apply our method to predict functionally meaningful modules of proteins in the Coral Holobiont, finding interesting clusters in both the coral animal and symbiont.
+We introduce PHILHARMONIC (Protein Human-Transferred Interactome Learns Homology And Recapitulates Model Organism Network Interaction Clusters), a novel computational pipeline for de novo network inference and functional annotation in non-model organisms.
+
+PHILHARMONIC uses [D-SCRIPT](https://dscript.csail.mit.edu) to predict a *de novo* genome-wide PPI network from amino acid sequence alone, then employs [DSD](https://dsd.cs.tufts.edu/capdsd/) coupled with Spectral Clustering followed by a new method, [ReCIPE](https://pypi.org/project/recipe-cluster/) to reconnect clusters. While the predicted PPIs will not individually be completely accurate, the clustering step allows us to aggregate the weaker pairwise signal into confident higher-level organization. We show that these clusters have substantial functional coherence, and we apply our method to predict functionally meaningful modules of proteins in the Coral Holobiont, finding interesting clusters in both the coral animal and symbiont.
 
 ## Table of Contents
 
 1. [Installation](#installation)
 2. [Usage](#usage)
-3. [Interpreting Results](#interpreting-the-results)
-4. [Workflow Overview](#workflow-overview)
+3. [Workflow Overview](#workflow-overview)
+4. [Interpreting Results](#interpreting-the-results)
 5. [Detailed Configuration](#detailed-configuration)
 6. [Citation](#citation)
 7. [FAQ/Known Issues](#issues)
@@ -34,7 +36,7 @@ mamba activate philharmonic
 pip install -e .
 ```
 
-You may also want to install [Cytoscape](https://cytoscape.org/) for visualizing the networks.
+We also recommend installing [Cytoscape](https://cytoscape.org/) to visualizing the resulting networks.
 
 ## Usage
 
@@ -65,7 +67,7 @@ snakemake -c {number of cores} --configfile {config file}
 
 ### Pipeline Outputs
 
-We provide a zip of the most relevant output files in `[run].zip`, which contains the following files
+We provide a zip of the most relevant output files in `[run].zip`, which contains the following files:
 
 ```bash
 run.zip
@@ -77,6 +79,28 @@ run.zip
 |-- run_cluster_graph_functions.tsv # Table of high-level cluster functions from GO Slim
 |-- run_GO_map.tsv # Mapping between proteins and GO function labels
 ```
+
+Instructions for working with and evaluating these results can be found in [Interpreting the Results](#interpreting-the-results).
+
+## Workflow Overview
+
+A detailed overview of PHILHARMNONIC can be found in the [manuscript](#citation). We briefly outline the pipeline below.
+
+Each of these steps can be invoked independently by running `snakemake -c {number of cores} --configfile {config file} {target}`. The `{target}` is shown in parentheses following each step below.
+
+![snakemake pipeline](img/pipeline.png)
+
+1. Download necessary files (`download_required_files`)
+2. Run [hmmscan](http://hmmer.org/) on protein sequences to annotate pfam domains (`annotate_seqs_pfam`)
+3. Use pfam-go associations to add [GO terms](https://geneontology.org/) to sequences (`annotate_seqs_go`)
+4. Generate candidate pairs (`generate_candidates`)
+5. Use [D-SCRIPT](https://dscript.csail.mit.edu/) to predict network (`predict_network`)
+6. Compute node distances with [FastDSD](https://github.com/samsledje/fastDSD) (`compute_distances`)
+7. Cluster the network with [spectral clustering](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.SpectralClustering.html) (`cluster_network`)
+8. Use [ReCIPE](https://pypi.org/project/recipe-cluster/) to reconnect clusters (`reconnect_recipe`)
+9. Annotate clusters with functions (`add_cluster_functions`)
+10. Compute cluster graph (`cluster_graph`)
+11. Name and describe clusters for human readability (`summarize_clusters`)
 
 ## Interpreting the Results
 
@@ -139,11 +163,16 @@ Top Terms:
 		GO:0019233 - <sensory perception of pain> (14)
 		GO:0008542 - <visual learning> (13)
 		GO:0010759 - <positive regulation of macrophage chemotaxis> (13)
+		GO:0043278 - <response to morphine> (13)
+		GO:0043547 - <positive regulation of GTPase activity> (13)
+		GO:0010579 - <adenylate cyclase-activating G protein-coupled receptor signaling pathway> (13)
+		GO:0007596 - <blood coagulation> (13)
+		GO:0042493 - <response to xenobiotic stimulus> (13)
 ```
 
-### 2. Functional Permutation Testing
+### 2. Functional Permutation Analysis
 
-<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/nb/02_functional_permutation_test.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/nb/02_functional_permutation_analysis.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
@@ -151,11 +180,96 @@ Using the same files, you can run a statistical test of cluster function by perm
 
 ![function enrichment](img/readme_function_enrichment.png)
 
-### 3. Full network in Cytoscape
+### 3. g:Profiler Enrichment Analysis
+
+<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/nb/03_gprofiler_analysis.ipynb">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
+
+You can view GO enrichments for each cluster using [`g:Profiler`](https://biit.cs.ut.ee/gprofiler/gost). In the provided notebook, we perform an additional mapping step to align the namespace used in our analysis with the namespace used by g:Profiler.
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>native</th>
+      <th>name</th>
+      <th>p_value</th>
+      <th>description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>GO:0007186</td>
+      <td>G protein-coupled receptor signaling pathway</td>
+      <td>0.000038</td>
+      <td>"The series of molecular signals initiated by a ligand binding to its receptor, in which the activated receptor promotes the exchange of GDP for GTP on the alpha-subunit of an associated heterotrimeric G-protein complex. The GTP-bound activated alpha-G-protein then dissociates from the beta- and gamma-subunits to further transmit the signal within the cell. The pathway begins with receptor-ligand interaction, and ends with regulation of a downstream cellular process. The pathway can start from the plasma membrane, Golgi or nuclear membrane." [GOC:bf, GOC:mah, PMID:16902576, PMID:24568158, Wikipedia:G_protein-coupled_receptor]</td>
+    </tr>
+    <tr>
+      <td>GO:0007165</td>
+      <td>signal transduction</td>
+      <td>0.000250</td>
+      <td>"The cellular process in which a signal is conveyed to trigger a change in the activity or state of a cell. Signal transduction begins with reception of a signal (e.g. a ligand binding to a receptor or receptor activation by a stimulus such as light), or for signal transduction in the absence of ligand, signal-withdrawal or the activity of a constitutively active receptor. Signal transduction ends with regulation of a downstream cellular process, e.g. regulation of transcription or regulation of a metabolic process. Signal transduction covers signaling from receptors located on the surface of the cell and signaling via molecules located within the cell. For signaling between cells, signal transduction is restricted to events at and within the receiving cell." [GOC:go_curators, GOC:mtg_signaling_feb11]</td>
+    </tr>
+    <tr>
+      <td>GO:0023052</td>
+      <td>signaling</td>
+      <td>0.000278</td>
+      <td>"The entirety of a process in which information is transmitted within a biological system. This process begins with an active signal and ends when a cellular response has been triggered." [GOC:mtg_signal, GOC:mtg_signaling_feb11, GOC:signaling]</td>
+    </tr>
+    <tr>
+      <td>GO:0007154</td>
+      <td>cell communication</td>
+      <td>0.000300</td>
+      <td>"Any process that mediates interactions between a cell and its surroundings. Encompasses interactions such as signaling or attachment between one cell and another cell, between a cell and an extracellular matrix, or between a cell and any other aspect of its environment." [GOC:mah]</td>
+    </tr>
+    <tr>
+      <td>GO:0051716</td>
+      <td>cellular response to stimulus</td>
+      <td>0.000956</td>
+      <td>"Any process that results in a change in state or activity of a cell (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a stimulus. The process begins with detection of the stimulus by a cell and ends with a change in state or activity or the cell." [GOC:bf, GOC:jl]</td>
+    </tr>
+    <tr>
+      <td>GO:0050896</td>
+      <td>response to stimulus</td>
+      <td>0.001406</td>
+      <td>"Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a stimulus. The process begins with detection of the stimulus and ends with a change in state or activity or the cell or organism." [GOC:ai, GOC:bf]</td>
+    </tr>
+    <tr>
+      <td>GO:0050794</td>
+      <td>regulation of cellular process</td>
+      <td>0.012037</td>
+      <td>"Any process that modulates the frequency, rate or extent of a cellular process, any of those that are carried out at the cellular level, but are not necessarily restricted to a single cell. For example, cell communication occurs among more than one cell, but occurs at the cellular level." [GOC:go_curators]</td>
+    </tr>
+    <tr>
+      <td>GO:0050789</td>
+      <td>regulation of biological process</td>
+      <td>0.017826</td>
+      <td>"Any process that modulates the frequency, rate or extent of a biological process. Biological processes are regulated by many means; examples include the control of gene expression, protein modification or interaction with a protein or substrate molecule." [GOC:ai, GOC:go_curators]</td>
+    </tr>
+    <tr>
+      <td>GO:0065007</td>
+      <td>biological regulation</td>
+      <td>0.021465</td>
+      <td>"Any process that modulates a measurable attribute of any biological process, quality or function." [GOC:dph, GOC:isa_complete, GOC:mah, GOC:pr, GOC:vw]</td>
+    </tr>
+  </tbody>
+</table>
+
+### 4. Gene Expression Analysis
+
+<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/nb/04_gene_expression_analysis.ipynb">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
+
+If gene expression data is available for the target species, we can check that proteins clustered together have correlated expression, and we can visualize where differentially expressed genes localize within the networks and clusters. Here, we use *Pocillopora* transcriptomic data from [Connelly et al. 2022](https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2021.814124/full).
+
+![gene expression](img/readme_expression_correlation.png)
+
+### 4. View the full network in Cytoscape
 
 1. Load `network.positive.tsv` using `File -> Import -> Network from File`
 
-### 4. Cluster graph in Cytoscape
+### 5. View the cluster graph in Cytoscape
 
 1. Load `cluster_graph.tsv` using `File -> Import -> Network from File`
 2. Load `cluster_graph_functions.tsv` using `File -> Import -> Table from File`
@@ -166,27 +280,6 @@ Using the same files, you can run a statistical test of cluster function by perm
 7. Add node colors using the [PHILHARMONIC style](assets/philharmonic_styles.xml), imported with `File -> Import -> Styles from File`
 
 ![cluster graph](img/readme_cluster_graph.svg)
-
-## Workflow Overview
-
-A detailed overview of PHILHARMNONIC can be found in the [manuscript](#citation). We briefly outline the pipeline below.
-
-Each of these steps can be invoked independently by running `snakemake -c {number of cores} {target}`. The `{target}` is shown in parentheses following each step below.
-
-![snakemake pipeline](img/pipeline.png)
-
-1. Download necessary files (`download_required_files`)
-2. Run [hmmscan](http://hmmer.org/) on protein sequences to annotate pfam domains (`annotate_seqs_pfam`)
-3. Use pfam-go associations to add [GO terms](https://geneontology.org/) to sequences (`annotate_seqs_go`)
-4. Generate candidate pairs (`generate_candidates`)
-5. Use [D-SCRIPT](https://dscript.csail.mit.edu/) to predict network (`predict_network`)
-6. Compute node distances with [FastDSD](https://github.com/samsledje/fastDSD) (`compute_distances`)
-7. Cluster the network with [spectral clustering](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.SpectralClustering.html) (`cluster_network`)
-8. Use [ReCIPE](https://pypi.org/project/recipe-cluster/) to reconnect clusters (`reconnect_recipe`)
-9. Annotate clusters with functions (`add_cluster_functions`)
-10. Compute cluster graph (`cluster_graph`)
-11. Name and describe clusters with [Langchain](https://www.langchain.com/) (`summarize_clusters`)
-<!-- 12. Visualize in [Cytoscape](https://cytoscape.org/) (`vizualize_network`) -->
 
 ## Detailed Configuration
 

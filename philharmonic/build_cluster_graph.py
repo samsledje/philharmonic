@@ -1,18 +1,19 @@
-import typer
+from collections import Counter
+
 import networkx as nx
 import pandas as pd
-from collections import Counter
-from tqdm import tqdm
+import typer
 from loguru import logger
-
+from tqdm import tqdm
 from typing_extensions import Annotated
+
 from .utils import (
-    parse_GO_map,
-    parse_GO_database,
-    load_cluster_json,
     add_GO_function,
     clean_top_terms,
+    load_cluster_json,
     nx_graph_cluster,
+    parse_GO_database,
+    parse_GO_map,
 )
 
 app = typer.Typer()
@@ -35,7 +36,9 @@ def main(
     n_crossing_edges: int = typer.Option(
         10, "--n_crossing_edges", help="Clusters with n crossing edges are connected"
     ),
-    include_recipe: Annotated[bool, typer.Option(..., "--include_recipe", help="Include recipe")] = False,
+    include_recipe: Annotated[
+        bool, typer.Option(..., "--include_recipe", help="Include recipe")
+    ] = False,
     recipe_metric: str = typer.Option(
         "degree", "--recipe_metric", help="Recipe metric"
     ),

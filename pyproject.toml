@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "philharmonic"
-version = "0.5.0"
+version = "0.6.0"
 description = "Decoding functional organization in non-model organisms"
 authors = ["Samuel Sledzieski <samsl@mit.edu>"]
 packages = [{ include = "philharmonic" }]
@@ -28,7 +28,7 @@ tqdm = "4.66.5"
 dscript = "0.2.8"
 fastdsd = "1.0.1"
 py4cytoscape = "1.9.0"
-recipe-cluster = "0.0.3"
+recipe-cluster = "0.0.4"
 typer = {extras = ["all"], version = "^0.9.0"}
 
 [tool.poetry.dev-dependencies]
