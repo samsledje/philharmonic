@@ -112,42 +112,15 @@ Each of these steps can be invoked independently by running `snakemake -c {numbe
 
 Using the `clusters.json` file, the `network.positive.tsv` file, the `GO map.tsv` file, and a [GO Slim](https://current.geneontology.org/ontology/subsets/goslim_generic.obo) database, you can view the overall network, a summary of the clustering, and explore individual clusters.
 
-<table border="0" class="dataframe" align="center">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Network</th>
-    </tr>
-    <tr>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>Nodes</th>
-      <td>8960</td>
-    </tr>
-    <tr>
-      <th>Edges</th>
-      <td>455490</td>
-    </tr>
-    <tr>
-      <th>Degree (Med)</th>
-      <td>37.0</td>
-    </tr>
-    <tr>
-      <th>Degree (Avg)</th>
-      <td>101.671875</td>
-    </tr>
-    <tr>
-      <th>Sparsity</th>
-      <td>0.005674</td>
-    </tr>
-  </tbody>
-</table>
- 
-<p align="center">
+|              |         Network |
+|:-------------|----------------:|
+| Nodes        |   7267          |
+| Edges        | 348278          |
+| Degree (Med) |     37          |
+| Degree (Avg) |     95.8519     |
+| Sparsity     |      0.00659501 |
+
+<p>
  <img src="img/readme_sample_cluster.jpg" width="400"/>
 </p>
 
@@ -188,72 +161,19 @@ Using the same files, you can run a statistical test of cluster function by perm
 
 You can view GO enrichments for each cluster using [`g:Profiler`](https://biit.cs.ut.ee/gprofiler/gost). In the provided notebook, we perform an additional mapping step to align the namespace used in our analysis with the namespace used by g:Profiler.
 
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th>native</th>
-      <th>name</th>
-      <th>p_value</th>
-      <th>description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>GO:0007186</td>
-      <td>G protein-coupled receptor signaling pathway</td>
-      <td>0.000038</td>
-      <td>"The series of molecular signals initiated by a ligand binding to its receptor, in which the activated receptor promotes the exchange of GDP for GTP on the alpha-subunit of an associated heterotrimeric G-protein complex. The GTP-bound activated alpha-G-protein then dissociates from the beta- and gamma-subunits to further transmit the signal within the cell. The pathway begins with receptor-ligand interaction, and ends with regulation of a downstream cellular process. The pathway can start from the plasma membrane, Golgi or nuclear membrane." [GOC:bf, GOC:mah, PMID:16902576, PMID:24568158, Wikipedia:G_protein-coupled_receptor]</td>
-    </tr>
-    <tr>
-      <td>GO:0007165</td>
-      <td>signal transduction</td>
-      <td>0.000250</td>
-      <td>"The cellular process in which a signal is conveyed to trigger a change in the activity or state of a cell. Signal transduction begins with reception of a signal (e.g. a ligand binding to a receptor or receptor activation by a stimulus such as light), or for signal transduction in the absence of ligand, signal-withdrawal or the activity of a constitutively active receptor. Signal transduction ends with regulation of a downstream cellular process, e.g. regulation of transcription or regulation of a metabolic process. Signal transduction covers signaling from receptors located on the surface of the cell and signaling via molecules located within the cell. For signaling between cells, signal transduction is restricted to events at and within the receiving cell." [GOC:go_curators, GOC:mtg_signaling_feb11]</td>
-    </tr>
-    <tr>
-      <td>GO:0023052</td>
-      <td>signaling</td>
-      <td>0.000278</td>
-      <td>"The entirety of a process in which information is transmitted within a biological system. This process begins with an active signal and ends when a cellular response has been triggered." [GOC:mtg_signal, GOC:mtg_signaling_feb11, GOC:signaling]</td>
-    </tr>
-    <tr>
-      <td>GO:0007154</td>
-      <td>cell communication</td>
-      <td>0.000300</td>
-      <td>"Any process that mediates interactions between a cell and its surroundings. Encompasses interactions such as signaling or attachment between one cell and another cell, between a cell and an extracellular matrix, or between a cell and any other aspect of its environment." [GOC:mah]</td>
-    </tr>
-    <tr>
-      <td>GO:0051716</td>
-      <td>cellular response to stimulus</td>
-      <td>0.000956</td>
-      <td>"Any process that results in a change in state or activity of a cell (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a stimulus. The process begins with detection of the stimulus by a cell and ends with a change in state or activity or the cell." [GOC:bf, GOC:jl]</td>
-    </tr>
-    <tr>
-      <td>GO:0050896</td>
-      <td>response to stimulus</td>
-      <td>0.001406</td>
-      <td>"Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a stimulus. The process begins with detection of the stimulus and ends with a change in state or activity or the cell or organism." [GOC:ai, GOC:bf]</td>
-    </tr>
-    <tr>
-      <td>GO:0050794</td>
-      <td>regulation of cellular process</td>
-      <td>0.012037</td>
-      <td>"Any process that modulates the frequency, rate or extent of a cellular process, any of those that are carried out at the cellular level, but are not necessarily restricted to a single cell. For example, cell communication occurs among more than one cell, but occurs at the cellular level." [GOC:go_curators]</td>
-    </tr>
-    <tr>
-      <td>GO:0050789</td>
-      <td>regulation of biological process</td>
-      <td>0.017826</td>
-      <td>"Any process that modulates the frequency, rate or extent of a biological process. Biological processes are regulated by many means; examples include the control of gene expression, protein modification or interaction with a protein or substrate molecule." [GOC:ai, GOC:go_curators]</td>
-    </tr>
-    <tr>
-      <td>GO:0065007</td>
-      <td>biological regulation</td>
-      <td>0.021465</td>
-      <td>"Any process that modulates a measurable attribute of any biological process, quality or function." [GOC:dph, GOC:isa_complete, GOC:mah, GOC:pr, GOC:vw]</td>
-    </tr>
-  </tbody>
-</table>
+|    | native     | name                                         |     p_value |
+|---:|:-----------|:---------------------------------------------|------------:|
+|  0 | GO:0007186 | G protein-coupled receptor signaling pathway | 4.99706e-09 |
+|  1 | GO:0007165 | signal transduction                          | 2.77627e-06 |
+|  2 | GO:0023052 | signaling                                    | 3.17572e-06 |
+|  3 | GO:0007154 | cell communication                           | 3.50392e-06 |
+|  4 | GO:0051716 | cellular response to stimulus                | 1.58692e-05 |
+|  5 | GO:0050896 | response to stimulus                         | 2.62309e-05 |
+|  6 | GO:0050794 | regulation of cellular process               | 0.000432968 |
+|  7 | GO:0050789 | regulation of biological process             | 0.00072382  |
+|  8 | GO:0065007 | biological regulation                        | 0.000923115 |
+
+
 
 ### 4. Gene Expression Analysis
 
