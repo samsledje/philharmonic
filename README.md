@@ -119,7 +119,7 @@ Using the `clusters.json` file, the `network.positive.tsv` file, the `GO map.tsv
 | Degree (Med) |     37          |
 | Degree (Avg) |     95.8519     |
 | Sparsity     |      0.00659501 |
- 
+
 <p>
  <img src="img/readme_sample_cluster.jpg" width="400"/>
 </p>
