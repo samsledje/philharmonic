@@ -152,22 +152,22 @@ Using the `clusters.json` file, the `network.positive.tsv` file, the `GO map.tsv
 </p>
 
 ```bash
-Cluster of 21 proteins [pdam_00022258-RA, pdam_00005419-RA, pdam_00017455-RA, ...] (hash 549662403768153899)
-7 proteins re-added by ReCIPE (degree, 0.75)
-Edges: 0
+Cluster of 20 proteins [pdam_00013683-RA, pdam_00006515-RA, pdam_00000216-RA, ...] (hash 208641124039621440)
+20 proteins re-added by ReCIPE (degree, 0.75)
+Edges: 3
 Triangles: 0
-Max Degree: 0
+Max Degree: 2
 Top Terms:
-		GO:0071380 - <cellular response to prostaglandin E stimulus> (14)
-		GO:0022900 - <electron transport chain> (14)
-		GO:0019233 - <sensory perception of pain> (14)
-		GO:0008542 - <visual learning> (13)
-		GO:0010759 - <positive regulation of macrophage chemotaxis> (13)
-		GO:0043278 - <response to morphine> (13)
-		GO:0043547 - <positive regulation of GTPase activity> (13)
-		GO:0010579 - <adenylate cyclase-activating G protein-coupled receptor signaling pathway> (13)
-		GO:0007596 - <blood coagulation> (13)
-		GO:0042493 - <response to xenobiotic stimulus> (13)
+		GO:0019233 - <sensory perception of pain> (20)
+		GO:0048148 - <behavioral response to cocaine> (19)
+		GO:0006468 - <protein phosphorylation> (19)
+		GO:0007507 - <heart development> (19)
+		GO:0010759 - <positive regulation of macrophage chemotaxis> (19)
+		GO:0001963 - <synaptic transmission, dopaminergic> (19)
+		GO:0071380 - <cellular response to prostaglandin E stimulus> (19)
+		GO:0071502 - <cellular response to temperature stimulus> (19)
+		GO:0008542 - <visual learning> (19)
+		GO:0007601 - <visual perception> (19)
 ```
 
 ### 2. Functional Permutation Analysis
