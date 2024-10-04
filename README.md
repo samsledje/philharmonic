@@ -112,7 +112,7 @@ Each of these steps can be invoked independently by running `snakemake -c {numbe
 
 Using the `clusters.json` file, the `network.positive.tsv` file, the `GO map.tsv` file, and a [GO Slim](https://current.geneontology.org/ontology/subsets/goslim_generic.obo) database, you can view the overall network, a summary of the clustering, and explore individual clusters.
 
-<table border="0" class="dataframe" align="center">
+<table border="0" class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -126,11 +126,11 @@ Using the `clusters.json` file, the `network.positive.tsv` file, the `GO map.tsv
   <tbody>
     <tr>
       <th>Nodes</th>
-      <td>8960</td>
+      <td>7267</td>
     </tr>
     <tr>
       <th>Edges</th>
-      <td>455490</td>
+      <td>348278</td>
     </tr>
     <tr>
       <th>Degree (Med)</th>
@@ -138,11 +138,11 @@ Using the `clusters.json` file, the `network.positive.tsv` file, the `GO map.tsv
     </tr>
     <tr>
       <th>Degree (Avg)</th>
-      <td>101.671875</td>
+      <td>95.851933</td>
     </tr>
     <tr>
       <th>Sparsity</th>
-      <td>0.005674</td>
+      <td>0.006595</td>
     </tr>
   </tbody>
 </table>
