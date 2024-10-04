@@ -174,7 +174,6 @@ You can view GO enrichments for each cluster using [`g:Profiler`](https://biit.c
 |  8 | GO:0065007 | biological regulation                        | 0.000923115 |
 
 
-
 ### 4. Gene Expression Analysis
 
 <a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/nb/04_gene_expression_analysis.ipynb">
