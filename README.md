@@ -125,6 +125,7 @@ Using the `clusters.json` file, the `network.positive.tsv` file, the `GO map.tsv
 </p>
 
 ```bash
+Pain Response and Signaling Pathways Cluster
 Cluster of 20 proteins [pdam_00013683-RA, pdam_00006515-RA, pdam_00000216-RA, ...] (hash 208641124039621440)
 20 proteins re-added by ReCIPE (degree, 0.75)
 Edges: 3
