@@ -9,6 +9,7 @@ import seaborn as sns
 from Bio import SeqIO
 from loguru import logger
 from matplotlib import pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 
 
 class Cluster:
@@ -424,3 +425,54 @@ def write_cluster_fasta(cluster_file, sequence_file, directory=".", prefix="clus
                 f.write(f">{p}\n")
                 f.write(f"{seq_dict[k]}\n")
     return None
+
+def write_cluster_cytoscape(cluster, full_G, outfile="cytoscape_input.txt", with_recipe=True, recipe_metric="degree", recipe_cthresh="0.75"):
+    
+    G = nx_graph_cluster(cluster, full_G=full_G, use_recipe_nodes=with_recipe, recipe_metric=recipe_metric, recipe_cthresh=recipe_cthresh)
+
+    with open(outfile, "w") as f:
+        f.write("Source\tTarget\tWeight\n")
+        for edge in G.edges(data=True):
+            f.write(f"{edge[0]}\t{edge[1]}\t{edge[2]['weight']}\n")
+
+    with open(outfile.replace(".txt", "_nodes.txt"), "w") as f:
+        f.write("Node\tType\n")
+        for node in G.nodes():
+            if node in cluster["recipe"][recipe_metric][recipe_cthresh]:
+                f.write(f"{node}\tRecipe\n")
+            else:
+                f.write(f"{node}\tMember\n")
+
+    return None
+
+def create_rainbow_colorbar(vmin=0, vmax=100, size=(1, 1), step=25, label="pLDDT", savefig=None):
+    # Create figure and axes
+    fig, ax = plt.subplots(figsize=size)
+    
+    # Create rainbow color map
+    colors = ['red', 'orange', 'yellow', 'green', 'blue']
+    n_bins = 100
+    cmap = LinearSegmentedColormap.from_list("rainbow", colors, N=n_bins)
+    
+    # Create color bar
+    norm = plt.Normalize(vmin, vmax)
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    
+    cbar = plt.colorbar(sm, cax=ax, orientation='vertical')
+    cbar.set_ticks(np.arange(vmin,vmax+step, step))
+    cbar.set_ticklabels(np.arange(vmin,vmax+step, step))
+    
+    # Add label to the left side
+    ax.yaxis.set_label_position("left")
+    ax.yaxis.set_ticks_position("right")
+    ax.set_ylabel(label, rotation=90, va='bottom', labelpad=5)
+    
+    # Remove frame
+    ax.set_frame_on(False)
+    
+    # Save figure
+    if savefig:
+        plt.savefig(savefig, bbox_inches='tight', dpi=300)
+
+    return fig
