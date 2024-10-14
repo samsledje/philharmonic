@@ -11,14 +11,16 @@
 
 Protein interaction networks are a fundamental tool for modeling cellular and molecular function, and a large and  sophisticated toolbox has been developed to leverage the structure and topological organization of these networks to predict the functional roles of many under-studied genes, proteins and pathways. However, the overwhelming majority of experimental PPIs from which such networks are constructed come from  humans plus a small number of well-studied model organisms.
 
-We introduce PHILHARMONIC: Protein Human-Transferred Interactome Learns Homology And Recapitulates Model Organism Network Interaction Clusters: a novel computational pipeline for de novo network inference and functional annotation in non-model organisms. PHILHARMONIC uses the D-SCRIPT deep learning method, trained on human PPIs, to learn how to predict PPIs directly from amino acid sequence alone to predict interactions genome-wide, then employs DSD coupled with Spectral Clustering  followed by a new method, Recipe to reconnect clusters. While the predicted PPIs will not individually be completely accurate, the clustering step allows us to aggregate the weaker pairwise signal into confident higher-level organization. We show that these clusters have substantial functional coherence, and we apply our method to predict functionally meaningful modules of proteins in the Coral Holobiont, finding interesting clusters in both the coral animal and symbiont.
+We introduce PHILHARMONIC (Protein Human-Transferred Interactome Learns Homology And Recapitulates Model Organism Network Interaction Clusters), a novel computational pipeline for de novo network inference and functional annotation in non-model organisms.
+
+PHILHARMONIC uses [D-SCRIPT](https://dscript.csail.mit.edu) to predict a *de novo* genome-wide PPI network from amino acid sequence alone, then employs [DSD](https://dsd.cs.tufts.edu/capdsd/) coupled with Spectral Clustering followed by a new method, [ReCIPE](https://pypi.org/project/recipe-cluster/) to reconnect clusters. While the predicted PPIs will not individually be completely accurate, the clustering step allows us to aggregate the weaker pairwise signal into confident higher-level organization. We show that these clusters have substantial functional coherence, and we apply our method to predict functionally meaningful modules of proteins in the Coral Holobiont, finding interesting clusters in both the coral animal and symbiont.
 
 ## Table of Contents
 
 1. [Installation](#installation)
 2. [Usage](#usage)
-3. [Interpreting Results](#interpreting-the-results)
-4. [Workflow Overview](#workflow-overview)
+3. [Workflow Overview](#workflow-overview)
+4. [Interpreting Results](#interpreting-the-results)
 5. [Detailed Configuration](#detailed-configuration)
 6. [Citation](#citation)
 7. [FAQ/Known Issues](#issues)
@@ -34,7 +36,7 @@ mamba activate philharmonic
 pip install -e .
 ```
 
-You may also want to install [Cytoscape](https://cytoscape.org/) for visualizing the networks.
+We also recommend installing [Cytoscape](https://cytoscape.org/) to visualizing the resulting networks.
 
 ## Usage
 
@@ -65,7 +67,7 @@ snakemake -c {number of cores} --configfile {config file}
 
 ### Pipeline Outputs
 
-We provide a zip of the most relevant output files in `[run].zip`, which contains the following files
+We provide a zip of the most relevant output files in `[run].zip`, which contains the following files:
 
 ```bash
 run.zip
@@ -78,100 +80,13 @@ run.zip
 |-- run_GO_map.tsv # Mapping between proteins and GO function labels
 ```
 
-## Interpreting the Results
-
-### 1. Result Summary
-
-<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/nb/01_result_summary.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
-</a>
-
-Using the `clusters.json` file, the `network.positive.tsv` file, the `GO map.tsv` file, and a [GO Slim](https://current.geneontology.org/ontology/subsets/goslim_generic.obo) database, you can view the overall network, a summary of the clustering, and explore individual clusters.
-
-<table border="0" class="dataframe" align="center">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Network</th>
-    </tr>
-    <tr>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>Nodes</th>
-      <td>8960</td>
-    </tr>
-    <tr>
-      <th>Edges</th>
-      <td>455490</td>
-    </tr>
-    <tr>
-      <th>Degree (Med)</th>
-      <td>37.0</td>
-    </tr>
-    <tr>
-      <th>Degree (Avg)</th>
-      <td>101.671875</td>
-    </tr>
-    <tr>
-      <th>Sparsity</th>
-      <td>0.005674</td>
-    </tr>
-  </tbody>
-</table>
- 
-<p align="center">
- <img src="img/readme_sample_cluster.jpg" width="400"/>
-</p>
-
-```bash
-Cluster of 21 proteins [pdam_00022258-RA, pdam_00005419-RA, pdam_00017455-RA, ...] (hash 549662403768153899)
-7 proteins re-added by ReCIPE (degree, 0.75)
-Edges: 0
-Triangles: 0
-Max Degree: 0
-Top Terms:
-		GO:0071380 - <cellular response to prostaglandin E stimulus> (14)
-		GO:0022900 - <electron transport chain> (14)
-		GO:0019233 - <sensory perception of pain> (14)
-		GO:0008542 - <visual learning> (13)
-		GO:0010759 - <positive regulation of macrophage chemotaxis> (13)
-```
-
-### 2. Functional Permutation Testing
-
-<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/nb/02_functional_permutation_test.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
-</a>
-
-Using the same files, you can run a statistical test of cluster function by permuting cluster labels, and computing the [Jaccard similarity](https://en.wikipedia.org/wiki/Jaccard_index) between terms in the same cluster.
-
-![function enrichment](img/readme_function_enrichment.png)
-
-### 3. Full network in Cytoscape
-
-1. Load `network.positive.tsv` using `File -> Import -> Network from File`
-
-### 4. Cluster graph in Cytoscape
-
-1. Load `cluster_graph.tsv` using `File -> Import -> Network from File`
-2. Load `cluster_graph_functions.tsv` using `File -> Import -> Table from File`
-3. Add a `Column filter` on the `Edge: weight` attribute, selecting edges greater than ~50-100 weight
-4. `Select -> Nodes -> Nodes Connected by Selected Edges` to subset the nodes
-5. Create the subgraph with `File -> New Network -> From Selected Nodes, Selected Edges`
-6. Layout the network with your layout of choice, we recommend `Layout -> Prefuse Force Directed Layout -> weight`
-7. Add node colors using the [PHILHARMONIC style](assets/philharmonic_styles.xml), imported with `File -> Import -> Styles from File`
-
-![cluster graph](img/readme_cluster_graph.svg)
+Instructions for working with and evaluating these results can be found in [Interpreting the Results](#interpreting-the-results).
 
 ## Workflow Overview
 
 A detailed overview of PHILHARMNONIC can be found in the [manuscript](#citation). We briefly outline the pipeline below.
 
-Each of these steps can be invoked independently by running `snakemake -c {number of cores} {target}`. The `{target}` is shown in parentheses following each step below.
+Each of these steps can be invoked independently by running `snakemake -c {number of cores} --configfile {config file} {target}`. The `{target}` is shown in parentheses following each step below.
 
 ![snakemake pipeline](img/pipeline.png)
 
@@ -185,8 +100,105 @@ Each of these steps can be invoked independently by running `snakemake -c {numbe
 8. Use [ReCIPE](https://pypi.org/project/recipe-cluster/) to reconnect clusters (`reconnect_recipe`)
 9. Annotate clusters with functions (`add_cluster_functions`)
 10. Compute cluster graph (`cluster_graph`)
-11. Name and describe clusters with [Langchain](https://www.langchain.com/) (`summarize_clusters`)
-<!-- 12. Visualize in [Cytoscape](https://cytoscape.org/) (`vizualize_network`) -->
+11. Name and describe clusters for human readability (`summarize_clusters`)
+
+## Interpreting the Results
+
+### 1. Result Summary
+
+<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/nb/01_result_summary.ipynb">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
+
+Using the `clusters.json` file, the `network.positive.tsv` file, the `GO map.tsv` file, and a [GO Slim](https://current.geneontology.org/ontology/subsets/goslim_generic.obo) database, you can view the overall network, a summary of the clustering, and explore individual clusters.
+
+|              |         Network |
+|:-------------|----------------:|
+| Nodes        |   7267          |
+| Edges        | 348278          |
+| Degree (Med) |     37          |
+| Degree (Avg) |     95.8519     |
+| Sparsity     |      0.00659501 |
+
+<p>
+ <img src="img/readme_sample_cluster.jpg" width="400"/>
+</p>
+
+```bash
+Cluster of 20 proteins [pdam_00013683-RA, pdam_00006515-RA, pdam_00000216-RA, ...] (hash 208641124039621440)
+20 proteins re-added by ReCIPE (degree, 0.75)
+Edges: 3
+Triangles: 0
+Max Degree: 2
+Top Terms:
+		GO:0019233 - <sensory perception of pain> (20)
+		GO:0048148 - <behavioral response to cocaine> (19)
+		GO:0006468 - <protein phosphorylation> (19)
+		GO:0007507 - <heart development> (19)
+		GO:0010759 - <positive regulation of macrophage chemotaxis> (19)
+		GO:0001963 - <synaptic transmission, dopaminergic> (19)
+		GO:0071380 - <cellular response to prostaglandin E stimulus> (19)
+		GO:0071502 - <cellular response to temperature stimulus> (19)
+		GO:0008542 - <visual learning> (19)
+		GO:0007601 - <visual perception> (19)
+```
+
+### 2. Functional Permutation Analysis
+
+<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/nb/02_functional_permutation_analysis.ipynb">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
+
+Using the same files, you can run a statistical test of cluster function by permuting cluster labels, and computing the [Jaccard similarity](https://en.wikipedia.org/wiki/Jaccard_index) between terms in the same cluster.
+
+![function enrichment](img/readme_function_enrichment.png)
+
+### 3. g:Profiler Enrichment Analysis
+
+<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/nb/03_gprofiler_analysis.ipynb">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
+
+You can view GO enrichments for each cluster using [`g:Profiler`](https://biit.cs.ut.ee/gprofiler/gost). In the provided notebook, we perform an additional mapping step to align the namespace used in our analysis with the namespace used by g:Profiler.
+
+|    | native     | name                                         |     p_value |
+|---:|:-----------|:---------------------------------------------|------------:|
+|  0 | GO:0007186 | G protein-coupled receptor signaling pathway | 4.99706e-09 |
+|  1 | GO:0007165 | signal transduction                          | 2.77627e-06 |
+|  2 | GO:0023052 | signaling                                    | 3.17572e-06 |
+|  3 | GO:0007154 | cell communication                           | 3.50392e-06 |
+|  4 | GO:0051716 | cellular response to stimulus                | 1.58692e-05 |
+|  5 | GO:0050896 | response to stimulus                         | 2.62309e-05 |
+|  6 | GO:0050794 | regulation of cellular process               | 0.000432968 |
+|  7 | GO:0050789 | regulation of biological process             | 0.00072382  |
+|  8 | GO:0065007 | biological regulation                        | 0.000923115 |
+
+
+### 4. Gene Expression Analysis
+
+<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/nb/04_gene_expression_analysis.ipynb">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
+
+If gene expression data is available for the target species, we can check that proteins clustered together have correlated expression, and we can visualize where differentially expressed genes localize within the networks and clusters. Here, we use *Pocillopora* transcriptomic data from [Connelly et al. 2022](https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2021.814124/full).
+
+![gene expression](img/readme_expression_correlation.png)
+
+### 4. View the full network in Cytoscape
+
+1. Load `network.positive.tsv` using `File -> Import -> Network from File`
+
+### 5. View the cluster graph in Cytoscape
+
+1. Load `cluster_graph.tsv` using `File -> Import -> Network from File`
+2. Load `cluster_graph_functions.tsv` using `File -> Import -> Table from File`
+3. Add a `Column filter` on the `Edge: weight` attribute, selecting edges greater than ~50-100 weight
+4. `Select -> Nodes -> Nodes Connected by Selected Edges` to subset the nodes
+5. Create the subgraph with `File -> New Network -> From Selected Nodes, Selected Edges`
+6. Layout the network with your layout of choice, we recommend `Layout -> Prefuse Force Directed Layout -> weight`
+7. Add node colors using the [PHILHARMONIC style](assets/philharmonic_styles.xml), imported with `File -> Import -> Styles from File`
+
+![cluster graph](img/readme_cluster_graph.svg)
 
 ## Detailed Configuration
 
