@@ -3,9 +3,8 @@ import json
 import os
 
 import typer
-from langchain.prompts import ChatPromptTemplate
-from langchain.schema import StrOutputParser
-from langchain_openai import ChatOpenAI
+import shlex
+import subprocess as sp
 from loguru import logger
 from tqdm import tqdm
 
@@ -54,7 +53,7 @@ request = """
 Please name the following cluster:
 """
 
-llm_system_template = (
+LLM_SYSTEM_TEMPLATE = (
     task_instruction
     + confidence_score
     + format_instruction
@@ -64,18 +63,19 @@ llm_system_template = (
 )
 
 
-def llm_summarize(cluster, go_database, model, sys_template, api_key):
-    parser = StrOutputParser()
-    prompt_template = ChatPromptTemplate.from_messages(
-        [("system", sys_template), ("user", "{text}")]
+def llm_name(description, model="Meta-Llama-3-8B-Instruct", api_key=None):
+    
+    cmd = f"llm --system '{LLM_SYSTEM_TEMPLATE}' -m {model} "
+
+    proc = sp.Popen(
+        shlex.split(cmd) + [ description ], stdout=sp.PIPE, stderr=sp.PIPE
     )
-    chain = prompt_template | model | parser
-    r = chain.invoke({"text": print_cluster(cluster, go_database, return_str=True)})
+    out, err = proc.communicate()
+    logger.debug(out.decode("utf-8"))
+    logger.debug(err.decode("utf-8"))
 
-    # return r
-
-    return json.loads(r)
-
+    name = out.decode("utf-8").split("<")[0]
+    return name
 
 @app.command()
 def main(
@@ -88,7 +88,7 @@ def main(
     llm_name: bool = typer.Option(
         False, help="Use a large language model to name clusters"
     ),
-    model: str = typer.Option(None, help="Language model to use"),
+    model: str = typer.Option("Meta-Llama-3-8B-Instruct", help="Language model to use"),
     api_key: str = typer.Option(None, help="OpenAI API key"),
 ):
     """Summarize clusters"""
@@ -100,30 +100,22 @@ def main(
         # passwd = f.read().strip()
         os.environ["OPENAI_API_KEY"] = api_key
 
-        model = ChatOpenAI(
-            model="gpt-4o",
-            temperature=0,
-            # max_tokens=200
-        )
-
         for _, clust in tqdm(clusters.items()):
             if not hasattr(clust, "llm_name"):
+                hr = print_cluster(clust, go_database, return_str=True)
                 try:
-                    llm_summary = llm_summarize(
-                        clust, go_database, model, llm_system_template, api_key
-                    )
-                    clust["llm_name"] = llm_summary["short_name"]
-                    clust["llm_explanation"] = llm_summary["explanation"]
-                    clust["llm_confidence"] = llm_summary["confidence_score"]
+                    clust["llm_name"] = llm_name(hr, model=model)
                 except Exception as e:
                     logger.error(f"Error: {e}")
                     clust["llm_name"] = "Unknown"
-                    clust["llm_explanation"] = "Unknown"
-                    clust["llm_confidence"] = "Unknown"
+                
+                clust["human_readable"] = print_cluster(clust, go_database, return_str=True)
+    else:
+        for _, clust in tqdm(clusters.items()):
+            clust["human_readable"] = print_cluster(clust, go_database, return_str=True)
+
 
     if json_output:
-        for _, clust in clusters.items():
-            clust["human_readable"] = print_cluster(clust, go_database, return_str=True)
         with open(json_output, "w") as f:
             json.dump(clusters, f, indent=4)
 
