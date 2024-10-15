@@ -1,9 +1,11 @@
 # python src/name_clusters.py --api_key {params.api_key} -o {output.human_readable} --go_db {input.go_database} -cfp {input.clusters}
 import json
 import os
+import sys
 
 import typer
 import shlex
+import regex as re
 import subprocess as sp
 from loguru import logger
 from tqdm import tqdm
@@ -14,23 +16,18 @@ app = typer.Typer()
 
 task_instruction = """
 You are an expert biologist with a deep understanding of the Gene Ontology. Your job is to give short, intuitive, high-level names to clusters of proteins, given a set of GO terms associated with the proteins and their frequencies.
-
 """
 
 confidence_score = """
-In addition to the name, you should indicate how confident you are that your label is correct, and that it is representative of the function of the cluster. This score should be between 0 and 1. If you cannot find a connection between the functions in the cluster, give a name of "Unknown" with a confidence of 0.
+In addition to the name, you should indicate how confident you are that your label is correct, and that it is representative of the function of the cluster. This score should be None, Low, Medium, or High. If you cannot find a connection between the functions in the cluster, give a name of Unknown with a confidence of None.
 """
 
 format_instruction = """
-Your response should be a single JSON formatted response, with no other text other than the JSON string. The response should have the following fields:
-
-"hash": [cluster hash],
-"short_name": [your intuitive name],
-"explanation": [a one paragraph justification for the intuitive name]
-"confidence_score": [a score between 0.0 and 1.0 indicating how confident you are that this name accurately reflects the function of the cluster]
+Your response should start with only the name of the cluster on the first line. Then, provide a short paragraph including your explanation for why you gave the cluster that name. Finally, on a new line, provide your confidence score. You should not put blank lines between these sections.
 """
 
 analytical_approach = """
+You should try to be as specific as possible in your naming, to avoid overlapping names with other similar clusters. However, the names should still be short and human readable, ideally fewer than 10 words. You should consider the most common GO terms in the cluster, and try to find a common theme or function that ties them together. If you cannot find a common theme, you should give the cluster a name of Unknown.
 """
 
 one_shot_example = """
@@ -46,7 +43,7 @@ Top Terms:
     GO:0007603 - <phototransduction, visible light> (10)
     GO:0004876 - <complement component C3a receptor activity> (9)
 
-We would name this cluster "Sensory Response" because there is a high representation for GO terms related to temperature, drug, and pain response.
+We would name this cluster Temperature, Pain, and Drug Response because there is a high representation for GO terms related to temperature, drug, and pain response.
 """
 
 request = """
@@ -63,19 +60,28 @@ LLM_SYSTEM_TEMPLATE = (
 )
 
 
-def llm_name(description, model="Meta-Llama-3-8B-Instruct", api_key=None):
+def llm_name_cluster(description, model="4o-mini", api_key=None):
     
-    cmd = f"llm --system '{LLM_SYSTEM_TEMPLATE}' -m {model} "
+    os.environ["OPENAI_API_KEY"] = api_key
+    cmd = f"llm --system '{LLM_SYSTEM_TEMPLATE}' -m {model} '{description}' "
 
     proc = sp.Popen(
-        shlex.split(cmd) + [ description ], stdout=sp.PIPE, stderr=sp.PIPE
+        shlex.split(cmd), stdout=sp.PIPE, stderr=sp.PIPE
     )
     out, err = proc.communicate()
-    logger.debug(out.decode("utf-8"))
-    logger.debug(err.decode("utf-8"))
+    # logger.debug(err.decode("utf-8"))
 
-    name = out.decode("utf-8").split("<")[0]
-    return name
+    reg = re.compile("(.*$)\s+(.*$)\s+(.*$)", re.MULTILINE)
+    regsearch = reg.search(out.decode("utf-8"))
+    name = regsearch.group(1)
+    explanation = regsearch.group(2)
+    confidence = regsearch.group(3)
+
+    logger.debug(f"Name: {name}")
+    logger.debug(f"Explanation: {explanation}")
+    logger.debug(f"Confidence: {confidence}")
+    
+    return name, explanation, confidence
 
 @app.command()
 def main(
@@ -96,18 +102,20 @@ def main(
     go_database = parse_GO_database(go_db)
 
     if llm_name:
-        # with open("OPENAI_API_KEY.txt","r") as f:
-        # passwd = f.read().strip()
-        os.environ["OPENAI_API_KEY"] = api_key
 
         for _, clust in tqdm(clusters.items()):
             if not hasattr(clust, "llm_name"):
                 hr = print_cluster(clust, go_database, return_str=True)
                 try:
-                    clust["llm_name"] = llm_name(hr, model=model)
+                    name, explanation, confidence = llm_name_cluster(hr, model=model, api_key=api_key)
+                    clust["llm_name"] = name
+                    clust["llm_explanation"] = explanation
+                    clust["llm_confidence"] = confidence
                 except Exception as e:
                     logger.error(f"Error: {e}")
                     clust["llm_name"] = "Unknown"
+                    clust["llm_explanation"] = "Unknown"
+                    clust["llm_confidence"] = "Unknown"
                 
                 clust["human_readable"] = print_cluster(clust, go_database, return_str=True)
     else:
