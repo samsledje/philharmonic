@@ -3,13 +3,12 @@ run_name: philharmonic
 sequence_path: sample_sequences.fasta
 go_filter_path: assets/go_filter.txt
 work_dir: results
-use_cytoscape: false
-use_langchain: false
+use_llm: true
 
 ############################################
 
 # General Parameters
-seed: 6191998
+seed: 42
 
 # hmmscan Parameters
 hmmscan:
@@ -43,6 +42,6 @@ recipe:
   max_proteins: 20
   metric: degree
 
-# Langchain Parameters
-langchain:
+# LLM Naming Parameters
+llm:
   model: gpt-4o
