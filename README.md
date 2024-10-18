@@ -208,24 +208,26 @@ The `config.yml` file contains various parameters that control the behavior of t
 
 - `run_name`: Identifier for this run [required]
 - `sequence_path`: Path to protein sequences in .fasta format [required]
+- `go_filter_path`: Path to list of GO terms to filter candidates (default: "assets/go_filter.txt")
 - `work_dir`: Path to the working directory where results will be stored (default: "results")
-- `use_cytoscape`: Boolean flag to enable/disable Cytoscape visualization (default: false)
-- `use_langchain`: Boolean flag to enable/disable Langchain for cluster summarization (default: false)
+- `use_llm`: Boolean flag to enable/disable LLM naming for cluster summarization (default: true)
+
+Note: if you set `use_llm` with an OpenAI model, make sure that you have set the environment variable `OPENAI_API_KEY` prior to running.
 
 ### General Parameters
 
-- `seed`: Random seed for reproducibility (default: 6191998)
+- `seed`: Random seed for reproducibility (default: 42)
 
 ### hmmscan Parameters
 
 - `hmmscan.path`: Path to the hmmscan executable (default: "hmmscan")
-- `hmmscan.threads`: Number of threads to use for hmmscan (default: 16)
+- `hmmscan.threads`: Number of threads to use for hmmscan (default: 32)
 
 ### D-SCRIPT Parameters
 
 - `dscript.path`: Path to the D-SCRIPT executable (default: "dscript")
 - `dscript.n_pairs`: Number of protein pairs to predict (-1 for all pairs) (default: -1)
-- `dscript.model`: Pre-trained D-SCRIPT model to use. (default: "samsl/human_v1")
+- `dscript.model`: Pre-trained D-SCRIPT model to use. (default: "samsl/dscript_human_v1")
 - `dscript.device`: GPU device to use (-1 for CPU) (default: 0)
 
 ### DSD Parameters
@@ -250,7 +252,7 @@ The `config.yml` file contains various parameters that control the behavior of t
 
 ### Langchain Parameters
 
-- `langchain.model`: Language model to use for cluster summarization (default: "gpt-4o")
+- `llm.model`: Language model to use for cluster summarization (default: "gpt-4o")
 
 ## Citation
 

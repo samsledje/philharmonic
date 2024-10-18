@@ -4,14 +4,13 @@ rule PHILHARMONIC:
         clusters = f"{config['work_dir']}/{config['run_name']}_clusters.json",
         cluster_graph = f"{config['work_dir']}/{config['run_name']}_cluster_graph.tsv",
         cluster_functions = f"{config['work_dir']}/{config['run_name']}_cluster_graph_functions.tsv",
-        cytoscape = f"{config['work_dir']}/{config['run_name']}_cytoscape_session.cys" if config["use_cytoscape"] else [],
         human_readable = f"{config['work_dir']}/{config['run_name']}_human_readable.txt",
         go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
     output:
         zipfile = f"{config['work_dir']}/{config['run_name']}.zip"
     params:
     shell:
-        "zip --junk-paths {output.zipfile} {input.network} {input.clusters} {input.go_map} {input.human_readable} {input.cluster_graph} {input.cluster_functions} {input.cytoscape}"
+        "zip --junk-paths {output.zipfile} {input.network} {input.clusters} {input.go_map} {input.human_readable} {input.cluster_graph} {input.cluster_functions}"
 
 
 rule download_required_files:
@@ -226,26 +225,11 @@ rule summarize_clusters:
         human_readable = f"{config['work_dir']}/{config['run_name']}_human_readable.txt",
         readable_json = f"{config['work_dir']}/{config['run_name']}_clusters.json",
     params:
-        api_key = f"--api_key {os.environ['OPENAI_API_KEY']}" if config["use_langchain"] else "",
-        langchain_model = config["langchain"]["model"],
-        do_llm_naming = "--llm_name" if config["use_langchain"] else ""
+        api_key = f"--api_key {os.environ['OPENAI_API_KEY']}" if config["use_llm"] else "",
+        llm_model = config["llm"]["model"],
+        do_llm_naming = "--llm-name" if config["use_llm"] else ""
     log:
         "logs/summarize_clusters.log",
     conda:
         "environment.yml",
-    shell:  "philharmonic summarize-clusters {params.do_llm_naming} --model {params.langchain_model} {params.api_key} -o {output.human_readable} --json {output.readable_json} --go_db {input.go_database} -cfp {input.clusters}"
-
-rule vizualize_network:
-    input:
-        clusters = f"{config['work_dir']}/{config['run_name']}_clusters.functional.json",
-        network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
-        style = "assets/philharmonic_styles.xml"
-    output:
-        cytoscape = f"{config['work_dir']}/{config['run_name']}_cytoscape_session.cys",
-    params:
-        run_name = config["run_name"]
-    log:
-        "logs/create_cytoscape_session.log",
-    conda:
-        "environment.yml",
-    shell:  "philharmonic create-cytoscape-session -s {input.style} -o {output.cytoscape} -cfp {input.clusters} -nfp {input.network} --name {params.run_name}"
+    shell:  "philharmonic summarize-clusters {params.do_llm_naming} --model {params.llm_model} {params.api_key} -o {output.human_readable} --json {output.readable_json} --go_db {input.go_database} -cfp {input.clusters}"
