@@ -98,7 +98,7 @@ def triangles(graph: nx.Graph):
     return int(sum([i for i in nx.triangles(graph).values()]) / 3)
 
 
-def get_top_terms(cluster, N=5, go_map=None):
+def get_top_terms(cluster, N=10, go_map=None):
     if (go_map is not None) and ("GO_terms" not in cluster):
         cluster["GO_terms"] = add_GO_function(cluster, go_map)
     term_dict = cluster["GO_terms"]
@@ -107,11 +107,11 @@ def get_top_terms(cluster, N=5, go_map=None):
     return sorted(term_dict.items(), key=lambda x: x[1], reverse=True)[:N]
 
 
-def print_cluster(clust, go_database, n_terms=5, return_str=False):
+def print_cluster(clust, go_database, n_terms=10, return_str=False):
     description_string = ""
 
     if "llm_name" in clust:
-        description_string += f"Cluster Name: {clust.llm_name}\n"
+        description_string += f"Cluster Name: {clust['llm_name']}\n"
 
     members = clust["members"]
     short_mem_string = ", ".join(members[:3])
@@ -148,8 +148,9 @@ def print_cluster(clust, go_database, n_terms=5, return_str=False):
 
     if "llm_explanation" in clust:
         llm_desc = clust["llm_explanation"]
+        llm_confidence = clust["llm_confidence"]
         description_string += f"LLM Explanation: {llm_desc}\n"
-        # description_string += f"LLM Confidence: {llm_desc}\n"
+        description_string += f"LLM Confidence: {llm_confidence}\n"
 
     if return_str:
         return description_string
