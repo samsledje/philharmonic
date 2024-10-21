@@ -5,7 +5,6 @@ import typer
 from . import (
     add_cluster_functions,
     build_cluster_graph,
-    build_cytoscape,
     build_go_map,
     cluster_network,
     generate_candidates,

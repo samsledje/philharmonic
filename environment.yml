@@ -8,8 +8,6 @@ dependencies:
   - hmmer=3.4
   - jupyter=1.0.0
   - jupyterlab=4.1.6
-  - langchain=0.2.7
-  - langchain-openai=0.1.16
   - loguru=0.7.2
   - matplotlib=3.8.0
   - networkx=3.1
@@ -30,3 +28,6 @@ dependencies:
     - fastdsd==1.0.1
     - recipe-cluster==0.0.4
     - gprofiler-official==1.0.0
+    - openpyxl==3.1.5
+    - llm==0.16
+    - ruff==0.7.0
