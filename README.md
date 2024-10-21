@@ -29,6 +29,7 @@ PHILHARMONIC uses [D-SCRIPT](https://dscript.csail.mit.edu) to predict a *de nov
 ## Installation
 
 ```bash
+mamba create -n philharmonic python==3.11
 pip install poetry
 git clone https://github.com/samsledje/philharmonic.git
 cd philharmonic
@@ -267,6 +268,7 @@ TBD
 ## Contributing
 
 ```bash
+mamba create -n philharmonic python==3.11
 pip install poetry
 git clone https://github.com/samsledje/philharmonic.git
 cd philharmonic
