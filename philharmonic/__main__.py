@@ -41,7 +41,6 @@ def main(
 
 # Register subcommands
 app.command("build-go-map")(build_go_map.main)
-app.command("build-cytoscape")(build_cytoscape.main)
 app.command("summarize-clusters")(summarize_clusters.main)
 app.command("add-cluster-functions")(add_cluster_functions.main)
 app.command("cluster-network")(cluster_network.main)
