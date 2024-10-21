@@ -29,11 +29,10 @@ PHILHARMONIC uses [D-SCRIPT](https://dscript.csail.mit.edu) to predict a *de nov
 ## Installation
 
 ```bash
+pip install poetry
 git clone https://github.com/samsledje/philharmonic.git
 cd philharmonic
-mamba create -f environment.yml
-mamba activate philharmonic
-pip install -e .
+poetry install --only main
 ```
 
 We also recommend installing [Cytoscape](https://cytoscape.org/) to visualizing the resulting networks.
@@ -268,12 +267,10 @@ TBD
 ## Contributing
 
 ```bash
+pip install poetry
 git clone https://github.com/samsledje/philharmonic.git
 cd philharmonic
-mamba create -f environment.yml
-mamba activate philharmonic
-pip install -e .
-mamba install -c conda-forge pre-commit
+poetry install
 pre-commit install
 git checkout -b [feature branch]
 ```
