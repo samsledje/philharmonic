@@ -21,14 +21,9 @@ pandas = "2.1.1"
 scikit-learn = "1.5.0"
 scipy = "1.11.3"
 seaborn = "0.13.2"
-snakemake = "8.10.0"
 tqdm = "4.66.5"
-openpyxl = "3.1.5"
 llm = "0.16"
 loguru = "0.7.2"
-dscript = "0.2.8"
-fastdsd = "1.0.1"
-recipe-cluster = "0.0.4"
 typer = {extras = ["all"], version = "^0.9.0"}
 
 [tool.poetry.dev-dependencies]
