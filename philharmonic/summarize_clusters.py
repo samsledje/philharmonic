@@ -1,12 +1,11 @@
 # python src/name_clusters.py --api_key {params.api_key} -o {output.human_readable} --go_db {input.go_database} -cfp {input.clusters}
 import json
 import os
-import sys
-
-import typer
 import shlex
-import regex as re
 import subprocess as sp
+
+import regex as re
+import typer
 from loguru import logger
 from tqdm import tqdm
 
@@ -61,13 +60,10 @@ LLM_SYSTEM_TEMPLATE = (
 
 
 def llm_name_cluster(description, model="4o-mini", api_key=None):
-    
     os.environ["OPENAI_API_KEY"] = api_key
     cmd = f"llm --system '{LLM_SYSTEM_TEMPLATE}' -m {model} '{description}' "
 
-    proc = sp.Popen(
-        shlex.split(cmd), stdout=sp.PIPE, stderr=sp.PIPE
-    )
+    proc = sp.Popen(shlex.split(cmd), stdout=sp.PIPE, stderr=sp.PIPE)
     out, err = proc.communicate()
     # logger.debug(err.decode("utf-8"))
 
@@ -80,8 +76,9 @@ def llm_name_cluster(description, model="4o-mini", api_key=None):
     logger.debug(f"Name: {name}")
     logger.debug(f"Explanation: {explanation}")
     logger.debug(f"Confidence: {confidence}")
-    
+
     return name, explanation, confidence
+
 
 @app.command()
 def main(
@@ -102,12 +99,13 @@ def main(
     go_database = parse_GO_database(go_db)
 
     if llm_name:
-
         for _, clust in tqdm(clusters.items()):
             if not hasattr(clust, "llm_name"):
                 hr = print_cluster(clust, go_database, return_str=True)
                 try:
-                    name, explanation, confidence = llm_name_cluster(hr, model=model, api_key=api_key)
+                    name, explanation, confidence = llm_name_cluster(
+                        hr, model=model, api_key=api_key
+                    )
                     clust["llm_name"] = name
                     clust["llm_explanation"] = explanation
                     clust["llm_confidence"] = confidence
@@ -116,12 +114,13 @@ def main(
                     clust["llm_name"] = "Unknown"
                     clust["llm_explanation"] = "Unknown"
                     clust["llm_confidence"] = "Unknown"
-                
-                clust["human_readable"] = print_cluster(clust, go_database, return_str=True)
+
+                clust["human_readable"] = print_cluster(
+                    clust, go_database, return_str=True
+                )
     else:
         for _, clust in tqdm(clusters.items()):
             clust["human_readable"] = print_cluster(clust, go_database, return_str=True)
-
 
     if json_output:
         with open(json_output, "w") as f:

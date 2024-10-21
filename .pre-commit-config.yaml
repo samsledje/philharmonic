@@ -9,11 +9,12 @@ repos:
     - id: trailing-whitespace
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.
-  rev: v0.6.8
+  rev: v0.7.0
   hooks:
+    # Run the formatter.
+    - id: ruff-format
+      name: Ruff Formatter
     # Run the linter.
     - id: ruff
+      name: Ruff Linter
       args: [ "check", "--select", "I", "--fix" ]
-    # Run the formatter.
-    - id: ruff
-      args: [ "format" ]
