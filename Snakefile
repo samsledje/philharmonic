@@ -171,9 +171,6 @@ rule reconnect_recipe:
     input:
         clusters = f"{config['work_dir']}/{config['run_name']}_clusters.disconnected.json",
         network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
-        dsd = f"{config['work_dir']}/{config['run_name']}_distances.DSD1",
-        go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
-        go_db = f"{config['work_dir']}/go.obo"
     output:
         clusters_connected = temp(f"{config['work_dir']}/{config['run_name']}_clusters.recipe.json"),
     params:
