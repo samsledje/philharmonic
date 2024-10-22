@@ -23,6 +23,11 @@ loguru = "^0.7.2"
 typer = "^0.12.5"
 regex = "^2024.9.11"
 snakemake = "^8.24.0"
+dscript = "^0.2.8"
+fastdsd = "^1.0.1"
+huggingface-hub = "^0.26.1"
+recipe-cluster = "^0.0.4"
+transformers = "^4.45.2"
 
 [tool.poetry.group.dev.dependencies]
 pip = "^24.2"
