@@ -185,11 +185,11 @@ If gene expression data is available for the target species, we can check that p
 
 ![gene expression](img/readme_expression_correlation.png)
 
-### 4. View the full network in Cytoscape
+### 5. View the full network in Cytoscape
 
 1. Load `network.positive.tsv` using `File -> Import -> Network from File`
 
-### 5. View the cluster graph in Cytoscape
+### 6. View the cluster graph in Cytoscape
 
 1. Load `cluster_graph.tsv` using `File -> Import -> Network from File`
 2. Load `cluster_graph_functions.tsv` using `File -> Import -> Table from File`
