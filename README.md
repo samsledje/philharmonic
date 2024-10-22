@@ -26,13 +26,14 @@ Protein-protein interaction (PPI) networks are a fundamental tool for modeling c
 
 ```bash
 mamba create -n philharmonic python==3.11
-pip install poetry
+mamba install pytorch torchvision torchaudio pytorch-cuda=12.4 -c pytorch -c nvidia
+mamba install poetry
 git clone https://github.com/samsledje/philharmonic.git
 cd philharmonic
 poetry install --only main
 ```
 
-We also recommend installing [Cytoscape](https://cytoscape.org/) to visualizing the resulting networks.
+We also recommend installing [Cytoscape](https://cytoscape.org/) to visualizing the resulting networks. You may need to swap out the pytorch-cuda version for your specific system.
 
 ## Usage
 
