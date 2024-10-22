@@ -1,6 +1,7 @@
 import hashlib
 import json
 from collections import defaultdict
+from pathlib import Path
 
 import networkx as nx
 import numpy as np
@@ -431,11 +432,14 @@ def write_cluster_fasta(cluster_file, sequence_file, directory=".", prefix="clus
 def write_cluster_cytoscape(
     cluster,
     full_G,
-    outfile="cytoscape_input.txt",
+    outfile: Path = Path("cytoscape_input.txt"),
     with_recipe=True,
     recipe_metric="degree",
     recipe_cthresh="0.75",
 ):
+    if not isinstance(outfile, Path):
+        outfile = Path(outfile)
+
     G = nx_graph_cluster(
         cluster,
         full_G=full_G,
@@ -449,7 +453,7 @@ def write_cluster_cytoscape(
         for edge in G.edges(data=True):
             f.write(f"{edge[0]}\t{edge[1]}\t{edge[2]['weight']}\n")
 
-    with open(outfile.replace(".txt", "_nodes.txt"), "w") as f:
+    with open(outfile.with_suffix("_nodes.txt"), "w") as f:
         f.write("Node\tType\n")
         for node in G.nodes():
             if node in cluster["recipe"][recipe_metric][recipe_cthresh]:
