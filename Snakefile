@@ -20,14 +20,14 @@ rule download_required_files:
         pfam_database_zipped = f"{config['work_dir']}/Pfam-A.hmm.gz",
         pfam_gobp = f"{config['work_dir']}/pfam_gobp_most_specific.txt",
     log:
-        "logs/download_required_files.log",
+        f"{config['work_dir']}/logs/01_download_required_files.log",
     run:
         commands = [
-            "mkdir -p {config[work_dir]}",
-            "curl https://current.geneontology.org/ontology/go.obo -o {config[work_dir]}/go.obo",
-            "curl https://current.geneontology.org/ontology/subsets/goslim_generic.obo -o {config[work_dir]}/goslim_generic.obo",
-            "curl ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz -o {config[work_dir]}/Pfam-A.hmm.gz",
-            "curl https://godm.loria.fr/data/pfam_gobp_most_specific.txt -o {config[work_dir]}/pfam_gobp_most_specific.txt",
+            "mkdir -p {config[work_dir]} > {log} 2>&1",
+            "curl https://current.geneontology.org/ontology/go.obo -o {config[work_dir]}/go.obo > {log} 2>&1",
+            "curl https://current.geneontology.org/ontology/subsets/goslim_generic.obo -o {config[work_dir]}/goslim_generic.obo > {log} 2>&1",
+            "curl ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz -o {config[work_dir]}/Pfam-A.hmm.gz > {log} 2>&1",
+            "curl https://godm.loria.fr/data/pfam_gobp_most_specific.txt -o {config[work_dir]}/pfam_gobp_most_specific.txt > {log} 2>&1",
         ]
         for c in commands:
             shell(c)
@@ -43,11 +43,11 @@ rule prepare_hmmdb:
         pfam_h3f = temp(f"{config['work_dir']}/Pfam-A.hmm.h3f"),
         pfam_h3p = temp(f"{config['work_dir']}/Pfam-A.hmm.h3p"),
     log:
-        "logs/prepare_hmmdb.log",
+        f"{config['work_dir']}/logs/02_prepare_hmmdb.log",
     run:
         commands = [
-            "gunzip -c {config[work_dir]}/Pfam-A.hmm.gz > {config[work_dir]}/Pfam-A.hmm",
-            "hmmpress {config[work_dir]}/Pfam-A.hmm",
+            "gunzip -c {config[work_dir]}/Pfam-A.hmm.gz > {config[work_dir]}/Pfam-A.hmm 2> {log}",
+            "hmmpress {config[work_dir]}/Pfam-A.hmm > {log} 2>&1",
         ]
         for c in commands:
             shell(c)
@@ -69,10 +69,11 @@ rule annotate_seqs_pfam:
         run_name = config["run_name"],
         hmmscan_path = config["hmmscan"]["path"]
     log:
-        "logs/annotate_seqs_pfam.log",
+        f"{config['work_dir']}/logs/03_annotate_seqs_pfam.log",
     conda:
         "environment.yml",
-    shell:  "{params.hmmscan_path} --cpu {threads} -o {params.work_dir}/{params.run_name}_hmmscan.out --tblout {params.work_dir}/{params.run_name}_hmmscan.tblout --domtblout {params.work_dir}/{params.run_name}_hmmscan.domtblout --acc --noali --notextw --cut_ga {input.pfam_database} {input.sequences}"
+    shell:
+        "{params.hmmscan_path} --cpu {threads} -o {params.work_dir}/{params.run_name}_hmmscan.out --tblout {params.work_dir}/{params.run_name}_hmmscan.tblout --domtblout {params.work_dir}/{params.run_name}_hmmscan.domtblout --acc --noali --notextw --cut_ga {input.pfam_database} {input.sequences} > {log} 2>&1"
 
 rule annotate_seqs_go:
     input:
@@ -81,11 +82,11 @@ rule annotate_seqs_go:
     output:
         go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
     log:
-        "logs/annotate_seqs_go.log",
+        f"{config['work_dir']}/logs/04_annotate_seqs_go.log",
     conda:
         "environment.yml",
     shell:
-        "philharmonic build-go-map -o {output.go_map} --hhtblout {input.hhtblout} --pfam_go_files {input.pfam_gobp}"
+        "philharmonic build-go-map -o {output.go_map} --hhtblout {input.hhtblout} --pfam_go_files {input.pfam_gobp} > {log} 2>&1"
 
 
 rule generate_candidates:
@@ -101,10 +102,11 @@ rule generate_candidates:
         n_pairs = config["dscript"]["n_pairs"],
         seed = config["seed"],
     log:
-        "logs/generate_candidates.log",
+        f"{config['work_dir']}/logs/05_generate_candidates.log",
     conda:
         "environment.yml",
-    shell:  "philharmonic generate-candidates --paircount {params.n_pairs} -o {output.candidates} --seq_out {output.kept_proteins} --go_map {input.go_map} --go_database {input.go_database} --go_filter {input.go_filter} --sequences {input.sequences} --seed {params.seed}"
+    shell:
+        "philharmonic generate-candidates --paircount {params.n_pairs} -o {output.candidates} --seq_out {output.kept_proteins} --go_map {input.go_map} --go_database {input.go_database} --go_filter {input.go_filter} --sequences {input.sequences} --seed {params.seed} > {log} 2>&1"
 
 rule predict_network:
     input:
@@ -122,10 +124,11 @@ rule predict_network:
     resources:
         nvidia_gpu=1
     log:
-        "logs/predict_network.log",
+        f"{config['work_dir']}/logs/06_predict_network.log",
     conda:
         "environment.yml",
-    shell:  "{params.dscript_path} predict --pairs {input.candidates} --seqs {input.sequences} --model {params.dscript_model} --outfile {params.work_dir}/{params.run_name}_network --device {params.device} --thresh {params.t}"
+    shell:
+        "{params.dscript_path} predict --pairs {input.candidates} --seqs {input.sequences} --model {params.dscript_model} --outfile {params.work_dir}/{params.run_name}_network --device {params.device} --thresh {params.t} > {log}"
 
 
 rule compute_distances:
@@ -140,10 +143,11 @@ rule compute_distances:
         t = config["dsd"]["t"],
         confidence = "-c" if config["dsd"]["confidence"] else ""
     log:
-        "logs/compute_distances.log",
+        f"{config['work_dir']}/logs/07_compute_distances.log",
     conda:
         "environment.yml",
-    shell: "{params.dsd_path} {params.confidence} --converge -t {params.t} --outfile {params.work_dir}/{params.run_name}_distances {input.network}"
+    shell:
+        "{params.dsd_path} {params.confidence} --converge -t {params.t} --outfile {params.work_dir}/{params.run_name}_distances {input.network} > {log} 2>&1"
 
 
 rule cluster_network:
@@ -161,10 +165,11 @@ rule cluster_network:
         sparsity = config["clustering"]["sparsity_thresh"],
         seed = config["seed"]
     log:
-        "logs/cluster_network.log",
+        f"{config['work_dir']}/logs/08_cluster_network.log",
     conda:
         "environment.yml",
-    shell:  "philharmonic cluster-network --network_file {input.network} --dsd_file {input.distances} --output {output.clusters} --min_cluster_size {params.min_cluster_size} --cluster_divisor {params.cluster_divisor} --init_k {params.init_k} --sparsity {params.sparsity} --random_seed {params.seed}"
+    shell:
+        "philharmonic cluster-network --network_file {input.network} --dsd_file {input.distances} --output {output.clusters} --min_cluster_size {params.min_cluster_size} --cluster_divisor {params.cluster_divisor} --init_k {params.init_k} --sparsity {params.sparsity} --random_seed {params.seed} > {log} 2>&1"
 
 
 rule reconnect_recipe:
@@ -179,10 +184,11 @@ rule reconnect_recipe:
         max_proteins = config["recipe"]["max_proteins"],
         metric = config["recipe"]["metric"]
     log:
-        "logs/reconnect_recipe.log",
+        f"{config['work_dir']}/logs/09_reconnect_recipe.log",
     conda:
         "environment.yml",
-    shell: "recipe-cluster cook --network-filepath {input.network} --cluster-filepath {input.clusters} --lr {params.lr} -cthresh {params.cthresh} --max {params.max_proteins} --metric {params.metric} --outfile {output.clusters_connected}"
+    shell:
+        "recipe-cluster cook --network-filepath {input.network} --cluster-filepath {input.clusters} --lr {params.lr} -cthresh {params.cthresh} --max {params.max_proteins} --metric {params.metric} --outfile {output.clusters_connected} > {log}"
 
 rule add_cluster_functions:
     input:
@@ -191,10 +197,11 @@ rule add_cluster_functions:
     output:
         clusters_functional = f"{config['work_dir']}/{config['run_name']}_clusters.functional.json",
     log:
-        "logs/add_cluster_functions.log",
+        f"{config['work_dir']}/logs/10_add_cluster_functions.log",
     conda:
         "environment.yml",
-    shell: "philharmonic add-cluster-functions -o {output.clusters_functional} -cfp {input.clusters} --go-map {input.go_map}"
+    shell:
+        "philharmonic add-cluster-functions -o {output.clusters_functional} -cfp {input.clusters} --go-map {input.go_map} > {log} 2>&1"
 
 rule cluster_graph:
     input:
@@ -209,10 +216,11 @@ rule cluster_graph:
         recipe_metric = config["recipe"]["metric"],
         recipe_cthresh = config["recipe"]["cthresh"],
     log:
-        "logs/cluster_graph.log",
+        f"{config['work_dir']}/logs/11_cluster_graph.log",
     conda:
         "environment.yml",
-    shell:  "philharmonic build-cluster-graph -o {output.graph} -coc {output.coc_functions} -cfp {input.clusters} -nfp {input.network} --go_map {input.go_map} --go_db {input.go_database} --recipe_metric {params.recipe_metric} --recipe_cthresh {params.recipe_cthresh}"
+    shell:
+        "philharmonic build-cluster-graph -o {output.graph} -coc {output.coc_functions} -cfp {input.clusters} -nfp {input.network} --go_map {input.go_map} --go_db {input.go_database} --recipe_metric {params.recipe_metric} --recipe_cthresh {params.recipe_cthresh} > {log} 2>&1"
 
 rule summarize_clusters:
     input:
@@ -222,11 +230,12 @@ rule summarize_clusters:
         human_readable = f"{config['work_dir']}/{config['run_name']}_human_readable.txt",
         readable_json = f"{config['work_dir']}/{config['run_name']}_clusters.json",
     params:
-        api_key = f"--api_key {os.environ['OPENAI_API_KEY']}" if config["use_llm"] else "",
+        api_key = f"--api-key {os.environ['OPENAI_API_KEY']}" if config["use_llm"] else "",
         llm_model = config["llm"]["model"],
         do_llm_naming = "--llm-name" if config["use_llm"] else ""
     log:
-        "logs/summarize_clusters.log",
+        f"{config['work_dir']}/logs/12_summarize_clusters.log",
     conda:
         "environment.yml",
-    shell:  "philharmonic summarize-clusters {params.do_llm_naming} --model {params.llm_model} {params.api_key} -o {output.human_readable} --json {output.readable_json} --go_db {input.go_database} -cfp {input.clusters}"
+    shell:
+        "philharmonic summarize-clusters {params.do_llm_naming} --model {params.llm_model} {params.api_key} -o {output.human_readable} --json {output.readable_json} --go_db {input.go_database} -cfp {input.clusters} > {log}"

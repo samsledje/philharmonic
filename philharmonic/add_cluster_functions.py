@@ -30,6 +30,7 @@ def main(
     for k, clust in clusters.items():
         clusters[k]["GO_terms"] = add_GO_function(clust, go_map_data)
 
+    logger.info(f"Writing to {output}")
     with open(output, "w") as f:
         json.dump(clusters, f, indent=4)
 

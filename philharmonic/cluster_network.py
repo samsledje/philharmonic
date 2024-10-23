@@ -158,7 +158,7 @@ def main(
     logger.info(f"Removing small clusters (<{min_cluster_size})...")
     filtered_clusters = []
     while not clustQ.empty():
-        wght, c = clustQ.get()
+        _, c = clustQ.get()
         filtered_clusters.append(c)
     filtered_clusters = [i for i in filtered_clusters if len(i) >= min_cluster_size]
     logger.info(f"Final Clustering: {len(filtered_clusters)} clusters")
@@ -180,7 +180,7 @@ def main(
 
     logger.info(f"Writing clusters to: {output}")
     with open(output, "w+") as f:
-        json.dump(clusts, f, indent=4)
+        json.dump(clustsDict, f, indent=4)
 
 
 if __name__ == "__main__":

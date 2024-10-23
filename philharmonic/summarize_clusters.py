@@ -64,8 +64,7 @@ def llm_name_cluster(description, model="4o-mini", api_key=None):
     cmd = f"llm --system '{LLM_SYSTEM_TEMPLATE}' -m {model} '{description}' "
 
     proc = sp.Popen(shlex.split(cmd), stdout=sp.PIPE, stderr=sp.PIPE)
-    out, err = proc.communicate()
-    # logger.debug(err.decode("utf-8"))
+    out, _ = proc.communicate()
 
     reg = re.compile("(.*$)\s+(.*$)\s+(.*$)", re.MULTILINE)
     regsearch = reg.search(out.decode("utf-8"))
@@ -73,9 +72,9 @@ def llm_name_cluster(description, model="4o-mini", api_key=None):
     explanation = regsearch.group(2)
     confidence = regsearch.group(3)
 
-    logger.debug(f"Name: {name}")
-    logger.debug(f"Explanation: {explanation}")
-    logger.debug(f"Confidence: {confidence}")
+    logger.info(f"Name: {name}")
+    logger.info(f"Explanation: {explanation}")
+    logger.info(f"Confidence: {confidence}")
 
     return name, explanation, confidence
 
@@ -129,7 +128,7 @@ def main(
     with open(output, "w") as f:
         for _, clust in clusters.items():
             description_string = print_cluster(clust, go_database, return_str=True)
-            f.write(description_string)
+            f.write(str(description_string))
             f.write("\n\n")
 
 
