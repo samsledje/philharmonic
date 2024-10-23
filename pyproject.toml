@@ -30,6 +30,7 @@ jupyter = "^1.1.1"
 jupyterlab = "^4.2.5"
 pre-commit = "^4.0.1"
 ruff = "^0.7.0"
+mypy = "^1.13.0"
 
 [tool.poetry.scripts]
 philharmonic = "philharmonic.__main__:app"

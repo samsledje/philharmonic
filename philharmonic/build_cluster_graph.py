@@ -31,8 +31,8 @@ def main(
     network_file_path: str = typer.Option(
         ..., "-nfp", "--network_file_path", help="Network file path"
     ),
-    go_map: str = typer.Option(..., "--go_map", help="GO map file"),
-    go_db: str = typer.Option(..., "--go_db", help="GO database file"),
+    go_map_path: str = typer.Option(..., "--go_map", help="GO map file"),
+    go_db_path: str = typer.Option(..., "--go_db", help="GO database file"),
     n_crossing_edges: int = typer.Option(
         10, "--n_crossing_edges", help="Clusters with n crossing edges are connected"
     ),
@@ -54,8 +54,8 @@ def main(
     full_G = nx.read_weighted_edgelist(network_file_path)
 
     # Add GO Annotations
-    go_map = parse_GO_map(go_map)
-    go_db = parse_GO_database(go_db)
+    go_map = parse_GO_map(go_map_path)
+    go_db = parse_GO_database(go_db_path)
 
     for clust in cluster_dict.values():
         clust["GO_terms"] = add_GO_function(clust, go_map, go_db=go_db)

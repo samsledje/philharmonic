@@ -40,11 +40,11 @@ def main(
     for prot_id, pfam_hits in hits.items():
         go_terms = pfam_go_map[pfam_go_map["PFAM"].isin(pfam_hits)]["GO"].tolist()
         protein_go_map.append((prot_id, "", ";".join(pfam_hits), ";".join(go_terms)))
-    protein_go_map = pd.DataFrame(
+    protein_go_dataframe = pd.DataFrame(
         protein_go_map, columns=["prot_id", "manual annot", "pfam_list", "GO_list"]
     )
 
-    protein_go_map.to_csv(output, index=False)
+    protein_go_dataframe.to_csv(output, index=False)
 
 
 if __name__ == "__main__":

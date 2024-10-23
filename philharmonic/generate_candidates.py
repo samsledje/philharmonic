@@ -16,7 +16,7 @@ app = typer.Typer()
 
 @app.command()
 def main(
-    sequences: Path = typer.Option(..., "--sequences", help="Sequences file"),
+    sequence_file_path: Path = typer.Option(..., "--sequences", help="Sequences file"),
     output: Path = typer.Option(..., "-o", "--output", help="Output file"),
     seq_out: Path = typer.Option(
         None,
@@ -38,7 +38,7 @@ def main(
     seed: int = typer.Option(42, "--seed", help="Random seed"),
 ):
     """Generate candidate protein pairs from a sequences file"""
-    sequences = SeqIO.to_dict(SeqIO.parse(sequences, "fasta"))
+    sequences = SeqIO.to_dict(SeqIO.parse(sequence_file_path, "fasta"))
     protein_names = list(sequences.keys())
 
     # Create list of filtered GO terms
@@ -50,20 +50,20 @@ def main(
                 f.write(f">{p}\n{sequences[p].seq}\n")
 
     # Create DataFrame
-    g = np.random.Generator(np.random.PCG64(seed))
-    protein_pairs = list(combinations(allowed_proteins, 2))
+    rng = np.random.Generator(np.random.PCG64(seed))
+    all_pairs = list(combinations(allowed_proteins, 2))
 
-    if paircount < 0:
-        sampled_pairs = protein_pairs
-    elif paircount > scipy.special.comb(len(allowed_proteins), 2):
+    if paircount > scipy.special.comb(len(allowed_proteins), 2):
         raise ValueError("Pair count exceeds number of possible pairs")
+    elif paircount < 0:
+        sampled_pairs = np.array(all_pairs)
     else:
-        sampled_pairs = g.choice(protein_pairs, paircount, replace=False)
+        sampled_pairs = rng.choice(all_pairs, paircount, replace=False)
 
     candidates = pd.DataFrame(sampled_pairs, columns=["protein_A", "protein_B"])
     candidates = candidates.drop_duplicates().reset_index(drop=True)
 
-    candidates.to_csv(output, index=False, header=None, sep="\t")
+    candidates.to_csv(str(output), sep="\t", index=False, header=False)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 # python src/cluster_network.py --network_file {input.network} --dsd_file {input.distances} --output {output.clusters} --min_cluster_size {config[clustering][min_cluster_size]} --cluster_divisor {config[clustering][cluster_divisor]} --init_k {config[clustering][init_k]}
 
 import json
+import typing as T
 from queue import PriorityQueue
 
 import networkx as nx
@@ -49,11 +50,6 @@ def extract_clusters(
 
     # return list of tuples of priority of cluster and list of nodes in cluster
     return [(1 / len(subC), subC) for subC in subCs]
-
-
-def writeClusters(outfile, clusts):
-    with open(outfile, "w+") as f:
-        json.dump(clusts, f, indent=4)
 
 
 def read_network_subset(network_file, protein_names, output_stats=True):
@@ -130,7 +126,7 @@ def main(
     clusts.sort(key=lambda x: len(x), reverse=True)
 
     logger.info(f"Initial Clustering: {len(clusts)} clusters")
-    clustQ = PriorityQueue()
+    clustQ: PriorityQueue[T.Tuple[float, T.List[int]]] = PriorityQueue()
     for c in clusts:
         clustQ.put((1 / len(c), c))
 
@@ -160,14 +156,14 @@ def main(
             clustQ.put(subClust)
 
     logger.info(f"Removing small clusters (<{min_cluster_size})...")
-    filteredClusters = []
+    filtered_clusters = []
     while not clustQ.empty():
         wght, c = clustQ.get()
-        filteredClusters.append(c)
-    filteredClusters = [i for i in filteredClusters if len(i) >= min_cluster_size]
-    logger.info(f"Final Clustering: {len(filteredClusters)} clusters")
+        filtered_clusters.append(c)
+    filtered_clusters = [i for i in filtered_clusters if len(i) >= min_cluster_size]
+    logger.info(f"Final Clustering: {len(filtered_clusters)} clusters")
 
-    clustsNames = [[protein_names[i] for i in cl] for cl in filteredClusters]
+    clustsNames = [[protein_names[i] for i in cl] for cl in filtered_clusters]
 
     clustsDict = {}
     for cl in clustsNames:
@@ -182,10 +178,9 @@ def main(
             ],
         }
 
-    # clustsDict = {hash_cluster(cl): {"members": cl} for cl in clustsNames}
-
     logger.info(f"Writing clusters to: {output}")
-    writeClusters(output, clustsDict)
+    with open(output, "w+") as f:
+        json.dump(clusts, f, indent=4)
 
 
 if __name__ == "__main__":

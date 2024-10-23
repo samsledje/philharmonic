@@ -1,5 +1,6 @@
 import hashlib
 import json
+import typing as T
 from collections import defaultdict
 from pathlib import Path
 
@@ -13,78 +14,11 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
 
-class Cluster:
-    def __init__(self, cluster_dict):
-        for k, v in cluster_dict.items():
-            setattr(self, k, v)
-        assert hasattr(self, "members"), "Cluster must have 'members' attribute"
-
-        if hasattr(self, "graph"):
-            self.G = nx.Graph()
-            for edge in self.graph:
-                self.G.add_edge(edge[0], edge[1], weight=edge[2])
-
-    def __len__(self):
-        return len(self.members)
-
-    def __repr__(self):
-        reprStr = "Cluster of {} [{}] (hash {})".format(
-            len(self), self._member_list(), hash(self)
-        )
-        if hasattr(self, "recipe"):
-            pass
-        if hasattr(self, "G"):
-            reprStr += "\nTriangles: {}\nMax Degree: {}".format(
-                self.triangles(), max(self.G.degree(), key=lambda x: x[1])[1]
-            )
-        if hasattr(self, "GO_terms"):
-            reprStr += "\nTop Terms:\n\t{}".format(
-                "\n\t".join(
-                    # ['{} ({})'.format(i[0], i[1]) for i in self.get_top_terms(5)]
-                    [
-                        f"{i[0]} - <{self.go_db[i[0]]}> ({i[1]})"
-                        for i in self.get_top_terms(5)
-                    ]
-                )
-            )
-        return reprStr
-
-    def __hash__(self):
-        return hash_cluster(self.members)
-
-    def _member_list(self):
-        if len(self.members) < 3:
-            return ", ".join(self.members)
-        else:
-            return "{}, ...".format(", ".join(self.members[:3]))
-
-    def add_GO_terms(self, go_map, go_db):
-        self.GO_terms = {}
-        self.go_db = go_db.copy()
-        for prot in self.members:
-            goIds = go_map.get(prot, None)
-            if goIds is None or len(goIds) == 0:
-                continue
-            for gid in goIds:
-                if gid in go_db:
-                    goCount = self.GO_terms.setdefault(gid, 0)
-                    self.GO_terms[gid] = goCount + 1
-
-    def set_graph(self, G):
-        self.G = G.subgraph(self.members)
-
-    def draw_graph(self):
-        if not hasattr(self, "G"):
-            raise ValueError("Run .set_graph() method on this cluster first")
-        G = self.G
-        nx.draw_kamada_kawai(G, with_labels=True, node_size=600, font_size=8)
-
-
-def add_GO_function(cluster, go_map, go_db=None):
+def add_GO_function(cluster: T.Dict, go_map: T.Dict, go_db: T.Optional[T.Dict] = None):
     """
     Keep track of how many proteins in the cluster have a given GO term
     """
-    go_terms = {}
+    go_terms: dict[str, int] = dict()
     for protein in cluster["members"]:
         if protein in go_map:
             for gid in set(go_map[protein]):
@@ -95,11 +29,13 @@ def add_GO_function(cluster, go_map, go_db=None):
     return go_terms
 
 
-def triangles(graph: nx.Graph):
+def calculate_graph_triangles(graph: nx.Graph):
     return int(sum([i for i in nx.triangles(graph).values()]) / 3)
 
 
-def get_top_terms(cluster, N=10, go_map=None):
+def get_cluster_top_terms(
+    cluster: T.Dict, N: int = 10, go_map: T.Optional[T.Dict] = None
+):
     if (go_map is not None) and ("GO_terms" not in cluster):
         cluster["GO_terms"] = add_GO_function(cluster, go_map)
     term_dict = cluster["GO_terms"]
@@ -108,18 +44,23 @@ def get_top_terms(cluster, N=10, go_map=None):
     return sorted(term_dict.items(), key=lambda x: x[1], reverse=True)[:N]
 
 
-def print_cluster(clust, go_database, n_terms=10, return_str=False):
+def print_cluster(
+    cluster: T.Dict,
+    go_database: T.Dict,
+    n_terms: int = 10,
+    return_str: T.Optional[bool] = False,
+):
     description_string = ""
 
-    if "llm_name" in clust:
-        description_string += f"Cluster Name: {clust['llm_name']}\n"
+    if "llm_name" in cluster:
+        description_string += f"Cluster Name: {cluster['llm_name']}\n"
 
-    members = clust["members"]
+    members = cluster["members"]
     short_mem_string = ", ".join(members[:3])
     description_string += f"Cluster of {len(members)} proteins [{short_mem_string}, ...] (hash {hash_cluster(members)})\n"
 
-    if "recipe" in clust:
-        recipe_dict = clust["recipe"]
+    if "recipe" in cluster:
+        recipe_dict = cluster["recipe"]
         recipe_metrics = list(recipe_dict.keys())
         for rm in recipe_metrics:
             for deg in recipe_dict[rm].keys():
@@ -128,17 +69,17 @@ def print_cluster(clust, go_database, n_terms=10, return_str=False):
                     f"{nadded} proteins re-added by ReCIPE ({rm}, {deg})\n"
                 )
 
-    if "graph" in clust:
+    if "graph" in cluster:
         G = nx.Graph()
-        for edge in clust["graph"]:
+        for edge in cluster["graph"]:
             G.add_edge(edge[0], edge[1], weight=edge[2])
 
         description_string += f"Edges: {len(G.edges())}\n"
-        description_string += f"Triangles: {triangles(G)}\n"
+        description_string += f"Triangles: {calculate_graph_triangles(G)}\n"
         description_string += f"Max Degree: {0 if not len(G.edges()) else max(G.degree(), key=lambda x: x[1])[1]}\n"
 
-    if "GO_terms" in clust:
-        top_terms = get_top_terms(clust, n_terms)
+    if "GO_terms" in cluster:
+        top_terms = get_cluster_top_terms(cluster, n_terms)
         description_string += "Top Terms:\n"
         for gid, freq in top_terms:
             try:
@@ -147,9 +88,9 @@ def print_cluster(clust, go_database, n_terms=10, return_str=False):
                 go_name = "Unknown"
             description_string += f"\t\t{gid} - <{go_name}> ({freq})\n"
 
-    if "llm_explanation" in clust:
-        llm_desc = clust["llm_explanation"]
-        llm_confidence = clust["llm_confidence"]
+    if "llm_explanation" in cluster:
+        llm_desc = cluster["llm_explanation"]
+        llm_confidence = cluster["llm_confidence"]
         description_string += f"LLM Explanation: {llm_desc}\n"
         description_string += f"LLM Confidence: {llm_confidence}\n"
 
@@ -159,22 +100,23 @@ def print_cluster(clust, go_database, n_terms=10, return_str=False):
         print(description_string)
 
 
-def hash_cluster(protein_list):
+def hash_cluster(protein_list: T.List[str]):
     return int(hashlib.md5("".join(sorted(protein_list)).encode()).hexdigest(), 16) % (
         2**61 - 1
     )
 
 
 def nx_graph_cluster(
-    cluster,
-    full_G=None,
-    use_recipe_nodes=False,
-    recipe_metric="degree",
-    recipe_cthresh="0.75",
+    cluster: T.Dict,
+    full_G: T.Optional[nx.Graph] = None,
+    use_recipe_nodes: bool = False,
+    recipe_metric: str = "degree",
+    recipe_cthresh: str = "0.75",
 ):
     if use_recipe_nodes:
         if full_G is None:
             logger.error("No full graph provided")
+            raise ValueError("No full graph provided")
         recipe_prots = cluster["recipe"][recipe_metric][recipe_cthresh]
         if not isinstance(recipe_prots, list):
             recipe_prots = list(recipe_prots)
@@ -188,15 +130,15 @@ def nx_graph_cluster(
     return clustG
 
 
-def load_cluster_json(infile):
+def load_cluster_json(infile: T.Union[str, Path]) -> T.Dict:
     with open(infile, "r") as f:
         clusters = json.load(f)
     return clusters
 
 
-def parse_GO_graph(go_graph_file):
+def parse_GO_graph(go_graph_file: T.Union[str, Path]) -> T.Tuple[T.Dict, T.Dict]:
     go2children = defaultdict(list)
-    go2desc = {}
+    go2desc = dict()
 
     def process_block(b):
         if not ("id" in b and "name" in b and "namespace" in b):
@@ -207,7 +149,7 @@ def parse_GO_graph(go_graph_file):
             for c in b["parent"]:
                 go2children[c].append(b["id"])
 
-    block = {}
+    block: T.Dict[str, T.Any] = dict()
     for line in open(go_graph_file):
         if line.startswith("[Term]"):
             if block:
@@ -233,7 +175,7 @@ def parse_GO_graph(go_graph_file):
     return go2children, go2desc
 
 
-def subset_GO_graph(go_graph_file, go_included_terms):
+def subset_GO_graph(go_graph_file: T.Union[str, Path], go_included_terms: T.List[str]):
     go2children, go2desc = parse_GO_graph(go_graph_file)
 
     visited_go_terms = set()
@@ -319,7 +261,7 @@ def filter_proteins_GO(proteins, go_map_f=None, go_database_f=None, go_filter_f=
 
 def clean_top_terms(c, go_db, return_counts=True, n_filter=3):
     csize = len(c)
-    tt = get_top_terms(c, 1)
+    tt = get_cluster_top_terms(c, 1)
     if len(tt):
         if tt[0][1] < n_filter:
             pass
