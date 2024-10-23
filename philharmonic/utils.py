@@ -416,7 +416,7 @@ def write_cluster_cytoscape(
         for edge in G.edges(data=True):
             f.write(f"{edge[0]}\t{edge[1]}\t{edge[2]['weight']}\n")
 
-    with open(outfile.with_suffix("_nodes.txt"), "w") as f:
+    with open(outfile.with_suffix(".nodes.txt"), "w") as f:
         f.write("Node\tType\n")
         for node in G.nodes():
             if node in cluster["recipe"][recipe_metric][recipe_cthresh]:
