@@ -1,3 +1,9 @@
+install: pyproject.toml poetry.lock
+	poetry install
+
+publish: pyproject.toml poetry.lock
+	poetry publish --build
+
 pipeline_figure: config.yml
 	touch sample_sequences.fasta;
 	snakemake --configfile config.yml --filegraph | dot -Tpng > img/pipeline.png;
