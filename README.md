@@ -149,7 +149,7 @@ Top Terms:
 
 Using the same files, you can run a statistical test of cluster function by permuting cluster labels, and computing the [Jaccard similarity](https://en.wikipedia.org/wiki/Jaccard_index) between terms in the same cluster.
 
-![function enrichment](img/readme_function_enrichment.png)
+![function enrichment](img/readme_function_enrichment.svg)
 
 ### 3. g:Profiler Enrichment Analysis
 
@@ -180,7 +180,7 @@ You can view GO enrichments for each cluster using [`g:Profiler`](https://biit.c
 
 If gene expression data is available for the target species, we can check that proteins clustered together have correlated expression, and we can visualize where differentially expressed genes localize within the networks and clusters. Here, we use *Pocillopora* transcriptomic data from [Connelly et al. 2022](https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2021.814124/full).
 
-![gene expression](img/readme_expression_correlation.png)
+![gene expression](img/readme_expression_correlation.svg)
 
 ### 5. View the full network in Cytoscape
 
