@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="img/philharmonic_logo.png" width="400"/>
+    <img src="https://raw.githubusercontent.com/samsledje/philharmonic/main/img/philharmonic_logo.png" width="400"/>
 </p>
 
 # Decoding the Functional Networks of Non-Model Organisms
@@ -86,7 +86,7 @@ A detailed overview of PHILHARMNONIC can be found in the [manuscript](#citation)
 
 Each of these steps can be invoked independently by running `snakemake -c {number of cores} --configfile {config file} {target}`. The `{target}` is shown in parentheses following each step below.
 
-![snakemake pipeline](img/pipeline.png)
+![snakemake pipeline](https://raw.githubusercontent.com/samsledje/philharmonic/main/img/pipeline.png)
 
 1. Download necessary files (`download_required_files`)
 2. Run [hmmscan](http://hmmer.org/) on protein sequences to annotate pfam domains (`annotate_seqs_pfam`)
@@ -119,7 +119,7 @@ Using the `clusters.json` file, the `network.positive.tsv` file, the `GO map.tsv
 | Sparsity     |      0.00659501 |
 
 <p>
- <img src="img/readme_sample_cluster.jpg" width="400"/>
+ <img src="https://raw.githubusercontent.com/samsledje/philharmonic/main/img/readme_sample_cluster.jpg" width="400"/>
 </p>
 
 ```bash
@@ -150,7 +150,7 @@ Top Terms:
 
 Using the same files, you can run a statistical test of cluster function by permuting cluster labels, and computing the [Jaccard similarity](https://en.wikipedia.org/wiki/Jaccard_index) between terms in the same cluster.
 
-![function enrichment](img/readme_function_enrichment.svg)
+![function enrichment](https://raw.githubusercontent.com/samsledje/philharmonic/main/img/readme_function_enrichment.svg)
 
 ### 3. g:Profiler Enrichment Analysis
 
@@ -181,7 +181,7 @@ You can view GO enrichments for each cluster using [`g:Profiler`](https://biit.c
 
 If gene expression data is available for the target species, we can check that proteins clustered together have correlated expression, and we can visualize where differentially expressed genes localize within the networks and clusters. Here, we use *Pocillopora* transcriptomic data from [Connelly et al. 2022](https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2021.814124/full).
 
-![gene expression](img/readme_expression_correlation.svg)
+![gene expression](https://raw.githubusercontent.com/samsledje/philharmonic/main/img/readme_expression_correlation.svg)
 
 ### 5. View the full network in Cytoscape
 
@@ -197,7 +197,7 @@ If gene expression data is available for the target species, we can check that p
 6. Layout the network with your layout of choice, we recommend `Layout -> Prefuse Force Directed Layout -> weight`
 7. Add node colors using the [PHILHARMONIC style](assets/philharmonic_styles.xml), imported with `File -> Import -> Styles from File`
 
-![cluster graph](img/readme_cluster_graph.svg)
+![cluster graph](https://raw.githubusercontent.com/samsledje/philharmonic/main/img/readme_cluster_graph.svg)
 
 ## Detailed Configuration
 

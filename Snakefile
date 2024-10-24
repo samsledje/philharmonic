@@ -6,11 +6,13 @@ rule PHILHARMONIC:
         cluster_functions = f"{config['work_dir']}/{config['run_name']}_cluster_graph_functions.tsv",
         human_readable = f"{config['work_dir']}/{config['run_name']}_human_readable.txt",
         go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
+    log:
+        f"{config['work_dir']}/logs/PHILHARMONIC.log",
     output:
         zipfile = f"{config['work_dir']}/{config['run_name']}.zip"
     params:
     shell:
-        "zip --junk-paths {output.zipfile} {input.network} {input.clusters} {input.go_map} {input.human_readable} {input.cluster_graph} {input.cluster_functions}"
+        "zip --junk-paths {output.zipfile} {input.network} {input.clusters} {input.go_map} {input.human_readable} {input.cluster_graph} {input.cluster_functions} > {log} 2>&1"
 
 
 rule download_required_files:

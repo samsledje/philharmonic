@@ -7,6 +7,7 @@ from . import (
     build_cluster_graph,
     build_go_map,
     cluster_network,
+    conduct,
     generate_candidates,
     summarize_clusters,
 )
@@ -36,9 +37,14 @@ def main(
     """
     Philharmonic: Decoding functional organization in non-model organisms
     """
+    pass
 
 
-# Register subcommands
+# Register commands
+app.command(
+    "conduct",
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
+)(conduct.main)
 app.command("build-go-map")(build_go_map.main)
 app.command("summarize-clusters")(summarize_clusters.main)
 app.command("add-cluster-functions")(add_cluster_functions.main)
