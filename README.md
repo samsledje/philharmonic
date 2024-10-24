@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="img/philharmonic_logo.png" width="400"/>
+    <img src="https://raw.githubusercontent.com/samsledje/philharmonic/main/img/philharmonic_logo.png" width="400"/>
 </p>
 
 # Decoding the Functional Networks of Non-Model Organisms
@@ -9,7 +9,7 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 <!-- [![DOI](https://zenodo.org/badge/308463847.svg)](https://zenodo.org/badge/latestdoi/308463847) -->
 
-Protein-protein interaction (PPI) networks are a fundamental tool for modeling cellular and molecular function, and a large and sophisticated toolbox has been developed to leverage their structure and topological organization to predict the functional roles of under-studied genes, proteins, and pathways. However, the overwhelming majority of experimentally-determined interactions from which such networks are constructed come from a small number of well-studied model organisms. Indeed, most species lack even a single experimentally-determined interaction in these databases, much less a network to enable the analysis of cellular function. We introduce PHILHARMONIC, a novel computational pipeline that couples deep learning *de novo* network inference with robust unsupervised spectral clustering algorithms to uncover functional pathways and high-level organization in non-model organisms. PHILHARMONIC uses a [D-SCRIPT](https://dscript.csail.mit.edu) model trained on human PPIs to predict an interaction network in the target species and partitions this network into communities using [Diffusion State Distance (DSD)](https://dsd.cs.tufts.edu/capdsd/) and spectral clustering. We develop a novel algorithm called [ReCIPE](https://github.com/focitti/ReCIPE), which aims to reconnects disconnected clusters, increasing functional enrichment and biological interpretability. Finally, we perform remote homology-based functional annotation with [hhsearch](https://pubmed.ncbi.nlm.nih.gov/15531603/) and [GODomainMiner](https://godm.loria.fr), which we extend from individual proteins to the full network using these clusters. We demonstrate the ability of PHILHARMONIC to recover clusters with significant functional coherence in the reef-building coral *P. damicornis*, its algal symbiont *C. goreaui*, and the well-annotated fruit fly *D. melanogaster*. We perform a deeper analysis of the *P. damicornis* network, where we show that PHILHARMONIC clusters correlate strongly with gene co-expression and investigate several clusters that participate in temperature regulation in the coral, including the first functional annotation of several previously uncharacterized proteins. Easy to run end-to-end and requiring only a sequenced proteome, PHILHARMONIC is an engine for biological hypothesis generation and discovery in non-model organisms.
+Protein-protein interaction (PPI) networks are a fundamental resource for modeling cellular and molecular function, and a large and sophisticated toolbox has been developed to leverage their structure and topological organization to predict the functional roles of under-studied genes, proteins, and pathways. However, the overwhelming majority of experimentally-determined interactions from which such networks are constructed come from a small number of well-studied model organisms. Indeed, most species lack even a single experimentally-determined interaction in these databases, much less a network to enable the analysis of cellular function, and methods for computational PPI prediction are too noisy to apply directly. We introduce PHILHARMONIC, a novel computational approach that couples deep learning *de novo* network inference ([D-SCRIPT](https://dscript.csail.mit.edu)) with robust unsupervised spectral clustering algorithms ([Diffusion State Distance](https://dsd.cs.tufts.edu/capdsd/)) to uncover functional relationships and high-level organization in non-model organisms. Our clustering approach allows us to de-noise the predicted network, producing highly informative functional modules. We also develop a novel algorithm called [ReCIPE](https://github.com/focitti/ReCIPE), which aims to reconnect disconnected clusters, increasing functional enrichment and biological interpretability. We perform remote homology-based functional annotation by leveraging [hmmscan](http://hmmer.org) and [GODomainMiner](https://godm.loria.fr) to assign initial functions to proteins at large evolutionary distances. Our clusters enable us to newly assign functions to uncharacterized proteins through "function by association." We demonstrate the ability of PHILHARMONIC to recover clusters with significant functional coherence in the reef-building coral *P. damicornis*, its algal symbiont *C. goreaui*, and the well-annotated fruit fly *D. melanogaster*. We perform a deeper analysis of the *P. damicornis* network, where we show that PHILHARMONIC clusters correlate strongly with gene co-expression and investigate several clusters that participate in temperature regulation in the coral, including the first putative functional annotation of several previously uncharacterized proteins. Easy to run end-to-end and requiring only a sequenced proteome, PHILHARMONIC is an engine for biological hypothesis generation and discovery in non-model organisms.
 
 ## Table of Contents
 
@@ -86,7 +86,7 @@ A detailed overview of PHILHARMNONIC can be found in the [manuscript](#citation)
 
 Each of these steps can be invoked independently by running `snakemake -c {number of cores} --configfile {config file} {target}`. The `{target}` is shown in parentheses following each step below.
 
-![snakemake pipeline](img/pipeline.png)
+![snakemake pipeline](https://raw.githubusercontent.com/samsledje/philharmonic/main/img/pipeline.png)
 
 1. Download necessary files (`download_required_files`)
 2. Run [hmmscan](http://hmmer.org/) on protein sequences to annotate pfam domains (`annotate_seqs_pfam`)
@@ -119,7 +119,7 @@ Using the `clusters.json` file, the `network.positive.tsv` file, the `GO map.tsv
 | Sparsity     |      0.00659501 |
 
 <p>
- <img src="img/readme_sample_cluster.jpg" width="400"/>
+ <img src="https://raw.githubusercontent.com/samsledje/philharmonic/main/img/readme_sample_cluster.jpg" width="400"/>
 </p>
 
 ```bash
@@ -150,7 +150,7 @@ Top Terms:
 
 Using the same files, you can run a statistical test of cluster function by permuting cluster labels, and computing the [Jaccard similarity](https://en.wikipedia.org/wiki/Jaccard_index) between terms in the same cluster.
 
-![function enrichment](img/readme_function_enrichment.svg)
+![function enrichment](https://raw.githubusercontent.com/samsledje/philharmonic/main/img/readme_function_enrichment.svg)
 
 ### 3. g:Profiler Enrichment Analysis
 
@@ -181,7 +181,7 @@ You can view GO enrichments for each cluster using [`g:Profiler`](https://biit.c
 
 If gene expression data is available for the target species, we can check that proteins clustered together have correlated expression, and we can visualize where differentially expressed genes localize within the networks and clusters. Here, we use *Pocillopora* transcriptomic data from [Connelly et al. 2022](https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2021.814124/full).
 
-![gene expression](img/readme_expression_correlation.svg)
+![gene expression](https://raw.githubusercontent.com/samsledje/philharmonic/main/img/readme_expression_correlation.svg)
 
 ### 5. View the full network in Cytoscape
 
@@ -197,7 +197,7 @@ If gene expression data is available for the target species, we can check that p
 6. Layout the network with your layout of choice, we recommend `Layout -> Prefuse Force Directed Layout -> weight`
 7. Add node colors using the [PHILHARMONIC style](assets/philharmonic_styles.xml), imported with `File -> Import -> Styles from File`
 
-![cluster graph](img/readme_cluster_graph.svg)
+![cluster graph](https://raw.githubusercontent.com/samsledje/philharmonic/main/img/readme_cluster_graph.svg)
 
 ## Detailed Configuration
 

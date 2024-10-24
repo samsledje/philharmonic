@@ -6,11 +6,13 @@ rule PHILHARMONIC:
         cluster_functions = f"{config['work_dir']}/{config['run_name']}_cluster_graph_functions.tsv",
         human_readable = f"{config['work_dir']}/{config['run_name']}_human_readable.txt",
         go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
+    log:
+        f"{config['work_dir']}/logs/PHILHARMONIC.log",
     output:
         zipfile = f"{config['work_dir']}/{config['run_name']}.zip"
     params:
     shell:
-        "zip --junk-paths {output.zipfile} {input.network} {input.clusters} {input.go_map} {input.human_readable} {input.cluster_graph} {input.cluster_functions}"
+        "zip --junk-paths {output.zipfile} {input.network} {input.clusters} {input.go_map} {input.human_readable} {input.cluster_graph} {input.cluster_functions} > {log} 2>&1"
 
 
 rule download_required_files:
@@ -70,8 +72,6 @@ rule annotate_seqs_pfam:
         hmmscan_path = config["hmmscan"]["path"]
     log:
         f"{config['work_dir']}/logs/03_annotate_seqs_pfam.log",
-    conda:
-        "environment.yml",
     shell:
         "{params.hmmscan_path} --cpu {threads} -o {params.work_dir}/{params.run_name}_hmmscan.out --tblout {params.work_dir}/{params.run_name}_hmmscan.tblout --domtblout {params.work_dir}/{params.run_name}_hmmscan.domtblout --acc --noali --notextw --cut_ga {input.pfam_database} {input.sequences} > {log} 2>&1"
 
@@ -83,8 +83,6 @@ rule annotate_seqs_go:
         go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
     log:
         f"{config['work_dir']}/logs/04_annotate_seqs_go.log",
-    conda:
-        "environment.yml",
     shell:
         "philharmonic build-go-map -o {output.go_map} --hhtblout {input.hhtblout} --pfam_go_files {input.pfam_gobp} > {log} 2>&1"
 
@@ -103,8 +101,6 @@ rule generate_candidates:
         seed = config["seed"],
     log:
         f"{config['work_dir']}/logs/05_generate_candidates.log",
-    conda:
-        "environment.yml",
     shell:
         "philharmonic generate-candidates --paircount {params.n_pairs} -o {output.candidates} --seq_out {output.kept_proteins} --go_map {input.go_map} --go_database {input.go_database} --go_filter {input.go_filter} --sequences {input.sequences} --seed {params.seed} > {log} 2>&1"
 
@@ -125,8 +121,6 @@ rule predict_network:
         nvidia_gpu=1
     log:
         f"{config['work_dir']}/logs/06_predict_network.log",
-    conda:
-        "environment.yml",
     shell:
         "{params.dscript_path} predict --pairs {input.candidates} --seqs {input.sequences} --model {params.dscript_model} --outfile {params.work_dir}/{params.run_name}_network --device {params.device} --thresh {params.t} > {log}"
 
@@ -144,8 +138,6 @@ rule compute_distances:
         confidence = "-c" if config["dsd"]["confidence"] else ""
     log:
         f"{config['work_dir']}/logs/07_compute_distances.log",
-    conda:
-        "environment.yml",
     shell:
         "{params.dsd_path} {params.confidence} --converge -t {params.t} --outfile {params.work_dir}/{params.run_name}_distances {input.network} > {log} 2>&1"
 
@@ -166,8 +158,6 @@ rule cluster_network:
         seed = config["seed"]
     log:
         f"{config['work_dir']}/logs/08_cluster_network.log",
-    conda:
-        "environment.yml",
     shell:
         "philharmonic cluster-network --network_file {input.network} --dsd_file {input.distances} --output {output.clusters} --min_cluster_size {params.min_cluster_size} --cluster_divisor {params.cluster_divisor} --init_k {params.init_k} --sparsity {params.sparsity} --random_seed {params.seed} > {log} 2>&1"
 
@@ -185,8 +175,6 @@ rule reconnect_recipe:
         metric = config["recipe"]["metric"]
     log:
         f"{config['work_dir']}/logs/09_reconnect_recipe.log",
-    conda:
-        "environment.yml",
     shell:
         "recipe-cluster cook --network-filepath {input.network} --cluster-filepath {input.clusters} --lr {params.lr} -cthresh {params.cthresh} --max {params.max_proteins} --metric {params.metric} --outfile {output.clusters_connected} > {log}"
 
@@ -198,8 +186,6 @@ rule add_cluster_functions:
         clusters_functional = f"{config['work_dir']}/{config['run_name']}_clusters.functional.json",
     log:
         f"{config['work_dir']}/logs/10_add_cluster_functions.log",
-    conda:
-        "environment.yml",
     shell:
         "philharmonic add-cluster-functions -o {output.clusters_functional} -cfp {input.clusters} --go-map {input.go_map} > {log} 2>&1"
 
@@ -217,8 +203,6 @@ rule cluster_graph:
         recipe_cthresh = config["recipe"]["cthresh"],
     log:
         f"{config['work_dir']}/logs/11_cluster_graph.log",
-    conda:
-        "environment.yml",
     shell:
         "philharmonic build-cluster-graph -o {output.graph} -coc {output.coc_functions} -cfp {input.clusters} -nfp {input.network} --go_map {input.go_map} --go_db {input.go_database} --recipe_metric {params.recipe_metric} --recipe_cthresh {params.recipe_cthresh} > {log} 2>&1"
 
@@ -235,7 +219,5 @@ rule summarize_clusters:
         do_llm_naming = "--llm-name" if config["use_llm"] else ""
     log:
         f"{config['work_dir']}/logs/12_summarize_clusters.log",
-    conda:
-        "environment.yml",
     shell:
         "philharmonic summarize-clusters {params.do_llm_naming} --model {params.llm_model} {params.api_key} -o {output.human_readable} --json {output.readable_json} --go_db {input.go_database} -cfp {input.clusters} > {log}"

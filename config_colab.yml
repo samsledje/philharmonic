@@ -1,0 +1,47 @@
+# User Specified
+run_name: philharmonic_colab
+sequence_path: sample_sequences.fasta
+go_filter_path: go_filter.txt
+work_dir: philharmonic_toy_results
+use_llm: false
+
+############################################
+
+# General Parameters
+seed: 42
+
+# hmmscan Parameters
+hmmscan:
+  path: hmmscan
+  threads: 32
+
+# D-SCRIPT Parameters
+dscript:
+  path: dscript
+  n_pairs: -1
+  model: samsl/dscript_human_v1
+  device: 0
+
+# DSD Parameters
+dsd:
+  path: fastdsd
+  t: 0.1
+  confidence: true
+
+# Clustering Parameters
+clustering:
+  init_k: 100
+  min_cluster_size: 3
+  cluster_divisor: 20
+  sparsity_thresh: 1e-5
+
+# ReCIPE Parameters
+recipe:
+  lr: 0.1
+  cthresh: 0.75
+  max_proteins: 20
+  metric: degree
+
+# LLM Naming Parameters
+llm:
+  model: gpt-4o-mini

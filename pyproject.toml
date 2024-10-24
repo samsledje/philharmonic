@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "philharmonic"
-version = "0.7.0"
+version = "0.7.2"
 description = "Decoding functional organization in non-model organisms"
 authors = ["Samuel Sledzieski <samsl@mit.edu>"]
 license = "MIT"
@@ -9,19 +9,29 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 biopython = "^1.84"
-numpy = "^2.1.2"
+numpy = [
+    {version = "^2.1.2", python = ">=3.11"},
+    {version = "^1.26.4", python = ">=3.8,<3.11"},
+]
 hmmer = "^3.4.0.0"
 matplotlib = "^3.9.2"
 networkx = "^3.4.2"
 pandas = "^2.2.3"
 scikit-learn = "^1.5.2"
-scipy = "^1.14.1"
+scipy= [
+    {version = "^1.14.1", python = ">=3.11"},
+    {version = "1.13.1", python = ">=3.8,<3.11"},
+]
 seaborn = "^0.13.2"
 tqdm = "^4.66.5"
 llm = "^0.16"
 loguru = "^0.7.2"
 typer = "^0.12.5"
 regex = "^2024.9.11"
+pulp= [
+    {version = "^2.9.0", python = ">=3.11"},
+    {version = "2.7.0", python = ">=3.8,<3.11"},
+]
 snakemake = [
     {version = "^8.24.0", python = ">=3.11"},
     {version = "^7.0", python = ">=3.8,<3.11"}

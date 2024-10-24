@@ -64,7 +64,9 @@ def llm_name_cluster(description, model="4o-mini", api_key=None):
     cmd = f"llm --system '{LLM_SYSTEM_TEMPLATE}' -m {model} '{description}' "
 
     proc = sp.Popen(shlex.split(cmd), stdout=sp.PIPE, stderr=sp.PIPE)
-    out, _ = proc.communicate()
+    out, err = proc.communicate()
+    if err.decode("utf-8") != "":
+        raise ChildProcessError(err.decode("utf-8"))
 
     reg = re.compile("(.*$)\s+(.*$)\s+(.*$)", re.MULTILINE)
     regsearch = reg.search(out.decode("utf-8"))
