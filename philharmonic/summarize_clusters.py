@@ -66,7 +66,7 @@ def llm_name_cluster(description, model="4o-mini", api_key=None):
     proc = sp.Popen(shlex.split(cmd), stdout=sp.PIPE, stderr=sp.PIPE)
     out, err = proc.communicate()
     if err.decode("utf-8") != "":
-        logger.error(err.decode("utf-8"))
+        raise ChildProcessError(err.decode("utf-8"))
 
     reg = re.compile("(.*$)\s+(.*$)\s+(.*$)", re.MULTILINE)
     regsearch = reg.search(out.decode("utf-8"))
