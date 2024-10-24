@@ -58,7 +58,10 @@ def main(
     all_pairs = list(combinations(allowed_proteins, 2))
 
     if paircount > scipy.special.comb(len(allowed_proteins), 2):
-        raise ValueError("Pair count exceeds number of possible pairs")
+        logger.warning(
+            "Pair count exceeds number of possible pairs, falling back to all possible pairs"
+        )
+        sampled_pairs = np.asarray(all_pairs)
     elif paircount < 0:
         logger.info(f"Using all {len(all_pairs)} possible pairs")
         sampled_pairs = np.asarray(all_pairs)
