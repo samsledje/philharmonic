@@ -18,19 +18,19 @@ hmmscan:
 # D-SCRIPT Parameters
 dscript:
   path: dscript
-  n_pairs: 10000
+  n_pairs: -1
   model: samsl/dscript_human_v1
   device: 0
 
 # DSD Parameters
 dsd:
   path: fastdsd
-  t: 0.25
+  t: 0.1
   confidence: true
 
 # Clustering Parameters
 clustering:
-  init_k: 200
+  init_k: 100
   min_cluster_size: 3
   cluster_divisor: 20
   sparsity_thresh: 1e-5
