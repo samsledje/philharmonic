@@ -77,9 +77,10 @@ def main(
 
     logger.info(f"Running command: {' '.join(cmd)}")
 
-    with sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT) as p, open(
-        log_file, "ab"
-    ) as file:
+    with (
+        sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT) as p,
+        open(log_file, "ab") as file,
+    ):
         assert p.stdout is not None
         for line in p.stdout:  # b'\n'-separated lines
             sys.stdout.buffer.write(line)  # pass bytes as is

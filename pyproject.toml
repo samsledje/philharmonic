@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "philharmonic"
-version = "0.8.0"
+version = "0.8.1"
 description = "Decoding functional organization in non-model organisms"
 authors = ["Samuel Sledzieski <samsl@mit.edu>"]
 license = "MIT"
@@ -58,6 +58,23 @@ biopython = "^1.84"
 
 [tool.poetry.scripts]
 philharmonic = "philharmonic.__main__:app"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+indent-width = 4
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP"]
+ignore = ["E501", "C"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+addopts = "--cov=philharmonic --cov-report=term-missing"
+testpaths = ["tests"]
 
 [build-system]
 requires = ["poetry-core"]

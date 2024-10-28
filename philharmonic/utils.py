@@ -6,7 +6,7 @@ import time
 import typing as T
 from collections import defaultdict
 from pathlib import Path
-from typing import Optional, TypeAlias, Union
+from typing import TypeAlias
 
 import networkx as nx
 import numpy as np
@@ -20,8 +20,8 @@ from matplotlib.colors import LinearSegmentedColormap
 
 
 def add_GO_function(
-    cluster: T.Dict, go_map: T.Dict, go_db: T.Optional[T.Dict] = None
-) -> T.Dict[str, int]:
+    cluster: dict, go_map: dict, go_db: dict | None = None
+) -> dict[str, int]:
     """
     Keep track of how many proteins in the cluster have a given GO term
     """
@@ -41,8 +41,8 @@ def calculate_graph_triangles(graph: nx.Graph) -> int:
 
 
 def get_cluster_top_terms(
-    cluster: T.Dict, N: int = 10, go_map: T.Optional[T.Dict] = None
-) -> T.List[T.Tuple[str, int]]:
+    cluster: dict, N: int = 10, go_map: dict | None = None
+) -> list[tuple[str, int]]:
     if (go_map is not None) and ("GO_terms" not in cluster):
         cluster["GO_terms"] = add_GO_function(cluster, go_map)
     term_dict = cluster["GO_terms"]
@@ -52,11 +52,11 @@ def get_cluster_top_terms(
 
 
 def print_cluster(
-    cluster: T.Dict,
-    go_database: T.Dict,
+    cluster: dict,
+    go_database: dict,
     n_terms: int = 10,
     return_str: bool = False,
-) -> T.Optional[str]:
+) -> str | None:
     description_string = ""
 
     if "llm_name" in cluster:
@@ -108,15 +108,15 @@ def print_cluster(
         return None
 
 
-def hash_cluster(protein_list: T.List[str]) -> int:
+def hash_cluster(protein_list: list[str]) -> int:
     return int(hashlib.md5("".join(sorted(protein_list)).encode()).hexdigest(), 16) % (
         2**61 - 1
     )
 
 
 def nx_graph_cluster(
-    cluster: T.Dict,
-    full_G: T.Optional[nx.Graph] = None,
+    cluster: dict,
+    full_G: nx.Graph | None = None,
     use_recipe_nodes: bool = False,
     recipe_metric: str = "degree",
     recipe_cthresh: str = "0.75",
@@ -138,13 +138,13 @@ def nx_graph_cluster(
     return clustG
 
 
-def load_cluster_json(infile: T.Union[str, Path]) -> T.Dict:
-    with open(infile, "r") as f:
+def load_cluster_json(infile: str | Path) -> dict:
+    with open(infile) as f:
         clusters = json.load(f)
     return clusters
 
 
-def parse_GO_graph(go_graph_file: T.Union[str, Path]) -> T.Tuple[T.Dict, T.Dict]:
+def parse_GO_graph(go_graph_file: str | Path) -> tuple[dict, dict]:
     go2children = defaultdict(list)
     go2desc = dict()
 
@@ -157,7 +157,7 @@ def parse_GO_graph(go_graph_file: T.Union[str, Path]) -> T.Tuple[T.Dict, T.Dict]
             for c in b["parent"]:
                 go2children[c].append(b["id"])
 
-    block: T.Dict[str, T.Any] = dict()
+    block: dict[str, T.Any] = dict()
     for line in open(go_graph_file):
         logger.debug(line)
         if line.startswith("[Term]"):
@@ -184,9 +184,7 @@ def parse_GO_graph(go_graph_file: T.Union[str, Path]) -> T.Tuple[T.Dict, T.Dict]
     return go2children, go2desc
 
 
-def subset_GO_graph(
-    go_graph_file: T.Union[str, Path], go_included_terms: T.List[str]
-) -> T.List:
+def subset_GO_graph(go_graph_file: str | Path, go_included_terms: list[str]) -> list:
     go2children, go2desc = parse_GO_graph(go_graph_file)
     logger.info(go2children)
     logger.info(go2desc)
@@ -208,9 +206,9 @@ def subset_GO_graph(
     return sorted(go_subset)
 
 
-def parse_GO_database(infile: T.Union[str, Path]) -> T.Dict:
+def parse_GO_database(infile: str | Path) -> dict:
     terms = {}
-    with open(infile, "r") as f:
+    with open(infile) as f:
         for line in f:
             line = line.strip()
             if line == "[Term]":
@@ -227,7 +225,7 @@ def parse_GO_database(infile: T.Union[str, Path]) -> T.Dict:
     return terms
 
 
-def parse_GO_map(file_path: T.Union[str, Path]) -> T.Dict[str, T.List[str]]:
+def parse_GO_map(file_path: str | Path) -> dict[str, list[str]]:
     seqDb = pd.read_csv(file_path, sep=",")
     seqDb.columns = pd.Index(["seq", "manual_annot", "pfam_list", "GO_list"])
     seqDb["GO_str"] = seqDb["GO_list"]
@@ -242,7 +240,7 @@ def parse_GO_map(file_path: T.Union[str, Path]) -> T.Dict[str, T.List[str]]:
     seqDb["GO_ids"] = seqDb["GO_list"].apply(extract_GO_id_from_list)
     seq2GO = seqDb[["seq", "GO_ids"]]
     seq2GO.columns = pd.Index(["seq", "GO_ids"])
-    go_map: T.Dict[str, T.List[str]] = dict()
+    go_map: dict[str, list[str]] = dict()
     for _, r in seq2GO.iterrows():
         if r.GO_ids is not None:
             go_map[r.seq] = r.GO_ids
@@ -250,12 +248,12 @@ def parse_GO_map(file_path: T.Union[str, Path]) -> T.Dict[str, T.List[str]]:
 
 
 def filter_proteins_GO(
-    proteins: T.List[str],
-    go_filter_f: T.Union[str, Path],
-    go_map_f: T.Union[str, Path],
-    go_database_f: T.Union[str, Path],
-) -> T.Set[str]:
-    with open(go_filter_f, "r") as f:
+    proteins: list[str],
+    go_filter_f: str | Path,
+    go_map_f: str | Path,
+    go_database_f: str | Path,
+) -> set[str]:
+    with open(go_filter_f) as f:
         # Get children of allowed GO terms
         allowed_go_initial = [line.strip() for line in f]
         allowed_go = set(
@@ -273,8 +271,8 @@ def filter_proteins_GO(
 
 
 def clean_top_terms(
-    clust: T.Dict,
-    go_db: T.Dict[str, str],
+    clust: dict,
+    go_db: dict[str, str],
     return_counts: bool = False,
     n_filter: int = 3,
 ):
@@ -294,13 +292,13 @@ def clean_top_terms(
 
 
 def get_node_colors(
-    cluster: T.Dict,
+    cluster: dict,
     recipe_metric: str = "degree",
     recipe_cthresh: str = "0.75",
     base_color: str = "blue",
     recipe_color: str = "red",
-) -> T.Dict[str, str]:
-    colors: T.Dict[str, str] = dict()
+) -> dict[str, str]:
+    colors: dict[str, str] = dict()
     for k in cluster["members"]:
         colors[k] = base_color
     for k in cluster["recipe"][recipe_metric][recipe_cthresh]:
@@ -311,9 +309,9 @@ def get_node_colors(
 def plot_degree(
     G: nx.Graph,
     name: str = "Graph",
-    node_colors: T.Optional[T.Dict[str, str]] = None,
-    node_labels: T.Optional[T.List[str]] = None,
-    savefig: T.Optional[T.List[str]] = None,
+    node_colors: dict[str, str] | None = None,
+    node_labels: list[str] | None = None,
+    savefig: list[str] | None = None,
     show: bool = True,
 ) -> None:
     # From https://networkx.org/documentation/stable/auto_examples/drawing/plot_degree.html
@@ -362,14 +360,14 @@ def plot_degree(
 
 
 def plot_cluster(
-    cluster: T.Dict,
+    cluster: dict,
     full_graph: nx.Graph,
     name: str = "Graph",
-    node_labels: T.Optional[T.List[str]] = None,
+    node_labels: list[str] | None = None,
     use_recipe: bool = True,
     recipe_metric: str = "degree",
     recipe_cthresh: str = "0.75",
-    savefig: T.Optional[T.List[str]] = None,
+    savefig: list[str] | None = None,
     show: bool = True,
 ) -> None:
     # From https://networkx.org/documentation/stable/auto_examples/drawing/plot_degree.html
@@ -389,9 +387,9 @@ def plot_cluster(
 
 
 def write_cluster_fasta(
-    cluster_file: T.Union[str, Path],
-    sequence_file: T.Union[str, Path],
-    directory: T.Union[str, Path] = ".",
+    cluster_file: str | Path,
+    sequence_file: str | Path,
+    directory: str | Path = ".",
     prefix: str = "cluster",
 ) -> None:
     cluster_dict = load_cluster_json(cluster_file)
@@ -409,9 +407,9 @@ def write_cluster_fasta(
 
 
 def write_cluster_cytoscape(
-    cluster: T.Dict,
+    cluster: dict,
     full_G: nx.Graph,
-    outfile: T.Union[str, Path] = Path("cytoscape_input.txt"),
+    outfile: str | Path = Path("cytoscape_input.txt"),
     with_recipe: bool = True,
     recipe_metric: str = "degree",
     recipe_cthresh: str = "0.75",
@@ -444,12 +442,12 @@ def write_cluster_cytoscape(
 
 
 def create_rainbow_colorbar(
-    vmin: T.Union[int, float] = 0,
-    vmax: T.Union[int, float] = 100,
-    size: T.Tuple[int, int] = (1, 1),
+    vmin: int | float = 0,
+    vmax: int | float = 100,
+    size: tuple[int, int] = (1, 1),
     step: int = 25,
     label: str = "pLDDT",
-    savefig: T.Optional[T.Union[str, Path]] = None,
+    savefig: str | Path | None = None,
 ) -> plt.Figure:
     # Create figure and axes
     fig, ax = plt.subplots(figsize=size)
@@ -484,7 +482,7 @@ def create_rainbow_colorbar(
 
 
 # Type aliases for clarity
-PathLike: TypeAlias = Union[str, Path]
+PathLike: TypeAlias = str | Path
 
 
 def download_file_safe(
@@ -493,7 +491,7 @@ def download_file_safe(
     max_retries: int = 3,
     retry_delay: int = 5,
     chunk_size: int = 8192,
-    expected_hash: Optional[str] = None,
+    expected_hash: str | None = None,
 ) -> bool:
     """
     Download a file with retry logic and validation.

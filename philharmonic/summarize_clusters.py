@@ -68,7 +68,7 @@ def llm_name_cluster(description, model="4o-mini", api_key=None):
     if err.decode("utf-8") != "":
         raise ChildProcessError(err.decode("utf-8"))
 
-    reg = re.compile("(.*$)\s+(.*$)\s+(.*$)", re.MULTILINE)
+    reg = re.compile(r"(.*$)\s+(.*$)\s+(.*$)", re.MULTILINE)
     regsearch = reg.search(out.decode("utf-8"))
     name = regsearch.group(1)
     explanation = regsearch.group(2)
