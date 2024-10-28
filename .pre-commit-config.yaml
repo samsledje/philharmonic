@@ -25,3 +25,4 @@ repos:
   hooks:
     - id: mypy
       name: Type Checker
+      args: ["--ignore-missing-imports"]
