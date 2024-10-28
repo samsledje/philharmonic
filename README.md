@@ -43,7 +43,7 @@ The only data that PHILHARMONIC requires is a set of protein sequences in `.fast
 
 ### Setting up the config
 
-The `config.yml` file is where you will specify the parameters for the pipeline. We provide a [sample config](config.yml) in this repository
+The `config.yml` file is where you will specify the parameters for PHILHARMONIC. We provide a [sample config](config.yml) in this repository
 with recommended parameters. You will need to specify the paths to your protein sequences. You can find an explanation for all parameters [below](#detailed-configuration). If you want to use an LLM to automatically name your clusters, make sure you have set the `OPENAI_API_KEY` environment variable with your API key, or set `llm.model` in the config to an open source LLM (see [llm](https://llm.datasette.io/en/stable/) package docs). If you use a different configuration file name or location, you can specify it with the `--configfile` flag when running Snakemake.
 
 ```yaml
@@ -55,15 +55,15 @@ use_llm: [true/false: whether to name clusters using a large language model]
 ...
 ```
 
-### Running the pipeline
+### Running PHILHARMONIC
 
-Once your configuration file is set up, you can invoke the pipeline with
+Once your configuration file is set up, you can invoke PHILHARMONIC with
 
 ```bash
 snakemake -c {number of cores} --configfile {config file}
 ```
 
-### Pipeline Outputs
+### Outputs
 
 We provide a zip of the most relevant output files in `[run].zip`, which contains the following files:
 
@@ -82,7 +82,7 @@ Instructions for working with and evaluating these results can be found in [Inte
 
 ## Workflow Overview
 
-A detailed overview of PHILHARMNONIC can be found in the [manuscript](#citation). We briefly outline the pipeline below.
+A detailed overview of PHILHARMNONIC can be found in the [manuscript](#citation). We briefly outline the method below.
 
 Each of these steps can be invoked independently by running `snakemake -c {number of cores} --configfile {config file} {target}`. The `{target}` is shown in parentheses following each step below.
 
@@ -201,7 +201,7 @@ If gene expression data is available for the target species, we can check that p
 
 ## Detailed Configuration
 
-The `config.yml` file contains various parameters that control the behavior of the PHILHARMONIC pipeline. Below is a detailed explanation of each parameter, including default values:
+The `config.yml` file contains various parameters that control the behavior of PHILHARMONIC. Below is a detailed explanation of each parameter, including default values:
 
 ### User Specified
 
