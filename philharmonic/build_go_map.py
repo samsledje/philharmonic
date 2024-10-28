@@ -1,5 +1,4 @@
 from collections import defaultdict
-from typing import List
 
 import pandas as pd
 import typer
@@ -13,7 +12,7 @@ app = typer.Typer()
 def main(
     output: str = typer.Option(..., "-o", "--output", help="Output file"),
     hhtblout: str = typer.Option(..., "--hhtblout", help="hhsearch tblout file"),
-    pfam_go_files: List[str] = typer.Option(
+    pfam_go_files: list[str] = typer.Option(
         ..., "--pfam_go_files", help="Pfam GO files"
     ),
 ):

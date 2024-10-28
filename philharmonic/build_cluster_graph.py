@@ -1,11 +1,11 @@
 from collections import Counter
+from typing import Annotated
 
 import networkx as nx
 import pandas as pd
 import typer
 from loguru import logger
 from tqdm import tqdm
-from typing_extensions import Annotated
 
 from .utils import (
     add_GO_function,

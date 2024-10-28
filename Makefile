@@ -11,8 +11,8 @@ pipeline_figure: config.yml
 	rm sample_sequences.fasta;
 
 format:
-	ruff check --select I --fix
-	ruff format
+	poetry run ruff check --fix .
+	poetry run ruff format .
 
 test:
 	mypy philharmonic --ignore-missing-imports

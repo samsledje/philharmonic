@@ -1,7 +1,6 @@
 # python src/cluster_network.py --network_file {input.network} --dsd_file {input.distances} --output {output.clusters} --min_cluster_size {config[clustering][min_cluster_size]} --cluster_divisor {config[clustering][cluster_divisor]} --init_k {config[clustering][init_k]}
 
 import json
-import typing as T
 from queue import PriorityQueue
 
 import networkx as nx
@@ -126,7 +125,7 @@ def main(
     clusts.sort(key=lambda x: len(x), reverse=True)
 
     logger.info(f"Initial Clustering: {len(clusts)} clusters")
-    clustQ: PriorityQueue[T.Tuple[float, T.List[int]]] = PriorityQueue()
+    clustQ: PriorityQueue[tuple[float, list[int]]] = PriorityQueue()
     for c in clusts:
         clustQ.put((1 / len(c), c))
 
