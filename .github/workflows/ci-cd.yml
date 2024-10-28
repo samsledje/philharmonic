@@ -32,7 +32,7 @@ jobs:
 
       - name: Load cached venv
         id: cached-poetry-dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
@@ -40,6 +40,11 @@ jobs:
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --with dev
+
+      - name: Get package version
+        if: matrix.python-version == "3.11"
+        id: version
+        run: echo "VERSION=$(poetry version --short)" >> $GITHUB_OUTPUT
 
       - name: Lint with Ruff
         run: |
@@ -49,13 +54,14 @@ jobs:
       - name: Run tests with pytest
         # Generate both XML and HTML coverage reports
         run: |
-          poetry run pytest --cov --cov-report=xml --cov-report=html
+          poetry run pytest --cov=philharmonic --cov-report=xml --cov-report=html
 
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v3
+        if: matrix.python-version == "3.11"
+        uses: actions/upload-artifact@v4
         with:
           # Include branch name and commit SHA in artifact name
-          name: coverage-py${{ matrix.python-version }}-${{ github.ref_name }}-${{ github.sha }}
+          name: coverage-v${{ steps.version.outputs.VERSION }}-py${{ matrix.python-version }}-${{ github.ref_name }}-${{ github.sha }}
           path: |
             coverage.xml
             htmlcov/
@@ -64,7 +70,7 @@ jobs:
   publish:
     needs: quality
     runs-on: ubuntu-latest
-    if: github.event_name == 'release'
+    if: github.event_name == "release"
 
     steps:
       - uses: actions/checkout@v4

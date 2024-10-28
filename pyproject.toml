@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "philharmonic"
-version = "0.8.0"
+version = "0.8.1"
 description = "Decoding functional organization in non-model organisms"
 authors = ["Samuel Sledzieski <samsl@mit.edu>"]
 license = "MIT"
