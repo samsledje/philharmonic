@@ -13,3 +13,7 @@ pipeline_figure: config.yml
 format:
 	ruff check --select I --fix
 	ruff format
+
+test:
+	mypy philharmonic --ignore-missing-imports
+	pytest --cov=philharmonic --cov-report=term-missing tests

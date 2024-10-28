@@ -25,15 +25,11 @@ Protein-protein interaction (PPI) networks are a fundamental resource for modeli
 ## Installation
 
 ```bash
-mamba create -n philharmonic python==3.11
-mamba install pytorch torchvision torchaudio pytorch-cuda=12.4 -c pytorch -c nvidia
-mamba install poetry
-git clone https://github.com/samsledje/philharmonic.git
-cd philharmonic
-poetry install --only main
+pip install philharmonic
 ```
 
-We also recommend installing [Cytoscape](https://cytoscape.org/) to visualizing the resulting networks. You may need to swap out the pytorch-cuda version for your specific system.
+We also recommend installing [Cytoscape](https://cytoscape.org/) to visualizing the resulting networks.
+ <!-- You may need to swap out the pytorch-cuda version for your specific system. -->
 
 ## Usage
 
@@ -60,7 +56,7 @@ use_llm: [true/false: whether to name clusters using a large language model]
 Once your configuration file is set up, you can invoke PHILHARMONIC with
 
 ```bash
-snakemake -c {number of cores} --configfile {config file}
+philharmonic conduct -cf {config file} -c {number of cores}
 ```
 
 ### Outputs
@@ -80,27 +76,36 @@ run.zip
 
 Instructions for working with and evaluating these results can be found in [Interpreting the Results](#interpreting-the-results).
 
+### Running on Google Colab
+<a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/dev/nb/00_run_philharmonic.ipynb">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
+
+We provide support for running PHILHARMONIC in Google Colab with the notebook at `nb/00_run_philharmonic.ipynb`. However, we note that the `hmmscan` and `dscript` sections can be quite resource intensive, and may result in a time-out if run on Colab.
+
 ## Workflow Overview
 
 A detailed overview of PHILHARMNONIC can be found in the [manuscript](#citation). We briefly outline the method below.
-
-Each of these steps can be invoked independently by running `snakemake -c {number of cores} --configfile {config file} {target}`. The `{target}` is shown in parentheses following each step below.
 
 ![snakemake pipeline](https://raw.githubusercontent.com/samsledje/philharmonic/main/img/pipeline.png)
 
 1. Download necessary files (`download_required_files`)
 2. Run [hmmscan](http://hmmer.org/) on protein sequences to annotate pfam domains (`annotate_seqs_pfam`)
 3. Use pfam-go associations to add [GO terms](https://geneontology.org/) to sequences (`annotate_seqs_go`)
-4. Generate candidate pairs (`generate_candidates`)
+4. Generate candidate pairs (`generate_candidates`+)
 5. Use [D-SCRIPT](https://dscript.csail.mit.edu/) to predict network (`predict_network`)
 6. Compute node distances with [FastDSD](https://github.com/samsledje/fastDSD) (`compute_distances`)
-7. Cluster the network with [spectral clustering](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.SpectralClustering.html) (`cluster_network`)
+7. Cluster the network with [spectral clustering](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.SpectralClustering.html) (`cluster_network`+)
 8. Use [ReCIPE](https://pypi.org/project/recipe-cluster/) to reconnect clusters (`reconnect_recipe`)
-9. Annotate clusters with functions (`add_cluster_functions`)
-10. Compute cluster graph (`cluster_graph`)
-11. Name and describe clusters for human readability (`summarize_clusters`)
+9. Annotate clusters with functions (`add_cluster_functions`+)
+10. Compute cluster graph (`cluster_graph`+)
+11. Name and describe clusters for human readability (`summarize_clusters`+)
+
+Each of these steps can be invoked independently by running `snakemake -c {number of cores} --configfile {config file} {target}`. The `{target}` is shown in parentheses following each step above. Certain steps (marked with a +) are available to run directly as `philharmonic` commands with the appropriate input, e.g. `philharmonic summarize-clusters`---note that in this case, underscores are generally replaced with dashes. Run `philharmonic --help` for full specifications.
 
 ## Interpreting the Results
+
+We provide some guidance on interpreting the output of PHILHARMONIC here, as well as analysis notebooks which can be run locally or in Google Colab. The typical starting point for these analyses is the zip file described in [Outputs](#outputs).
 
 ### 1. Result Summary
 
@@ -256,7 +261,13 @@ Note: if you set `use_llm` with an OpenAI model, make sure that you have set the
 ## Citation
 
 ```bibtex
-TBD
+@article{sledzieski2024decoding,
+  title={Decoding the Functional Interactome of Non-Model Organisms with PHILHARMONIC},
+  author={Sledzieski, Samuel and Versavel, Charlotte and Singh, Rohit and Ocitti, Faith and Devkota, Kapil and Kumar, Lokender and Shpilker, Polina and Roger, Liza and Yang, Jinkyu and Lewinski, Nastassja and Putnam, Hollie and Berger, Bonnie and Klein-Seetharaman Judith and Cowen, Lenore},
+  journal={BioRxiv},
+  year={2024},
+  publisher={Cold Spring Harbor Laboratory}
+}
 ```
 
 ## Issues

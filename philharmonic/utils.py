@@ -1,12 +1,17 @@
+from __future__ import annotations
+
 import hashlib
 import json
+import time
 import typing as T
 from collections import defaultdict
 from pathlib import Path
+from typing import Optional, TypeAlias, Union
 
 import networkx as nx
 import numpy as np
 import pandas as pd
+import requests  # type: ignore
 import seaborn as sns
 from Bio import SeqIO
 from loguru import logger
@@ -154,6 +159,7 @@ def parse_GO_graph(go_graph_file: T.Union[str, Path]) -> T.Tuple[T.Dict, T.Dict]
 
     block: T.Dict[str, T.Any] = dict()
     for line in open(go_graph_file):
+        logger.debug(line)
         if line.startswith("[Term]"):
             if block:
                 process_block(block)
@@ -182,6 +188,8 @@ def subset_GO_graph(
     go_graph_file: T.Union[str, Path], go_included_terms: T.List[str]
 ) -> T.List:
     go2children, go2desc = parse_GO_graph(go_graph_file)
+    logger.info(go2children)
+    logger.info(go2desc)
 
     visited_go_terms = set()
 
@@ -306,6 +314,7 @@ def plot_degree(
     node_colors: T.Optional[T.Dict[str, str]] = None,
     node_labels: T.Optional[T.List[str]] = None,
     savefig: T.Optional[T.List[str]] = None,
+    show: bool = True,
 ) -> None:
     # From https://networkx.org/documentation/stable/auto_examples/drawing/plot_degree.html
     degree_sequence = sorted((d for n, d in G.degree()), reverse=True)
@@ -348,7 +357,8 @@ def plot_degree(
 
     if savefig:
         plt.savefig(savefig, dpi=300, bbox_inches="tight")
-    plt.show()
+    if show:
+        plt.show()
 
 
 def plot_cluster(
@@ -360,6 +370,7 @@ def plot_cluster(
     recipe_metric: str = "degree",
     recipe_cthresh: str = "0.75",
     savefig: T.Optional[T.List[str]] = None,
+    show: bool = True,
 ) -> None:
     # From https://networkx.org/documentation/stable/auto_examples/drawing/plot_degree.html
 
@@ -368,7 +379,12 @@ def plot_cluster(
         cluster, recipe_metric=recipe_metric, recipe_cthresh=recipe_cthresh
     )
     plot_degree(
-        G, name=name, node_colors=node_colors, node_labels=node_labels, savefig=savefig
+        G,
+        name=name,
+        node_colors=node_colors,
+        node_labels=node_labels,
+        savefig=savefig,
+        show=show,
     )
 
 
@@ -388,7 +404,7 @@ def write_cluster_fasta(
         with open(fname, "w+") as f:
             for p in clust["members"]:
                 f.write(f">{p}\n")
-                f.write(f"{seq_dict[k]}\n")
+                f.write(f"{seq_dict[p]}\n")
     return None
 
 
@@ -465,3 +481,100 @@ def create_rainbow_colorbar(
         plt.savefig(savefig, bbox_inches="tight", dpi=300)
 
     return fig
+
+
+# Type aliases for clarity
+PathLike: TypeAlias = Union[str, Path]
+
+
+def download_file_safe(
+    url: str,
+    output_path: PathLike,
+    max_retries: int = 3,
+    retry_delay: int = 5,
+    chunk_size: int = 8192,
+    expected_hash: Optional[str] = None,
+) -> bool:
+    """
+    Download a file with retry logic and validation.
+
+    Args:
+        url: URL to download from
+        output_path: Where to save the downloaded file
+        max_retries: Maximum number of retry attempts
+        retry_delay: Seconds to wait between retries
+        chunk_size: Size of chunks to download
+        expected_hash: Expected SHA-256 hash of the file (optional)
+        progress_callback: Optional callback function to handle progress updates
+
+    Returns:
+        ValidationResult: True if download was successful and valid, False otherwise
+
+    Raises:
+        ValueError: If input parameters are invalid
+        requests.RequestException: If network-related errors occur
+        OSError: If file system operations fail
+    """
+
+    # Convert string path to Path object
+    output_path_obj: Path = Path(output_path)
+
+    for attempt in range(max_retries):
+        try:
+            # Make the request with stream=True to handle large files
+            response: requests.Response = requests.get(url, stream=True, timeout=30)
+            response.raise_for_status()
+
+            # Get total file size if available
+            total_size: int = int(response.headers.get("content-length", 0))
+
+            # Create parent directories if they don't exist
+            output_path_obj.parent.mkdir(parents=True, exist_ok=True)
+
+            # Download the file in chunks
+            sha256_hash: hashlib._Hash = hashlib.sha256()
+            with open(output_path_obj, "wb") as f:
+                downloaded: int = 0
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    if chunk:
+                        f.write(chunk)
+                        sha256_hash.update(chunk)
+                        downloaded += len(chunk)
+                        if total_size:
+                            progress: float = downloaded / total_size
+                            logger.info(f"Download progress: {progress:.1f}%")
+
+            # Verify file hash if provided
+            if expected_hash:
+                calculated_hash: str = sha256_hash.hexdigest()
+                if calculated_hash != expected_hash:
+                    logger.error(
+                        f"Hash mismatch! Expected: {expected_hash}, Got: {calculated_hash}"
+                    )
+                    if attempt < max_retries - 1:
+                        logger.info(
+                            f"Retrying download... Attempt {attempt + 2} of {max_retries}"
+                        )
+                        time.sleep(retry_delay)
+                        continue
+                    return False
+
+            # Verify file exists and has size > 0
+            if not output_path_obj.exists() or output_path_obj.stat().st_size == 0:
+                raise ValueError("Downloaded file is empty or doesn't exist")
+
+            logger.info("Download completed successfully!")
+            return True
+
+        except (requests.RequestException, ValueError, OSError) as e:
+            logger.error(f"Error during download: {str(e)}")
+            if attempt < max_retries - 1:
+                logger.info(
+                    f"Retrying download... Attempt {attempt + 2} of {max_retries}"
+                )
+                time.sleep(retry_delay)
+            else:
+                logger.error("Max retries reached. Download failed.")
+                return False
+
+    return False

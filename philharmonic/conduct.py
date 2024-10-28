@@ -1,15 +1,51 @@
 import shlex
 import subprocess as sp
 import sys
+from importlib.metadata import version as get_version
+from pathlib import Path
 
 import typer
 from loguru import logger
 
+from .utils import download_file_safe
+
 app = typer.Typer()
-PHILHARMONIC_SNAKEFILE = "Snakefile"
 
 
-def build_snakemake_command(snakefile: str, config: str, cores: int, **kwargs):
+def get_snakefile_remote_path(commit: str = "current"):
+    """
+    Get the path to the snakefile
+    """
+
+    if commit == "current":
+        installed_version = f"v{get_version('philharmonic')}"
+        snakefile_remote_path = f"https://raw.githubusercontent.com/samsledje/philharmonic/refs/tags/{installed_version}/Snakefile"
+    else:
+        snakefile_remote_path = f"https://raw.githubusercontent.com/samsledje/philharmonic/{commit}/Snakefile"
+    return snakefile_remote_path
+
+
+def download_snakefile(
+    download_loc: Path = Path("Snakefile"), commit: str = "current"
+) -> Path:
+    """
+    Download the snakefile from the repo
+    """
+    snakefile_remote_path = get_snakefile_remote_path(commit)
+    local_path = download_loc.resolve()
+
+    if local_path.exists():
+        logger.info(f"Snakefile already exists at {local_path}")
+        return local_path
+    elif download_file_safe(snakefile_remote_path, download_loc):
+        return local_path
+    else:
+        raise FileNotFoundError(
+            f"Failed to download snakefile from {snakefile_remote_path}"
+        )
+
+
+def build_snakemake_command(snakefile: Path, config: Path, cores: int, **kwargs):
     """
     Build the snakemake command
     """
@@ -34,9 +70,13 @@ def main(
     """
     logger.info(f"Running snakemake with config file: {config_file}")
     logger.info(f"Running snakemake with n_cores: {cores}")
-    cmd = build_snakemake_command(PHILHARMONIC_SNAKEFILE, config_file, cores, *ctx.args)
+
+    snakefile = download_snakefile(Path(__file__).parent / "philharmonic_snakefile")
+    config_path = Path(config_file).resolve()
+    cmd = build_snakemake_command(snakefile, config_path, cores, *ctx.args)
 
     logger.info(f"Running command: {' '.join(cmd)}")
+
     with sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT) as p, open(
         log_file, "ab"
     ) as file:
