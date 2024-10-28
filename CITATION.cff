@@ -1,41 +1,13 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-authors:
-- family-names: "Sledzieski"
-  given-names: "Samuel"
-- family-names: "Versavel"
-  given-names: "Charlotte"
-- family-names: "Singh"
-  given-names: "Rohit"
-- family-names: "Ocitti"
-  given-names: "Faith"
-- family-names: "Devkota"
-  given-names: "Kapil"
-- family-names: "Kumar"
-  given-names: "Lokender"
-- family-names: "Shpilker"
-  given-names: "Polina"
-- family-names: "Roger"
-  given-names: "Liza"
-- family-names: "Yang"
-  given-names: "Jinkyu"
-- family-names: "Lewinski"
-  given-names: "Nastassja"
-- family-names: "Putnam"
-  given-names: "Hollie"
-- family-names: "Berger"
-  given-names: "Bonnie"
-- family-names: "Klein-Seetharaman"
-  given-names: "Judith"
-- family-names: "Cowen"
-  given-names: "Lenore"
-title: "D-SCRIPT"
+title: "PHILHARMONIC"
 version: 0.8.0
-doi: ""
 date-released: 2024-10-29
+license: MIT
 url: "https://github.com/samsledje/philharmonic"
 preferred-citation:
   type: article
+  title: "Decoding the Functional Interactome of Non-Model Organisms with PHILHARMONIC"
   authors:
   - family-names: "Sledzieski"
     given-names: "Samuel"
@@ -65,8 +37,8 @@ preferred-citation:
     given-names: "Judith"
   - family-names: "Cowen"
     given-names: "Lenore"
-  doi: ""
+  year: 2024  
   journal: "bioRxiv"
   publisher: "Cold Spring Harbor Laboratory"
-  title: "Decoding the Functional Interactome of Non-Model Organisms with PHILHARMONIC"
-  year: 2024
+  doi: ""
+  bibtext-cite-key: "sledzieski2024decoding"
