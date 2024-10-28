@@ -42,7 +42,7 @@ jobs:
         run: poetry install --no-interaction --with dev
 
       - name: Get package version
-        if: matrix.python-version == "3.11"
+        if: matrix.python-version == '3.11'
         id: version
         run: echo "VERSION=$(poetry version --short)" >> $GITHUB_OUTPUT
 
@@ -57,7 +57,7 @@ jobs:
           poetry run pytest --cov=philharmonic --cov-report=xml --cov-report=html
 
       - name: Upload coverage reports
-        if: matrix.python-version == "3.11"
+        if: matrix.python-version == '3.11'
         uses: actions/upload-artifact@v4
         with:
           # Include branch name and commit SHA in artifact name
