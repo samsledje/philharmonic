@@ -13,9 +13,11 @@ repos:
   hooks:
     # Run the linter.
     - id: ruff
-      args: [ --fix ]
+      name: Ruff Linter
+      args: [ check, --fix ]
     # Run the formatter.
     - id: ruff-format
+      name: Ruff Formatter
 # - repo: https://github.com/astral-sh/ruff-pre-commit
 #   # Ruff version.
 #   rev: v0.7.0
