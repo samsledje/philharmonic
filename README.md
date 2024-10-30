@@ -11,6 +11,8 @@
 
 Protein-protein interaction (PPI) networks are a fundamental resource for modeling cellular and molecular function, and a large and sophisticated toolbox has been developed to leverage their structure and topological organization to predict the functional roles of under-studied genes, proteins, and pathways. However, the overwhelming majority of experimentally-determined interactions from which such networks are constructed come from a small number of well-studied model organisms. Indeed, most species lack even a single experimentally-determined interaction in these databases, much less a network to enable the analysis of cellular function, and methods for computational PPI prediction are too noisy to apply directly. We introduce PHILHARMONIC, a novel computational approach that couples deep learning *de novo* network inference ([D-SCRIPT](https://dscript.csail.mit.edu)) with robust unsupervised spectral clustering algorithms ([Diffusion State Distance](https://dsd.cs.tufts.edu/capdsd/)) to uncover functional relationships and high-level organization in non-model organisms. Our clustering approach allows us to de-noise the predicted network, producing highly informative functional modules. We also develop a novel algorithm called [ReCIPE](https://github.com/focitti/ReCIPE), which aims to reconnect disconnected clusters, increasing functional enrichment and biological interpretability. We perform remote homology-based functional annotation by leveraging [hmmscan](http://hmmer.org) and [GODomainMiner](https://godm.loria.fr) to assign initial functions to proteins at large evolutionary distances. Our clusters enable us to newly assign functions to uncharacterized proteins through "function by association." We demonstrate the ability of PHILHARMONIC to recover clusters with significant functional coherence in the reef-building coral *P. damicornis*, its algal symbiont *C. goreaui*, and the well-annotated fruit fly *D. melanogaster*. We perform a deeper analysis of the *P. damicornis* network, where we show that PHILHARMONIC clusters correlate strongly with gene co-expression and investigate several clusters that participate in temperature regulation in the coral, including the first putative functional annotation of several previously uncharacterized proteins. Easy to run end-to-end and requiring only a sequenced proteome, PHILHARMONIC is an engine for biological hypothesis generation and discovery in non-model organisms.
 
+Our [preprint](https://www.biorxiv.org/content/10.1101/2024.10.25.620267v1) is out now!
+
 ## Table of Contents
 
 1. [Installation](#installation)
@@ -261,12 +263,16 @@ Note: if you set `use_llm` with an OpenAI model, make sure that you have set the
 ## Citation
 
 ```bibtex
-@article{sledzieski2024decoding,
-  title={Decoding the Functional Interactome of Non-Model Organisms with PHILHARMONIC},
-  author={Sledzieski, Samuel and Versavel, Charlotte and Singh, Rohit and Ocitti, Faith and Devkota, Kapil and Kumar, Lokender and Shpilker, Polina and Roger, Liza and Yang, Jinkyu and Lewinski, Nastassja and Putnam, Hollie and Berger, Bonnie and Klein-Seetharaman Judith and Cowen, Lenore},
-  journal={BioRxiv},
-  year={2024},
-  publisher={Cold Spring Harbor Laboratory}
+@article {sledzieski2024decoding,
+	author = {Sledzieski, Samuel and Versavel, Charlotte and Singh, Rohit and Ocitti, Faith and Devkota, Kapil and Kumar, Lokender and Shpilker, Polina and Roger, Liza and Yang, Jinkyu and Lewinski, Nastassja and Putnam, Hollie M and Berger, Bonnie and Klein-Seetharaman, Judith and Cowen, Lenore},
+	title = {Decoding the Functional Interactome of Non-Model Organisms with PHILHARMONIC},
+	elocation-id = {2024.10.25.620267},
+	year = {2024},
+	doi = {10.1101/2024.10.25.620267},
+	publisher = {Cold Spring Harbor Laboratory},
+	URL = {https://www.biorxiv.org/content/10.1101/2024.10.25.620267v1},
+	eprint = {https://www.biorxiv.org/content/10.1101/2024.10.25.620267v1.full.pdf},
+	journal = {bioRxiv}
 }
 ```
 
