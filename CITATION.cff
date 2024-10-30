@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 title: "PHILHARMONIC"
-version: 0.8.0
-date-released: 2024-10-29
+version: 0.8.2
+date-released: 2024-10-30
 license: MIT
 url: "https://github.com/samsledje/philharmonic"
 preferred-citation:
@@ -37,8 +37,8 @@ preferred-citation:
     given-names: "Judith"
   - family-names: "Cowen"
     given-names: "Lenore"
-  year: 2024  
+  year: 2024
   journal: "bioRxiv"
   publisher: "Cold Spring Harbor Laboratory"
-  doi: ""
+  doi: "10.1101/2024.10.25.620267"
   bibtext-cite-key: "sledzieski2024decoding"

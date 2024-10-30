@@ -10,6 +10,8 @@ on:
   #   types: [published]
     tags:
         - 'v*'  # Trigger on version tags
+  release:
+    types: [published]
 
 jobs:
   quality:
