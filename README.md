@@ -42,7 +42,7 @@ The only data that PHILHARMONIC requires is a set of protein sequences in `.fast
 ### Setting up the config
 
 The `config.yml` file is where you will specify the parameters for PHILHARMONIC. We provide a [sample config](config.yml) in this repository
-with recommended parameters. You will need to specify the paths to your protein sequences. You can find an explanation for all parameters [below](#detailed-configuration). If you want to use an LLM to automatically name your clusters, make sure you have set the `OPENAI_API_KEY` environment variable with your API key, or set `llm.model` in the config to an open source LLM (see [llm](https://llm.datasette.io/en/stable/) package docs). If you use a different configuration file name or location, you can specify it with the `--configfile` flag when running Snakemake.
+with recommended parameters. You will need to specify the paths to your protein sequences. You can find an explanation for all parameters [below](#detailed-configuration). If you want to use an LLM to automatically name your clusters, make sure you have set the `OPENAI_API_KEY` environment variable with your API key, or set `llm.model` in the config to an open source LLM (see [llm](https://llm.datasette.io/en/stable/) package docs).
 
 ```yaml
 # User Specified
