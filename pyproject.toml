@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "philharmonic"
-version = "0.9.0a0"
+version = "0.8.2.dev2+436a0ee"
 description = "Decoding functional organization in non-model organisms"
 authors = ["Samuel Sledzieski <samsl@mit.edu>"]
 license = "MIT"
@@ -77,6 +77,10 @@ indent-style = "space"
 addopts = "--cov=philharmonic --cov-report=term-missing"
 testpaths = ["tests"]
 
+[tool.dunamai]
+style = "pep440"
+formats = {tagged = "{base}", distance = "{base}.dev{distance}+{commit}", dirty = "{base}.dev{distance}+{commit}.dirty"}
+
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0", "dunamai>=1.19.0"]
 build-backend = "poetry.core.masonry.api"
