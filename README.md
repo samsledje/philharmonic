@@ -85,6 +85,35 @@ Instructions for working with and evaluating these results can be found in [Inte
 
 We provide support for running PHILHARMONIC in Google Colab with the notebook at `nb/00_run_philharmonic.ipynb`. However, we note that the `hmmscan` and `dscript` sections can be quite resource intensive, and may result in a time-out if run on Colab.
 
+### Running on HPC
+
+We provide support for running PHILHARMONIC on an HPC environment with the `Snakefile_slurm` file. We have provided `resource` estimates, but before submitting a job make sure that resources are properly set for your system.
+
+Make sure you have the `snakemake-executor-plugin-slurm` plugin installed
+
+`pip install snakemake-executor-plugin-slurm`
+
+Create a profile file `slurm_profile/config.v8+.yaml` and specify the following:
+
+```yaml
+executor: slurm
+jobs: [number of species]
+default-resources:
+    slurm_partition: [your main partition]
+    slurm_account: [your main account]
+
+set-resources:
+    dscript:
+        slurm_partition: [your gpu partition]
+        slurm_extra: [your gpu specification] # "'--gres=gpu:h100_pcie:1'"
+```
+
+Then, all query `.fasta` files should be placed in the directory `{species}_results/{species}.fasta`, or the `SPECIES_NAME` list at the head of the file should be edited. Then run
+
+```bash
+XDG_CACHE_HOME="{your cache dir}" OPENAI_API_KEY="{your api key}" snakemake -s Snakefile_slurm --configfile config_slurm.yml --workflow-profile slurm_profile
+```
+
 ## Workflow Overview
 
 A detailed overview of PHILHARMNONIC can be found in the [manuscript](#citation). We briefly outline the method below.

@@ -1,0 +1,9 @@
+executor: slurm
+default-resources:
+    slurm_partition: "gen"
+    slurm_account: "ccb"
+
+set-resources:
+    dscript:
+        slurm_partition: "gpu"
+        slurm_extra: "'--gres=gpu:h100_pcie:1'"

@@ -1,0 +1,44 @@
+# User Specified
+go_filter_path: /mnt/home/ssledzieski/Projects/philharmonic-experiments/code/assets/go_filter.txt
+use_llm: true
+
+############################################
+
+# General Parameters
+seed: 42
+
+# hmmscan Parameters
+hmmscan:
+  path: hmmscan
+  threads: 32
+
+# D-SCRIPT Parameters
+dscript:
+  path: dscript
+  n_pairs: 100000
+  model: samsl/dscript_human_v1
+  device: 0
+
+# DSD Parameters
+dsd:
+  path: fastdsd
+  t: 0.5
+  confidence: true
+
+# Clustering Parameters
+clustering:
+  init_k: 500
+  min_cluster_size: 3
+  cluster_divisor: 20
+  sparsity_thresh: 1e-5
+
+# ReCIPE Parameters
+recipe:
+  lr: 0.1
+  cthresh: 0.75
+  max_proteins: 20
+  metric: degree
+
+# LLM Naming Parameters
+llm:
+  model: gpt-4o
