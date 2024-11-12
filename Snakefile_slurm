@@ -36,7 +36,6 @@ rule setup:
         go_database = "shared/go.obo",
         goslim_database = "shared/goslim_generic.obo",
     resources:
-        partition = "genx",
         tasks = 1,
         nodes = 1,
         cpus_per_task = 1,
@@ -72,7 +71,6 @@ rule hmmscan:
         hmmscan_path = config["hmmscan"]["path"],
     threads: config["hmmscan"]["threads"]
     resources:
-        partition = "gen",
         nodes = 1,
         tasks = 1,
         time = "1-00:00:00",
@@ -97,7 +95,6 @@ rule candidates:
         n_pairs = config["dscript"]["n_pairs"],
         seed = config["seed"],
     resources:
-        partition = "gen",
         nodes = 1,
         tasks = 1,
         time = "1-00:00:00",
@@ -124,7 +121,6 @@ rule dscript:
         dscript_model = config['dscript']['model'],
         device = config["dscript"]["device"],
         t = config["dsd"]["t"],
-        partition = "gpu",
     resources:
         tasks = 1,
         time = "8-00:00:00",
@@ -157,7 +153,6 @@ rule clustering:
         max_proteins = config["recipe"]["max_proteins"],
         metric = config["recipe"]["metric"],
     resources:
-        partition = "gen",
         nodes = 1,
         tasks = 1,
         time = "12:00:00",
@@ -188,7 +183,6 @@ rule describe:
         llm_model = config["llm"]["model"],
         do_llm_naming = "--llm-name" if config["use_llm"] else ""
     resources:
-        partition = "gen",
         nodes = 1,
         tasks = 1,
         time = "12:00:00",

@@ -4,6 +4,8 @@ default-resources:
     slurm_account: "ccb"
 
 set-resources:
+    setup:
+        slurm_partition: "genx"
     dscript:
         slurm_partition: "gpu"
         slurm_extra: "'--gres=gpu:h100_pcie:1'"
