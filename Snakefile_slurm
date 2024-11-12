@@ -127,8 +127,8 @@ rule dscript:
         partition = "gpu",
     resources:
         tasks = 1,
-        time = "4-00:00:00",
-        mem_mb = 100000,
+        time = "8-00:00:00",
+        mem_mb = lambda wc, input: max(15000 * input.size_mb, 64000),
     log:
         "{species}_results/logs/dscript.log",
     shell:
@@ -167,10 +167,10 @@ rule clustering:
         "{species}_results/logs/clustering.log",
     run:
         commands = [
-            "{params.dsd_path} {params.confidence} --converge -t {params.t} --outfile {wildcards.species}/{wildcards.species}_distances {input.network} > {log} 2>&1",
-            "philharmonic cluster-network --network_file {input.network} --dsd_file {wildcards.species}/{wildcards.species}_distances --output {output.clusters}_disconnected --min_cluster_size {params.min_cluster_size} --cluster_divisor {params.cluster_divisor} --init_k {params.init_k} --sparsity {params.sparsity} --random_seed {params.seed} > {log} 2>&1",
-            "recipe-cluster cook --network-filepath {input.network} --cluster-filepath {output.clusters}_disconnected --lr {params.lr} -cthresh {params.cthresh} --max {params.max_proteins} --metric {params.metric} --outfile {species}/{species}_clusters.connected > {log}",
-            "philharmonic add-cluster-functions -o {output.clusters} -cfp {input.clusters}_connected --go-map {input.go_map} > {log} 2>&1",
+            "{params.dsd_path} {params.confidence} --converge -t {params.t} --outfile {wildcards.species}_results/{wildcards.species}_distances {input.network} > {log} 2>&1",
+            "philharmonic cluster-network --network_file {input.network} --dsd_file {wildcards.species}_results/{wildcards.species}_distances.DSD1 --output {output.clusters}_disconnected --min_cluster_size {params.min_cluster_size} --cluster_divisor {params.cluster_divisor} --init_k {params.init_k} --sparsity {params.sparsity} --random_seed {params.seed} > {log} 2>&1",
+            "recipe-cluster cook --network-filepath {input.network} --cluster-filepath {output.clusters}_disconnected --lr {params.lr} -cthresh {params.cthresh} --max {params.max_proteins} --metric {params.metric} --outfile {output.clusters}_connected > {log}",
+            "philharmonic add-cluster-functions -o {output.clusters} -cfp {output.clusters}_connected --go-map {input.go_map} > {log} 2>&1",
             "philharmonic build-cluster-graph -o {output.cluster_graph} -coc {output.cluster_functions} -cfp {output.clusters} -nfp {input.network} --go_map {input.go_map} --go_db {input.go_database} --recipe_metric {params.metric} --recipe_cthresh {params.cthresh} > {log} 2>&1",
         ]
         for c in commands:
