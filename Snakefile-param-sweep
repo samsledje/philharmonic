@@ -1,0 +1,103 @@
+rule all:
+    input:
+        expand("{work_dir}/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}.zip",
+            work_dir=config["work_dir"],
+            run_name=config["run_name"],
+            init_k=config["clustering"]["init_k"],
+            min_cluster_size=config["clustering"]["min_cluster_size"],
+            cluster_divisor=config["clustering"]["cluster_divisor"],
+            lr=config["recipe"]["lr"],
+            cthresh=config["recipe"]["cthresh"],
+            max_proteins=config["recipe"]["max_proteins"],
+        ),
+
+
+rule PHILHARMONIC:
+    input:
+        network = "{work_dir}/{run_name}_network.positive.tsv",
+        clusters = "{work_dir}/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_clusters.json",
+        cluster_graph = "{work_dir}/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_cluster_graph.tsv",
+        cluster_functions = "{work_dir}/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_cluster_graph_functions.tsv",
+        go_map = "{work_dir}/{run_name}_GO_map.csv",
+    log:
+        "{work_dir}/logs/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_PHILHARMONIC.log",
+    output:
+        zipfile = "{work_dir}/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}.zip",
+    params:
+    shell:
+        "zip --junk-paths {output.zipfile} {input.network} {input.clusters} {input.go_map} {input.cluster_graph} {input.cluster_functions} > {log} 2>&1"
+
+rule cluster_network:
+    input:
+        network = f"{config['work_dir']}/{config['run_name']}_network.positive.tsv",
+        distances = f"{config['work_dir']}/{config['run_name']}_distances.DSD1",
+    output:
+        clusters = "{work_dir}/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_clusters.disconnected.json",
+    params:
+        sparsity = config["clustering"]["sparsity_thresh"],
+        seed = config["seed"]
+    resources:
+        tasks = 1,
+        cpus_per_task = 4,
+        time = "8:00:00",
+        mem_mb = 8000,
+    log:
+        "{work_dir}/logs/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_cluster_network.log",
+    shell:
+        "source ~/venvs/philharmonic/bin/activate; philharmonic cluster-network --network_file {input.network} --dsd_file {input.distances} --output {output.clusters} --min_cluster_size {wildcards.min_cluster_size} --cluster_divisor {wildcards.cluster_divisor} --init_k {wildcards.init_k} --sparsity {params.sparsity} --random_seed {params.seed} > {log} 2>&1"
+
+
+rule reconnect_recipe:
+    input:
+        clusters = "{work_dir}/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_clusters.disconnected.json",
+        network = "{work_dir}/{run_name}_network.positive.tsv",
+    output:
+        clusters_connected = "{work_dir}/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_clusters.recipe.json",
+    params:
+        metric = config["recipe"]["metric"]
+    resources:
+        tasks = 1,
+        cpus_per_task = 4,
+        time = "4:00:00",
+        mem_mb = 8000,
+    log:
+        "{work_dir}/logs/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_reconnect_recipe.log",
+    shell:
+        "source ~/venvs/philharmonic/bin/activate; recipe-cluster cook --network-filepath {input.network} --cluster-filepath {input.clusters} --lr {wildcards.lr} -cthresh {wildcards.cthresh} --max {wildcards.max_proteins} --metric {params.metric} --outfile {output.clusters_connected} > {log}"
+
+rule add_cluster_functions:
+    input:
+        clusters = "{work_dir}/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_clusters.recipe.json",
+        go_map = "{work_dir}/{run_name}_GO_map.csv",
+    output:
+        clusters_functional = "{work_dir}/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_clusters.json",
+    resources:
+        tasks = 1,
+        cpus_per_task = 4,
+        time = "1:00:00",
+        mem_mb = 8000,
+    log:
+        "{work_dir}/logs/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_cluster_functions.log",
+    shell:
+        "source ~/venvs/philharmonic/bin/activate; philharmonic add-cluster-functions -o {output.clusters_functional} -cfp {input.clusters} --go-map {input.go_map} > {log} 2>&1"
+
+rule cluster_graph:
+    input:
+        clusters = "{work_dir}/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_clusters.json",
+        network = "{work_dir}/{run_name}_network.positive.tsv",
+        go_map = "{work_dir}/{run_name}_GO_map.csv",
+        go_database = "{work_dir}/goslim_generic.obo",
+    output:
+        graph = "{work_dir}/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_cluster_graph.tsv",
+        coc_functions = "{work_dir}/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_cluster_graph_functions.tsv",
+    resources:
+        tasks = 1,
+        cpus_per_task = 4,
+        time = "1:00:00",
+        mem_mb = 8000,
+    params:
+        recipe_metric = config["recipe"]["metric"],
+    log:
+        "{work_dir}/logs/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_cluster_graph.log",
+    shell:
+        "source ~/venvs/philharmonic/bin/activate; philharmonic build-cluster-graph -o {output.graph} -coc {output.coc_functions} -cfp {input.clusters} -nfp {input.network} --go_map {input.go_map} --go_db {input.go_database} --recipe_metric {params.recipe_metric} --recipe_cthresh {wildcards.cthresh} > {log} 2>&1"

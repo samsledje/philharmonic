@@ -1,0 +1,4 @@
+executor: slurm
+default-resources:
+    slurm_partition: "genx"
+    slurm_account: "ccb"
