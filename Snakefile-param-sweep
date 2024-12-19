@@ -11,6 +11,34 @@ rule all:
             max_proteins=config["recipe"]["max_proteins"],
         ),
 
+rule compute_stats_all:
+    input:
+        expand("{work_dir}/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_stats.txt",
+                work_dir=config["work_dir"],
+                run_name=config["run_name"],
+                init_k=config["clustering"]["init_k"],
+                min_cluster_size=config["clustering"]["min_cluster_size"],
+                cluster_divisor=config["clustering"]["cluster_divisor"],
+                lr=config["recipe"]["lr"],
+                cthresh=config["recipe"]["cthresh"],
+                max_proteins=config["recipe"]["max_proteins"],
+            ),
+
+rule compute_stats:
+    input:
+        clusters = "{work_dir}/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_clusters.json",
+    output:
+        stats = "{work_dir}/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_stats.txt",
+    resources:
+        tasks = 1,
+        cpus_per_task = 1,
+        time = "30:00",
+        mem_mb = 4000,
+    log:
+        "{work_dir}/logs/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_compute_stats.log",
+    shell:
+        "source ~/venvs/philharmonic/bin/activate; cd /mnt/home/ssledzieski/Projects/philharmonic-experiments/code; python scripts/02_functional_permutation_param_sweep.py --results_dir {wildcards.work_dir} --run_name {wildcards.run_name}_initk:{wildcards.init_k}_mcs:{wildcards.min_cluster_size}_cd:{wildcards.cluster_divisor}_lr:{wildcards.lr}_cthresh:{wildcards.cthresh}_max:{wildcards.max_proteins} 2>&1 {log}"
+
 
 rule PHILHARMONIC:
     input:
