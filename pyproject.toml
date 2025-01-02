@@ -11,7 +11,7 @@ homepage = "https://github.com/samsledje/philharmonic"
 python = "^3.10"
 biopython = "^1.84"
 numpy = [
-    {version = "^2.1.2", python = ">=3.11"},
+    {version = "^1.26.4", python = ">=3.11"},
     {version = "^1.26.4", python = ">=3.8,<3.11"},
 ]
 hmmer = "^3.4.0.0"

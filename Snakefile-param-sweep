@@ -32,12 +32,12 @@ rule compute_stats:
     resources:
         tasks = 1,
         cpus_per_task = 1,
-        time = "30:00",
+        time = "2:00:00",
         mem_mb = 4000,
     log:
         "{work_dir}/logs/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_compute_stats.log",
     shell:
-        "source ~/venvs/philharmonic/bin/activate; cd /mnt/home/ssledzieski/Projects/philharmonic-experiments/code; python scripts/02_functional_permutation_param_sweep.py --results_dir {wildcards.work_dir} --run_name {wildcards.run_name}_initk:{wildcards.init_k}_mcs:{wildcards.min_cluster_size}_cd:{wildcards.cluster_divisor}_lr:{wildcards.lr}_cthresh:{wildcards.cthresh}_max:{wildcards.max_proteins} 2>&1 {log}"
+        "source ~/venvs/philharmonic/bin/activate; cd /mnt/home/ssledzieski/Projects/philharmonic-experiments; python code/scripts/02_functional_permutation_param_sweep.py --go_map {wildcards.work_dir}/{wildcards.run_name}_GO_map.csv --results_dir {wildcards.work_dir} --run_name {wildcards.run_name}_initk:{wildcards.init_k}_mcs:{wildcards.min_cluster_size}_cd:{wildcards.cluster_divisor}_lr:{wildcards.lr}_cthresh:{wildcards.cthresh}_max:{wildcards.max_proteins} --cthresh {wildcards.cthresh} > {log} 2>&1"
 
 
 rule PHILHARMONIC:
@@ -67,7 +67,7 @@ rule cluster_network:
     resources:
         tasks = 1,
         cpus_per_task = 4,
-        time = "8:00:00",
+        time = "6-00:00:00",
         mem_mb = 8000,
     log:
         "{work_dir}/logs/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_cluster_network.log",
@@ -86,7 +86,7 @@ rule reconnect_recipe:
     resources:
         tasks = 1,
         cpus_per_task = 4,
-        time = "4:00:00",
+        time = "24:00:00",
         mem_mb = 8000,
     log:
         "{work_dir}/logs/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_reconnect_recipe.log",
@@ -102,7 +102,7 @@ rule add_cluster_functions:
     resources:
         tasks = 1,
         cpus_per_task = 4,
-        time = "1:00:00",
+        time = "12:00:00",
         mem_mb = 8000,
     log:
         "{work_dir}/logs/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_cluster_functions.log",
@@ -121,7 +121,7 @@ rule cluster_graph:
     resources:
         tasks = 1,
         cpus_per_task = 4,
-        time = "1:00:00",
+        time = "12:00:00",
         mem_mb = 8000,
     params:
         recipe_metric = config["recipe"]["metric"],
