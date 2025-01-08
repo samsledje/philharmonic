@@ -32,7 +32,7 @@ rule compute_stats:
     resources:
         tasks = 1,
         cpus_per_task = 1,
-        time = "2:00:00",
+        runtime = "2h",
         mem_mb = 4000,
     log:
         "{work_dir}/logs/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_compute_stats.log",
@@ -67,7 +67,7 @@ rule cluster_network:
     resources:
         tasks = 1,
         cpus_per_task = 4,
-        time = "6-00:00:00",
+        runtime = "6d",
         mem_mb = 8000,
     log:
         "{work_dir}/logs/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_cluster_network.log",
@@ -86,7 +86,7 @@ rule reconnect_recipe:
     resources:
         tasks = 1,
         cpus_per_task = 4,
-        time = "24:00:00",
+        runtime = "1d",
         mem_mb = 8000,
     log:
         "{work_dir}/logs/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_reconnect_recipe.log",
@@ -102,7 +102,7 @@ rule add_cluster_functions:
     resources:
         tasks = 1,
         cpus_per_task = 4,
-        time = "12:00:00",
+        runtime = "12h",
         mem_mb = 8000,
     log:
         "{work_dir}/logs/{run_name}_initk:{init_k}_mcs:{min_cluster_size}_cd:{cluster_divisor}_lr:{lr}_cthresh:{cthresh}_max:{max_proteins}_cluster_functions.log",
@@ -121,7 +121,7 @@ rule cluster_graph:
     resources:
         tasks = 1,
         cpus_per_task = 4,
-        time = "12:00:00",
+        runtime = "12h",
         mem_mb = 8000,
     params:
         recipe_metric = config["recipe"]["metric"],

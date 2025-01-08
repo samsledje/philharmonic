@@ -45,16 +45,26 @@ parser.add_argument(
 parser.add_argument(
     "--clustering_method",
     choices=[
-        "congo","ego_networks", "eigenvector", "infomap", "ipca",
-        "label_propagation", "leiden", "lfm", "louvain", "lpanni",
-        "manual", "multicom", "r_spectral_clustering", "walkscan"
-        ],
+        "congo",
+        "ego_networks",
+        "eigenvector",
+        "infomap",
+        "ipca",
+        "label_propagation",
+        "leiden",
+        "lfm",
+        "louvain",
+        "lpanni",
+        "manual",
+        "multicom",
+        "r_spectral_clustering",
+        "walkscan",
+    ],
     default="manual",
     help="Clustering method",
 )
 
 if __name__ == "__main__":
-
     args = parser.parse_args()
 
     results_dir = Path(args.results_dir)
@@ -79,7 +89,10 @@ if __name__ == "__main__":
                 if "recipe" in clust:
                     del clust["recipe"]
 
-        with open(f"{results_dir}/{run_name}_{args.clustering_method}_{recipe_ext}clusters.txt", "w") as f:
+        with open(
+            f"{results_dir}/{run_name}_{args.clustering_method}_{recipe_ext}clusters.txt",
+            "w",
+        ) as f:
             for com in clusters.values():
                 f.write("\t".join(com["members"]) + "\n")
 
@@ -88,7 +101,9 @@ if __name__ == "__main__":
         from cdlib import algorithms
 
         if args.no_recipe:
-            logger.warning("--no_recipe is selected with non-manual clustering, will be ignored")
+            logger.warning(
+                "--no_recipe is selected with non-manual clustering, will be ignored"
+            )
 
         def coms_to_clusters(coms):
             clusters = {}
@@ -97,7 +112,9 @@ if __name__ == "__main__":
             return clusters
 
         NETWORK_FILE_PATH = results_dir / f"{run_name}_network.positive.tsv"
-        logger.info(f"Using {args.clustering_method} clustering, loading from {NETWORK_FILE_PATH}")
+        logger.info(
+            f"Using {args.clustering_method} clustering, loading from {NETWORK_FILE_PATH}"
+        )
 
         G = nx.read_weighted_edgelist(NETWORK_FILE_PATH, delimiter="\t")
         try:
@@ -110,6 +127,7 @@ if __name__ == "__main__":
         EXTRA_ARG_DICT = {
             "congo": {"number_communities": 500},
             "ego_networks": {"level": 1},
+            "infomap": {"flags": "preferred_number_of_modules=500"},
             "lfm": {"alpha": 1},
             "multicom": {"seed_node": 0},
             "r_spectral_clustering": {"n_clusters": 500},
@@ -119,13 +137,17 @@ if __name__ == "__main__":
         coms = com_algorithm(G, **EXTRA_ARG_DICT.get(args.clustering_method, {}))
         clusters = coms_to_clusters(coms)
         try:
-            with open(f"{results_dir}/{run_name}_{args.clustering_method}_clusters.txt", "w") as f:
+            with open(
+                f"{results_dir}/{run_name}_{args.clustering_method}_clusters.txt", "w"
+            ) as f:
                 for com in coms.communities:
                     f.write("\t".join(com) + "\n")
         except Exception as e:
             logger.error(e)
         try:
-            with open(f"{results_dir}/{run_name}_{args.clustering_method}_clusters.json", "w") as f:
+            with open(
+                f"{results_dir}/{run_name}_{args.clustering_method}_clusters.json", "w"
+            ) as f:
                 f.write(coms.to_json())
         except Exception as e:
             logger.error(e)
@@ -144,11 +166,11 @@ if __name__ == "__main__":
         for gt in clust["GO_terms"].keys():
             assert gt in go_db.keys()
 
-    go_assigned = set()
+    go_assigned_orig = set()
     for clust in tqdm(clusters.values(), desc="Collecting GO terms"):
         for m in clust["members"]:
-            go_assigned.update(go_map.get(m, []))
-    go_assigned = sorted(list(go_assigned.intersection(go_db.keys())))
+            go_assigned_orig.update(go_map.get(m, []))
+    go_assigned = sorted(list(go_assigned_orig.intersection(go_db.keys())))
 
     logger.info(f"{len(go_assigned)} GO terms assigned")
 
@@ -171,7 +193,6 @@ if __name__ == "__main__":
                     go_bv[full_go_list.index(gid)] = 1
         return go_bv
 
-
     # Compute GO bit vectors for each protein
     protein_GO_bvs = {}
     for pid in tqdm(proteins_in_clusters, desc="Computing bit vectors"):
@@ -184,9 +205,7 @@ if __name__ == "__main__":
         cmembers = clust["members"]
         if "recipe" in clust:
             cmembers += list(clust["recipe"]["degree"]["0.75"])
-        for p1, p2 in combinations(
-            cmembers, 2
-        ):
+        for p1, p2 in combinations(cmembers, 2):
             jc = 1 - jaccard(protein_GO_bvs[p1], protein_GO_bvs[p2])
             cjaccard.append(jc)
         cluster_jaccards[k] = np.array(cjaccard)
@@ -203,14 +222,14 @@ if __name__ == "__main__":
 
     cluster_jaccards_perm = {}
 
-    for k, clust in tqdm(clusters.items(), desc="Computing permuted Jaccard Similarity"):
+    for k, clust in tqdm(
+        clusters.items(), desc="Computing permuted Jaccard Similarity"
+    ):
         cjaccard = []
         cmembers = clust["members"]
         if "recipe" in clust:
             cmembers += list(clust["recipe"]["degree"]["0.75"])
-        for p1, p2 in combinations(
-            cmembers, 2
-        ):
+        for p1, p2 in combinations(cmembers, 2):
             jc = 1 - jaccard(shuffled_bit_vectors[p1], shuffled_bit_vectors[p2])
             cjaccard.append(jc)
         cluster_jaccards_perm[k] = np.array(cjaccard)
@@ -218,7 +237,9 @@ if __name__ == "__main__":
     phil_mean = np.array([np.mean(i) for i in cluster_jaccards.values()])
     permute_mean = np.array([np.mean(i) for i in cluster_jaccards_perm.values()])
 
-    clustering_name = "PHILHARMONIC" if args.clustering_method == "manual" else args.clustering_method
+    clustering_name = (
+        "PHILHARMONIC" if args.clustering_method == "manual" else args.clustering_method
+    )
 
     coherence_df = (
         pd.DataFrame(
@@ -230,16 +251,22 @@ if __name__ == "__main__":
         )
         .melt("cluster")
         .rename(
-            {"variable": "Clustering Method", "value": "Mean Jaccard Similarity"}, axis=1
+            {"variable": "Clustering Method", "value": "Mean Jaccard Similarity"},
+            axis=1,
         )
     )
     coherence_df.head()
-    coherence_df = coherence_df.dropna(how='any')
+    coherence_df = coherence_df.dropna(how="any")
 
-    phil_mean = coherence_df[coherence_df["Clustering Method"] == clustering_name]["Mean Jaccard Similarity"]
-    permute_mean = coherence_df[coherence_df["Clustering Method"] == "Random Clustering"]["Mean Jaccard Similarity"]
+    phil_mean = coherence_df[coherence_df["Clustering Method"] == clustering_name][
+        "Mean Jaccard Similarity"
+    ]
+    permute_mean = coherence_df[
+        coherence_df["Clustering Method"] == "Random Clustering"
+    ]["Mean Jaccard Similarity"]
 
     from scipy import interpolate
+
     def find_histogram_intersection(data1, data2, bins=50, return_curves=False):
         """
         Find the intersection point of two histograms.
@@ -350,7 +377,13 @@ if __name__ == "__main__":
     # plt.show()
 
     logger.info(f"p-value: {p:.3e}, t-statistic: {tstat:.3f}")
-    with open(results_dir / f"{run_name}_{args.clustering_method}_{'no_recipe_' if args.no_recipe else ''}{'stats' if not args.use_go_slim else 'slim_stats'}.txt", "w+") as f:
+    with open(
+        results_dir
+        / f"{run_name}_{args.clustering_method}_{'no_recipe_' if args.no_recipe else ''}{'stats' if not args.use_go_slim else 'slim_stats'}.txt",
+        "w+",
+    ) as f:
         f.write(f"# statistics: {p:.3e} {tstat:.3f}\n")
         for _, r in coherence_df.iterrows():
-            f.write(f"{r['cluster']}\t{r['Clustering Method']}\t{r['Mean Jaccard Similarity']}\n")
+            f.write(
+                f"{r['cluster']}\t{r['Clustering Method']}\t{r['Mean Jaccard Similarity']}\n"
+            )
