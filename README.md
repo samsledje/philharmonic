@@ -46,8 +46,11 @@ The only data that PHILHARMONIC requires is a set of protein sequences in `.fast
 The `config.yml` file is where you will specify the parameters for PHILHARMONIC. We provide a [sample config](config.yml) in this repository
 with recommended parameters. You will need to specify the paths to your protein sequences. You can find an explanation for all parameters [below](#detailed-configuration). If you want to use an LLM to automatically name your clusters, make sure you have set the `OPENAI_API_KEY` environment variable with your API key, or set `llm.model` in the config to an open source LLM (see [llm](https://llm.datasette.io/en/stable/) package docs). For most use cases, the default parameters should be okay, but make sure to set those in the "User Specified" section as these will differ per system and for each run.
 
+> [!IMPORTANT]
+> The `run_name` CANNOT have a space in it. If you want to use multiple words replace spaces with underscores.
+
 > [!NOTE]
-> We recommend using the default go_filter_path, but if you choose to set your own, it should be a non-empty file. If you want to include all proteins, you can use the root of the GO tree -- `GO:008150` as the only line in the file.
+> We recommend using the default `go_filter_path`, but if you choose to set your own, it should be a non-empty file. If you want to include all proteins, you can use the root of the GO tree -- `GO:008150` as the only line in the file.
 
 ```yaml
 # User Specified
