@@ -85,12 +85,19 @@ run.zip
 
 Instructions for working with and evaluating these results can be found in [Interpreting the Results](#interpreting-the-results).
 
+### Resource Usage
+
+We recommend running on a machine with at least 32 cores and one GPU, and ~1GB of RAM per 100 sequences. `hmmscan` runtime is limited by the number of cores provided. `dscript` is memory intensive, and will run extremely slowly without access to a GPU
+
 ### Running on Google Colab
 <a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/dev/nb/00_run_philharmonic.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
-We provide support for running PHILHARMONIC in Google Colab with the notebook at `nb/00_run_philharmonic.ipynb`. However, we note that the `hmmscan` and `dscript` sections can be quite resource intensive, and may result in a time-out if run on Colab.
+We provide support for running PHILHARMONIC in Google Colab with the notebook at `nb/00_run_philharmonic.ipynb`. 
+
+> [!WARNING]
+> The `hmmscan` and `dscript` steps can be quite resource intensive, and may result in a time-out if run on Colab.
 
 ## Workflow Overview
 
