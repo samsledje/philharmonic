@@ -11,7 +11,8 @@
 
 Cellular behavior is driven by the complex set of protein-protein interactions, and network-based analysis methods have repeatedly demonstrated the power of a systems approach for decoding protein function. Despite the widespread adoption of next-generation sequencing to critical non-model systems such as coral, livestock, and crops, experimental profiling of their protein interactions is significantly lacking. This lack of experimental network data, combined with network re-wiring over distant evolutionary relationships, presents a significant barrier to the application of existing network methods in such systems. Here, we introduce PHILHARMONIC, a novel computational approach for functional network analysis in non-model organisms. PHILHARMONIC requires only a sequenced proteome, and couples deep learning _de novo_ network inference with robust unsupervised spectral clustering algorithms and remote homology detection to uncover functional clusters and high-level organization. Using PHILHARMONIC, we identify proteins involved in temperature sensing and response in the reef-building coral P. damicornis and its algal symbiont C. goreaui, including the first putative functional annotation of several previously uncharacterized proteins. We show that PHILHARMONIC clusters correlate strongly with gene co-expression in coral and known gene functions and pathways in the fruit fly D. melanogaster.
 
-Our [preprint](https://www.biorxiv.org/content/10.1101/2024.10.25.620267v1) is out now!
+> [!IMPORTANT]
+> Our [preprint](https://www.biorxiv.org/content/10.1101/2024.10.25.620267v1) is out now!
 
 ## Table of Contents
 
@@ -30,7 +31,8 @@ Our [preprint](https://www.biorxiv.org/content/10.1101/2024.10.25.620267v1) is o
 pip install philharmonic
 ```
 
-We also recommend installing [Cytoscape](https://cytoscape.org/) to visualizing the resulting networks.
+> [!NOTE]
+> We also recommend installing [Cytoscape](https://cytoscape.org/) to visualizing the resulting networks.
  <!-- You may need to swap out the pytorch-cuda version for your specific system. -->
 
 ## Usage
@@ -44,13 +46,18 @@ The only data that PHILHARMONIC requires is a set of protein sequences in `.fast
 The `config.yml` file is where you will specify the parameters for PHILHARMONIC. We provide a [sample config](config.yml) in this repository
 with recommended parameters. You will need to specify the paths to your protein sequences. You can find an explanation for all parameters [below](#detailed-configuration). If you want to use an LLM to automatically name your clusters, make sure you have set the `OPENAI_API_KEY` environment variable with your API key, or set `llm.model` in the config to an open source LLM (see [llm](https://llm.datasette.io/en/stable/) package docs). For most use cases, the default parameters should be okay, but make sure to set those in the "User Specified" section as these will differ per system and for each run.
 
+> [!NOTE]
+> We recommend using the default go_filter_path, but if you choose to set your own, it should be a non-empty file. If you want to include all proteins, you can use the root of the GO tree -- `GO:008150` as the only line in the file.
+
 ```yaml
 # User Specified
 run_name: [identifier for this run]
 sequence_path: [path to protein sequences in .fasta format]
 work_dir: [path to working directory]
+go_filter_path: assets/go_filter.txt
 use_llm: [true/false: whether to name clusters using a large language model]
 ...
+[rest of config file]
 ```
 
 ### Running PHILHARMONIC
