@@ -43,10 +43,18 @@ def main(
     protein_names = list(sequences.keys())
 
     # Create list of filtered GO terms
-    allowed_proteins = filter_proteins_GO(protein_names, go_filter, go_map, go_database)
-    logger.info(
-        f"Generating candidates from {len(allowed_proteins)} proteins after GO filtering"
-    )
+    if go_filter is not None:
+        allowed_proteins = filter_proteins_GO(
+            protein_names, go_filter, go_map, go_database
+        )
+        logger.info(
+            f"Generating candidates from {len(allowed_proteins)} proteins after GO filtering"
+        )
+    else:
+        allowed_proteins = protein_names
+        logger.info(
+            f"Generating candidates from {len(allowed_proteins)} proteins without GO filtering"
+        )
 
     if seq_out is not None:
         with open(seq_out, "w") as f:

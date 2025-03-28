@@ -91,7 +91,6 @@ rule generate_candidates:
     input:
         sequences = f"{config['sequence_path']}",
         go_database = f"{config['work_dir']}/go.obo",
-        go_filter = f"{config['go_filter_path']}",
         go_map = f"{config['work_dir']}/{config['run_name']}_GO_map.csv",
     output:
         kept_proteins = f"{config['work_dir']}/{config['run_name']}_kept_proteins.txt",
@@ -99,10 +98,11 @@ rule generate_candidates:
     params:
         n_pairs = config["dscript"]["n_pairs"],
         seed = config["seed"],
+        go_filter = lambda wildcards, input: f"--go_filter={config['go_filter_path']}" if 'go_filter_path' in config else ""
     log:
         f"{config['work_dir']}/logs/05_generate_candidates.log",
     shell:
-        "philharmonic generate-candidates --paircount {params.n_pairs} -o {output.candidates} --seq_out {output.kept_proteins} --go_map {input.go_map} --go_database {input.go_database} --go_filter {input.go_filter} --sequences {input.sequences} --seed {params.seed} > {log} 2>&1"
+        "philharmonic generate-candidates --paircount {params.n_pairs} -o {output.candidates} --seq_out {output.kept_proteins} --go_map {input.go_map} --go_database {input.go_database} {params.go_filter} --sequences {input.sequences} --seed {params.seed} > {log} 2>&1"
 
 rule predict_network:
     input:

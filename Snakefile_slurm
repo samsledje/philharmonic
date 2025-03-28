@@ -94,6 +94,7 @@ rule candidates:
     params:
         n_pairs = config["dscript"]["n_pairs"],
         seed = config["seed"],
+        go_filter = lambda wildcards, input: f"--go_filter={config['go_filter_path']}" if 'go_filter_path' in config else ""
     resources:
         nodes = 1,
         tasks = 1,
@@ -105,7 +106,7 @@ rule candidates:
     run:
         commands = [
             "philharmonic build-go-map -o {output.go_map} --hhtblout {input.hhtblout} --pfam_go_files {input.pfam_gobp} > {log} 2>&1",
-            "philharmonic generate-candidates --paircount {params.n_pairs} -o {output.candidates} --seq_out {output.kept_proteins} --go_map {output.go_map} --go_database {input.go_database} --go_filter {input.go_filter} --sequences {input.sequences} --seed {params.seed} > {log} 2>&1"
+            "philharmonic generate-candidates --paircount {params.n_pairs} -o {output.candidates} --seq_out {output.kept_proteins} --go_map {output.go_map} --go_database {input.go_database} {params.go_filter} --sequences {input.sequences} --seed {params.seed} > {log} 2>&1"
         ]
         for c in commands:
             shell(c)
