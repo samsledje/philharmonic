@@ -124,7 +124,7 @@ rule dscript:
     resources:
         tasks = 1,
         time = "8-00:00:00",
-        mem_mb = lambda wc, input: max(15000 * input.size_mb, 64000),
+        mem_mb = lambda wc, input: min(15000 * input.size_mb, 250000),
     log:
         "{species}_results/logs/dscript.log",
     shell:

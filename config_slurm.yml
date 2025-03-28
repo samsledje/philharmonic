@@ -15,7 +15,7 @@ hmmscan:
 # D-SCRIPT Parameters
 dscript:
   path: dscript
-  n_pairs: 100000
+  n_pairs: -1
   model: samsl/dscript_human_v1
   device: 0
 
