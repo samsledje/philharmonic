@@ -159,7 +159,6 @@ def parse_GO_graph(go_graph_file: str | Path) -> tuple[dict, dict]:
 
     block: dict[str, T.Any] = dict()
     for line in open(go_graph_file):
-        logger.debug(line)
         if line.startswith("[Term]"):
             if block:
                 process_block(block)
@@ -186,8 +185,6 @@ def parse_GO_graph(go_graph_file: str | Path) -> tuple[dict, dict]:
 
 def subset_GO_graph(go_graph_file: str | Path, go_included_terms: list[str]) -> list:
     go2children, go2desc = parse_GO_graph(go_graph_file)
-    logger.info(go2children)
-    logger.info(go2desc)
 
     visited_go_terms = set()
 

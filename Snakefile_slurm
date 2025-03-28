@@ -1,0 +1,193 @@
+
+import glob
+SPECIES_NAMES = [Path(f).stem for f in glob.glob("*/*.fasta")]
+
+envvars: "OPENAI_API_KEY"
+
+rule all:
+    input:
+        zip_files = expand("{species}_results/{species}.zip", species=SPECIES_NAMES)
+    log:
+        "batch.log"
+
+rule one_species:
+    input:
+        network = "{species}_results/{species}_network.positive.tsv",
+        clusters = "{species}_results/{species}_clusters.json",
+        cluster_graph = "{species}_results/{species}_cluster_graph.tsv",
+        cluster_functions = "{species}_results/{species}_cluster_graph_functions.tsv",
+        human_readable = "{species}_results/{species}_human_readable.txt",
+        go_map = "{species}_results/{species}_GO_map.csv"
+    output:
+        zipfile = "{species}_results/{species}.zip"
+    log:
+        "{species}_results/logs/{species}.log"
+    shell:
+        "zip --junk-paths {output.zipfile} {input.network} {input.clusters} {input.go_map} {input.human_readable} {input.cluster_graph} {input.cluster_functions} > {log} 2>&1"
+
+rule setup:
+    output:
+        pfam_database = "shared/Pfam-A.hmm",
+        pfam_h3m = "shared/Pfam-A.hmm.h3m",
+        pfam_h3i = "shared/Pfam-A.hmm.h3i",
+        pfam_h3f = "shared/Pfam-A.hmm.h3f",
+        pfam_h3p = "shared/Pfam-A.hmm.h3p",
+        pfam_gobp = "shared/pfam_gobp_most_specific.txt",
+        go_database = "shared/go.obo",
+        goslim_database = "shared/goslim_generic.obo",
+    resources:
+        tasks = 1,
+        nodes = 1,
+        cpus_per_task = 1,
+        time = "00:30:00",
+    log:
+        "setup.log",
+    run:
+        commands = [
+            "mkdir -p shared > {log} 2>&1",
+            "curl https://current.geneontology.org/ontology/go.obo -o shared/go.obo > {log} 2>&1",
+            "curl https://current.geneontology.org/ontology/subsets/goslim_generic.obo -o shared/goslim_generic.obo > {log} 2>&1",
+            "curl ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz -o shared/Pfam-A.hmm.gz > {log} 2>&1",
+            "curl https://godm.loria.fr/data/pfam_gobp_most_specific.txt -o shared/pfam_gobp_most_specific.txt > {log} 2>&1",
+            "gunzip -c shared/Pfam-A.hmm.gz > shared/Pfam-A.hmm 2> {log}",
+            "hmmpress shared/Pfam-A.hmm > {log} 2>&1",
+        ]
+        for c in commands:
+            shell(c)
+
+rule hmmscan:
+    input:
+        sequences = "{species}_results/{species}.fasta",
+        pfam_database = "shared/Pfam-A.hmm",
+        pfam_h3m = "shared/Pfam-A.hmm.h3m",
+        pfam_h3i = "shared/Pfam-A.hmm.h3i",
+        pfam_h3f = "shared/Pfam-A.hmm.h3f",
+        pfam_h3p = "shared/Pfam-A.hmm.h3p",
+    output:
+        hmmout = "{species}_results/{species}_hmmscan.out",
+        tblout = "{species}_results/{species}_hmmscan.tblout",
+        domtblout = "{species}_results/{species}_hmmscan.domtblout",
+    params:
+        hmmscan_path = config["hmmscan"]["path"],
+    threads: config["hmmscan"]["threads"]
+    resources:
+        nodes = 1,
+        tasks = 1,
+        time = "1-00:00:00",
+        cpus_per_task = config["hmmscan"]["threads"],
+    log:
+        "{species}_results/logs/hmmscan.log"
+    shell:
+        "{params.hmmscan_path} --cpu {threads} -o {output.hmmout} --tblout {output.tblout} --domtblout {output.domtblout} --acc --noali --notextw --cut_ga {input.pfam_database} {input.sequences} > {log} 2>&1"
+
+rule candidates:
+    input:
+        hhtblout = "{species}_results/{species}_hmmscan.tblout",
+        pfam_gobp = "shared/pfam_gobp_most_specific.txt",
+        sequences = "{species}_results/{species}.fasta",
+        go_database = "shared/go.obo",
+        go_filter = config['go_filter_path'],
+    output:
+        kept_proteins = "{species}_results/{species}_kept_proteins.txt",
+        candidates = "{species}_results/{species}_candidates.tsv",
+        go_map = "{species}_results/{species}_GO_map.csv",
+    params:
+        n_pairs = config["dscript"]["n_pairs"],
+        seed = config["seed"],
+    resources:
+        nodes = 1,
+        tasks = 1,
+        time = "1-00:00:00",
+        mem_mb = 32000,
+        cpus_per_task = config["hmmscan"]["threads"],
+    log:
+        "{species}_results/logs/candidates.log",
+    run:
+        commands = [
+            "philharmonic build-go-map -o {output.go_map} --hhtblout {input.hhtblout} --pfam_go_files {input.pfam_gobp} > {log} 2>&1",
+            "philharmonic generate-candidates --paircount {params.n_pairs} -o {output.candidates} --seq_out {output.kept_proteins} --go_map {output.go_map} --go_database {input.go_database} --go_filter {input.go_filter} --sequences {input.sequences} --seed {params.seed} > {log} 2>&1"
+        ]
+        for c in commands:
+            shell(c)
+
+rule dscript:
+    input:
+        sequences = "{species}_results/{species}.fasta",
+        candidates = "{species}_results/{species}_candidates.tsv",
+    output:
+        network = "{species}_results/{species}_network.positive.tsv",
+    params:
+        dscript_path = config["dscript"]["path"],
+        dscript_model = config['dscript']['model'],
+        device = config["dscript"]["device"],
+        t = config["dsd"]["t"],
+    resources:
+        tasks = 1,
+        time = "8-00:00:00",
+        mem_mb = lambda wc, input: min(15000 * input.size_mb, 250000),
+    log:
+        "{species}_results/logs/dscript.log",
+    shell:
+        "{params.dscript_path} predict --pairs {input.candidates} --seqs {input.sequences} --model {params.dscript_model} --outfile {wildcards.species}_results/{wildcards.species}_network --device {params.device} --thresh {params.t} > {log}"
+
+rule clustering:
+    input:
+        network = "{species}_results/{species}_network.positive.tsv",
+        go_map = "{species}_results/{species}_GO_map.csv",
+        go_database = "shared/goslim_generic.obo",
+    output:
+        clusters = "{species}_results/{species}_clusters.pre.json",
+        cluster_graph = "{species}_results/{species}_cluster_graph.tsv",
+        cluster_functions = "{species}_results/{species}_cluster_graph_functions.tsv",
+    params:
+        seed = config["seed"],
+        dsd_path = config["dsd"]["path"],
+        t = config["dsd"]["t"],
+        confidence = "-c" if config["dsd"]["confidence"] else "",
+        min_cluster_size = config["clustering"]["min_cluster_size"],
+        cluster_divisor = config["clustering"]["cluster_divisor"],
+        init_k = config["clustering"]["init_k"],
+        sparsity = config["clustering"]["sparsity_thresh"],
+        lr = config["recipe"]["lr"],
+        cthresh = config["recipe"]["cthresh"],
+        max_proteins = config["recipe"]["max_proteins"],
+        metric = config["recipe"]["metric"],
+    resources:
+        nodes = 1,
+        tasks = 1,
+        time = "12:00:00",
+        mem_mb = 32000,
+        cpus_per_task = config["hmmscan"]["threads"],
+    log:
+        "{species}_results/logs/clustering.log",
+    run:
+        commands = [
+            "{params.dsd_path} {params.confidence} --converge -t {params.t} --outfile {wildcards.species}_results/{wildcards.species}_distances {input.network} > {log} 2>&1",
+            "philharmonic cluster-network --network_file {input.network} --dsd_file {wildcards.species}_results/{wildcards.species}_distances.DSD1 --output {output.clusters}_disconnected --min_cluster_size {params.min_cluster_size} --cluster_divisor {params.cluster_divisor} --init_k {params.init_k} --sparsity {params.sparsity} --random_seed {params.seed} > {log} 2>&1",
+            "recipe-cluster cook --network-filepath {input.network} --cluster-filepath {output.clusters}_disconnected --lr {params.lr} -cthresh {params.cthresh} --max {params.max_proteins} --metric {params.metric} --outfile {output.clusters}_connected > {log}",
+            "philharmonic add-cluster-functions -o {output.clusters} -cfp {output.clusters}_connected --go-map {input.go_map} > {log} 2>&1",
+            "philharmonic build-cluster-graph -o {output.cluster_graph} -coc {output.cluster_functions} -cfp {output.clusters} -nfp {input.network} --go_map {input.go_map} --go_db {input.go_database} --recipe_metric {params.metric} --recipe_cthresh {params.cthresh} > {log} 2>&1",
+        ]
+        for c in commands:
+            shell(c)
+
+rule describe:
+    input:
+        clusters = "{species}_results/{species}_clusters.pre.json",
+        go_database = "shared/go.obo",
+    output:
+        human_readable = "{species}_results/{species}_human_readable.txt",
+        readable_json = "{species}_results/{species}_clusters.json",
+    params:
+        api_key = f"--api-key {os.environ['OPENAI_API_KEY']}" if config["use_llm"] else "",
+        llm_model = config["llm"]["model"],
+        do_llm_naming = "--llm-name" if config["use_llm"] else ""
+    resources:
+        nodes = 1,
+        tasks = 1,
+        time = "12:00:00",
+        cpus_per_task = config["hmmscan"]["threads"],
+    log:
+        "{species}_results/logs/describe.log",
+    shell:
+        "philharmonic summarize-clusters {params.do_llm_naming} --model {params.llm_model} {params.api_key} -o {output.human_readable} --json {output.readable_json} --go_db {input.go_database} -cfp {input.clusters} > {log}"
