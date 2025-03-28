@@ -60,6 +60,16 @@ def build_snakemake_command(
     """
 
     if slurm:
+        if slurm_profile is None:
+            logger.error(
+                "Slurm profile not provided. Please provide a slurm profile using --slurm-profile"
+            )
+            raise ValueError("Slurm profile not provided")
+        if not slurm_profile.exists():
+            logger.error(
+                f"Slurm profile not found at {slurm_profile}. Please provide a valid slurm profile"
+            )
+            raise FileNotFoundError(f"Slurm profile not found at {slurm_profile}")
         slurm_extra: str = f"--workflow-profile {slurm_profile}"
     else:
         slurm_extra = ""
@@ -96,8 +106,9 @@ def main(
     )
     # snakefile = download_snakefile(commit="95ab801eb216d7ae175b1225420204cee82a2f43", slurm=False)
     config_path = Path(config_file).resolve()
+    slurm_profile_path = Path(slurm_profile).resolve() if slurm_profile else None
     cmd = build_snakemake_command(
-        snakefile, config_path, cores, slurm, slurm_profile, *ctx.args
+        snakefile, config_path, cores, slurm, slurm_profile_path, *ctx.args
     )
 
     logger.info(f"Running command: {' '.join(cmd)}")
