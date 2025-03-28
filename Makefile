@@ -54,9 +54,17 @@ bump-dynamic:
 	@echo "Current dynamic version is: $(NEXT_DYNAMIC)"
 	poetry version $(NEXT_DYNAMIC)
 
+## Lock poetry dependencies
+.PHONY: lock
+lock:
+	@echo "Locking poetry dependencies"
+	export PYTHON_KEYRING_BACKEND=keyring.backends.fail.Keyring
+	poetry lock -v
+
 ## Install the project using poetry
 .PHONY: install
 install: pyproject.toml poetry.lock
+	export PYTHON_KEYRING_BACKEND=keyring.backends.fail.Keyring
 	poetry install
 
 ## Publish the project to PyPI
