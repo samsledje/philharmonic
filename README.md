@@ -4,12 +4,14 @@
 
 # Decoding the Functional Networks of Non-Model Organisms
 
+[![DOI:10.1101/2024.10.25.620267](https://zenodo.org/badge/DOI/10.1101/2024.10.25.620267.svg)](https://doi.org/10.1101/2024.10.25.620267)
 [![PHILHARMONIC](https://img.shields.io/github/v/release/samsledje/philharmonic?include_prereleases)](https://github.com/samsledje/philharmonic/releases)
+[![Requires Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python&logoColor=white)](https://python.org/downloads)
 [![License](https://img.shields.io/github/license/samsledje/philharmonic)](https://github.com/samsledje/philharmonic/blob/main/LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 <!-- [![DOI](https://zenodo.org/badge/308463847.svg)](https://zenodo.org/badge/latestdoi/308463847) -->
 
-Cellular behavior is driven by the complex set of protein-protein interactions, and network-based analysis methods have repeatedly demonstrated the power of a systems approach for decoding protein function. Despite the widespread adoption of next-generation sequencing to critical non-model systems such as coral, livestock, and crops, experimental profiling of their protein interactions is significantly lacking. This lack of experimental network data, combined with network re-wiring over distant evolutionary relationships, presents a significant barrier to the application of existing network methods in such systems. Here, we introduce PHILHARMONIC, a novel computational approach for functional network analysis in non-model organisms. PHILHARMONIC requires only a sequenced proteome, and couples deep learning _de novo_ network inference with robust unsupervised spectral clustering algorithms and remote homology detection to uncover functional clusters and high-level organization. Using PHILHARMONIC, we identify proteins involved in temperature sensing and response in the reef-building coral P. damicornis and its algal symbiont C. goreaui, including the first putative functional annotation of several previously uncharacterized proteins. We show that PHILHARMONIC clusters correlate strongly with gene co-expression in coral and known gene functions and pathways in the fruit fly D. melanogaster.
+PHILHARMONIC is a computational framework for _de novo_ network inference and functional clustering in non-model organisms. It requires only a sequenced proteome, and produces functionally coherent, human-interpretable clusterings.
 
 > [!IMPORTANT]
 > Our [preprint](https://www.biorxiv.org/content/10.1101/2024.10.25.620267v1) is out now!
@@ -26,6 +28,8 @@ Cellular behavior is driven by the complex set of protein-protein interactions, 
 8. [Contributing](#issues)
 
 ## Installation
+
+For the simplest installation, you can install via `pip`. For more control over use of computational resources or running of individual steps, we recommend cloning this repository and installing with [Poetry](https://github.com/python-poetry/poetry). 
 
 ```bash
 pip install philharmonic
@@ -69,6 +73,12 @@ Once your configuration file is set up, you can invoke PHILHARMONIC with
 
 ```bash
 philharmonic conduct -cf {config file} -c {number of cores}
+```
+
+or, if the repository has been locally cloned and installed, with
+
+```bash
+snakemake --configfile {config file} -c {number of cores}
 ```
 
 ### Outputs
