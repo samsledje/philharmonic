@@ -29,14 +29,14 @@ PHILHARMONIC is a computational framework for _de novo_ network inference and fu
 
 ## Installation
 
-For the simplest installation, you can install via `pip`. For more control over use of computational resources or running of individual steps, we recommend cloning this repository and installing with [Poetry](https://github.com/python-poetry/poetry). 
+For the simplest installation, you can install via `pip`. For more control over use of computational resources or running of individual steps, we recommend cloning this repository and installing with [Poetry](https://github.com/python-poetry/poetry).
 
 ```bash
 pip install philharmonic
 ```
 
 > [!NOTE]
-> We also recommend installing [Cytoscape](https://cytoscape.org/) to visualizing the resulting networks.
+> We also recommend installing [Cytoscape](https://cytoscape.org/) to visualize the resulting networks.
  <!-- You may need to swap out the pytorch-cuda version for your specific system. -->
 
 ## Usage
@@ -107,7 +107,7 @@ We recommend running on a machine with at least 32 cores and one GPU, and ~1GB o
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
-We provide support for running PHILHARMONIC in Google Colab with the notebook at `nb/00_run_philharmonic.ipynb`. 
+We provide support for running PHILHARMONIC in Google Colab with the notebook at `nb/00_run_philharmonic.ipynb`.
 
 > [!WARNING]
 > The `hmmscan` and `dscript` steps can be quite resource intensive, and may result in a time-out if run on Colab.
