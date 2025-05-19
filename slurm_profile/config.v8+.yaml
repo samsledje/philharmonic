@@ -1,8 +1,8 @@
 executor: slurm
 jobs: 8
 default-resources:
-    slurm_partition: "gen"
-    slurm_account: "gen"
+    slurm_partition: "ccb"
+    slurm_account: "ccb"
 
 set-resources:
     setup:
