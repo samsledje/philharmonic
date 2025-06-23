@@ -48,7 +48,7 @@ def extract_clusters(
         logger.info(to_print[:-1])
 
     # return list of tuples of priority of cluster and list of nodes in cluster
-    return [(1 / len(subC), subC) for subC in subCs]
+    return [(-len(subC), subC) for subC in subCs]
 
 
 def read_network_subset(network_file, protein_names, output_stats=True):
@@ -125,14 +125,14 @@ def main(
     clusts.sort(key=lambda x: len(x), reverse=True)
 
     logger.info(f"Initial Clustering: {len(clusts)} clusters")
-    clustQ: PriorityQueue[tuple[float, list[int]]] = PriorityQueue()
+    clustQ: PriorityQueue[tuple[int, list[int]]] = PriorityQueue()
     for c in clusts:
-        clustQ.put((1 / len(c), c))
+        clustQ.put((-len(c), c))
 
     logger.info(f"Splitting large clusters into {cluster_divisor} clusters...")
     while True:
         priority, c = clustQ.get()
-        csize = int(1 / priority)
+        csize = -priority
 
         n_clusters = int(
             np.round(csize / cluster_divisor)
