@@ -31,15 +31,15 @@ def dsd_to_similarity(D, sparsity_threshold=1e-5):
 
 
 def extract_clusters(
-    SC: SpectralClustering, og_clust: list, og_csize: int, verbosity=2
+    SC: SpectralClustering, og_clust: list, verbosity=2
 ):
     subCs = []
     for label in set(SC.labels_):  # go through all labels
         # make a list of all nodes in the cluster assigned to given label
-        subCs.append([og_clust[i] for i in range(og_csize) if SC.labels_[i] == label])
+        subCs.append([c for (c, l) in zip(og_clust, SC.labels_) if l == label])
 
     if verbosity > 0:
-        to_print = f"Cluster of size {og_csize} -> split into {len(subCs)} clusters "
+        to_print = f"Cluster of size {len(og_clust)} -> split into {len(subCs)} clusters "
 
         if verbosity > 1:
             to_print += "of sizes: "
@@ -131,15 +131,14 @@ def main(
 
     logger.info(f"Splitting large clusters into {cluster_divisor} clusters...")
     while True:
-        priority, c = clustQ.get()
-        csize = -priority
+        _, c = clustQ.get()
 
         n_clusters = int(
-            np.round(csize / cluster_divisor)
+            np.round(len(c) / cluster_divisor)
         )  # NOTE: this changed so that we are left with clusters of max size 30
 
         if n_clusters < 2:
-            clustQ.put((priority, c))
+            clustQ.put((-len(c), c))
             break
 
         SC2 = SpectralClustering(
@@ -150,7 +149,7 @@ def main(
         )
         SC2.fit(sim[c, :][:, c])
 
-        subClusts = extract_clusters(SC2, c, csize, verbosity=2)
+        subClusts = extract_clusters(SC2, c, verbosity=2)
         for subClust in subClusts:
             clustQ.put(subClust)
 
