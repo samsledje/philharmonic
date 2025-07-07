@@ -140,14 +140,20 @@ def main(
         if n_clusters < 2:
             clustQ.put((-len(c), c))
             break
-
-        SC2 = SpectralClustering(
-            n_clusters=n_clusters,
-            assign_labels="discretize",
-            random_state=random_seed,
-            affinity="precomputed",
-        )
-        SC2.fit(sim[c, :][:, c])
+        i = 0
+        n_labels = 1
+        while n_labels == 1:
+            #if i > 0:
+            #    logger.info(f"Incremented random seed to {i} to fix a degenerate clustering")
+            SC2 = SpectralClustering(
+                n_clusters=n_clusters,
+                assign_labels="discretize",
+                random_state=random_seed+i,
+                affinity="precomputed",
+            )
+            SC2.fit(sim[c, :][:, c])
+            n_labels = len(set(SC2.labels_))
+            i += 1
 
         subClusts = extract_clusters(SC2, c, verbosity=2)
         for subClust in subClusts:
