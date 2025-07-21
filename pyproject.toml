@@ -37,7 +37,7 @@ snakemake = [
     {version = "^8.24.0", python = ">=3.11"},
     {version = "^7.0", python = ">=3.8,<3.11"}
 ]
-dscript = "^0.2.8"
+dscript = "0.2.8"
 fastdsd = "^1.0.1"
 huggingface-hub = "^0.26.1"
 recipe-cluster = "^0.0.4"
