@@ -29,10 +29,19 @@ PHILHARMONIC is a computational framework for _de novo_ network inference and fu
 
 ## Installation
 
-For the simplest installation, you can install via `pip`. For more control over use of computational resources or running of individual steps, we recommend cloning this repository and installing with [Poetry](https://github.com/python-poetry/poetry).
+For the simplest installation, you can install via `pip`. For more control over use of computational resources or running of individual steps, we recommend cloning this repository and installing with [uv](https://docs.astral.sh/uv/).
 
 ```bash
 pip install philharmonic
+```
+
+or to install locally:
+
+```bash
+git clone https://github.com/samsledje/philharmonic.git
+cd philharmonic
+uv sync --extra dev
+uv pip install -e .
 ```
 
 > [!NOTE]
@@ -103,6 +112,7 @@ Instructions for working with and evaluating these results can be found in [Inte
 We recommend running on a machine with at least 32 cores and one GPU, and ~1GB of RAM per 100 sequences. `hmmscan` runtime is limited by the number of cores provided. `dscript` is memory intensive, and will run extremely slowly without access to a GPU
 
 ### Running on Google Colab
+
 <a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/dev/nb/00_run_philharmonic.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
@@ -193,16 +203,16 @@ Edges: 3
 Triangles: 0
 Max Degree: 2
 Top Terms:
-		GO:0019233 - <sensory perception of pain> (20)
-		GO:0048148 - <behavioral response to cocaine> (19)
-		GO:0006468 - <protein phosphorylation> (19)
-		GO:0007507 - <heart development> (19)
-		GO:0010759 - <positive regulation of macrophage chemotaxis> (19)
-		GO:0001963 - <synaptic transmission, dopaminergic> (19)
-		GO:0071380 - <cellular response to prostaglandin E stimulus> (19)
-		GO:0071502 - <cellular response to temperature stimulus> (19)
-		GO:0008542 - <visual learning> (19)
-		GO:0007601 - <visual perception> (19)
+  GO:0019233 - <sensory perception of pain> (20)
+  GO:0048148 - <behavioral response to cocaine> (19)
+  GO:0006468 - <protein phosphorylation> (19)
+  GO:0007507 - <heart development> (19)
+  GO:0010759 - <positive regulation of macrophage chemotaxis> (19)
+  GO:0001963 - <synaptic transmission, dopaminergic> (19)
+  GO:0071380 - <cellular response to prostaglandin E stimulus> (19)
+  GO:0071502 - <cellular response to temperature stimulus> (19)
+  GO:0008542 - <visual learning> (19)
+  GO:0007601 - <visual perception> (19)
 ```
 
 ### 2. Functional Permutation Analysis
@@ -235,14 +245,13 @@ You can view GO enrichments for each cluster using [`g:Profiler`](https://biit.c
 |  7 | GO:0050789 | regulation of biological process             | 0.00072382  |
 |  8 | GO:0065007 | biological regulation                        | 0.000923115 |
 
-
 ### 4. Gene Expression Analysis
 
 <a target="_blank" href="https://colab.research.google.com/github/samsledje/philharmonic/blob/main/nb/04_gene_expression_analysis.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
-If gene expression data is available for the target species, we can check that proteins clustered together have correlated expression, and we can visualize where differentially expressed genes localize within the networks and clusters. Here, we use *Pocillopora* transcriptomic data from [Connelly et al. 2022](https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2021.814124/full).
+If gene expression data is available for the target species, we can check that proteins clustered together have correlated expression, and we can visualize where differentially expressed genes localize within the networks and clusters. Here, we use _Pocillopora_ transcriptomic data from [Connelly et al. 2022](https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2021.814124/full).
 
 ![gene expression](https://raw.githubusercontent.com/samsledje/philharmonic/main/img/readme_expression_correlation.svg)
 
@@ -320,15 +329,15 @@ Note: if you set `use_llm` with an OpenAI model, make sure that you have set the
 
 ```bibtex
 @article {sledzieski2024decoding,
-	author = {Sledzieski, Samuel and Versavel, Charlotte and Singh, Rohit and Ocitti, Faith and Devkota, Kapil and Kumar, Lokender and Shpilker, Polina and Roger, Liza and Yang, Jinkyu and Lewinski, Nastassja and Putnam, Hollie M and Berger, Bonnie and Klein-Seetharaman, Judith and Cowen, Lenore},
-	title = {Decoding the Functional Interactome of Non-Model Organisms with PHILHARMONIC},
-	elocation-id = {2024.10.25.620267},
-	year = {2024},
-	doi = {10.1101/2024.10.25.620267},
-	publisher = {Cold Spring Harbor Laboratory},
-	URL = {https://www.biorxiv.org/content/10.1101/2024.10.25.620267v1},
-	eprint = {https://www.biorxiv.org/content/10.1101/2024.10.25.620267v1.full.pdf},
-	journal = {bioRxiv}
+ author = {Sledzieski, Samuel and Versavel, Charlotte and Singh, Rohit and Ocitti, Faith and Devkota, Kapil and Kumar, Lokender and Shpilker, Polina and Roger, Liza and Yang, Jinkyu and Lewinski, Nastassja and Putnam, Hollie M and Berger, Bonnie and Klein-Seetharaman, Judith and Cowen, Lenore},
+ title = {Decoding the Functional Interactome of Non-Model Organisms with PHILHARMONIC},
+ elocation-id = {2024.10.25.620267},
+ year = {2024},
+ doi = {10.1101/2024.10.25.620267},
+ publisher = {Cold Spring Harbor Laboratory},
+ URL = {https://www.biorxiv.org/content/10.1101/2024.10.25.620267v1},
+ eprint = {https://www.biorxiv.org/content/10.1101/2024.10.25.620267v1.full.pdf},
+ journal = {bioRxiv}
 }
 ```
 
@@ -339,11 +348,13 @@ Note: if you set `use_llm` with an OpenAI model, make sure that you have set the
 ## Contributing
 
 ```bash
-mamba create -n philharmonic python==3.11
-pip install poetry
+# Install uv if not already installed
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Clone and set up
 git clone https://github.com/samsledje/philharmonic.git
 cd philharmonic
-poetry install
+uv sync --extra dev
 pre-commit install
 git checkout -b [feature branch]
 ```

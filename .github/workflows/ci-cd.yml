@@ -28,37 +28,36 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install poetry
-        uses: snok/install-poetry@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          virtualenvs-create: true
-          virtualenvs-in-project: true
+          version: "latest"
 
       - name: Load cached venv
-        id: cached-poetry-dependencies
+        id: cached-uv-dependencies
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
 
       - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --with dev
+        if: steps.cached-uv-dependencies.outputs.cache-hit != 'true'
+        run: uv sync --extra dev
 
       - name: Get package version
         if: matrix.python-version == '3.11'
         id: version
-        run: echo "VERSION=$(poetry version --short)" >> $GITHUB_OUTPUT
+        run: echo "VERSION=$(grep '^version' pyproject.toml | cut -d'"' -f2)" >> $GITHUB_OUTPUT
 
       - name: Lint with Ruff
         run: |
-          poetry run ruff check .
-          poetry run ruff format .
+          uv run ruff check .
+          uv run ruff format .
 
       - name: Run tests with pytest
         # Generate both XML and HTML coverage reports
         run: |
-          poetry run pytest --cov=philharmonic --cov-report=xml --cov-report=html
+          uv run pytest --cov=philharmonic --cov-report=xml --cov-report=html
 
       - name: Upload coverage reports
         if: matrix.python-version == '3.11'
@@ -86,16 +85,16 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install poetry
-        uses: snok/install-poetry@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          virtualenvs-create: true
-          virtualenvs-in-project: true
+          version: "latest"
 
       - name: Build package
-        run: poetry build
+        run: uv build
 
       - name: Publish to PyPI
         env:
-          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
-        run: poetry publish
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: uvx twine upload dist/*

@@ -1,68 +1,63 @@
-[tool.poetry]
+[project]
 name = "philharmonic"
-version = "0.9.0"
+version = "0.8.1"
 description = "Decoding functional organization in non-model organisms"
-authors = ["Samuel Sledzieski <samsl@mit.edu>"]
-license = "MIT"
+authors = [{name = "Samuel Sledzieski", email = "ssledzieski@mit.edu"}]
+license = {text = "MIT"}
 readme = "README.md"
-homepage = "https://github.com/samsledje/philharmonic"
-
-[tool.poetry.dependencies]
-python = "^3.10"
-biopython = "^1.84"
-numpy = [
-    {version = "^2.1.2", python = ">=3.11"},
-    {version = "^1.26.4", python = ">=3.8,<3.11"},
+requires-python = ">=3.10"
+dependencies = [
+    "biopython>=1.84",
+    "numpy>=2.1.2; python_version>='3.11'",
+    "numpy>=1.26.4,<2.0.0; python_version<'3.11'",
+    "hmmer>=3.4.0.0",
+    "matplotlib>=3.9.2",
+    "networkx>=3.4.2",
+    "pandas>=2.2.3",
+    "scikit-learn>=1.5.2",
+    "scipy>=1.14.1; python_version>='3.11'",
+    "scipy>=1.13.1,<1.14.0; python_version<'3.11'",
+    "seaborn>=0.13.2",
+    "tqdm>=4.66.5",
+    "llm>=0.16",
+    "loguru>=0.7.2",
+    "typer>=0.12.5",
+    "regex>=2024.9.11",
+    "pulp>=2.9.0; python_version>='3.11'",
+    "pulp>=2.7.0,<2.8.0; python_version<'3.11'",
+    "snakemake>=8.24.0; python_version>='3.11'",
+    "snakemake>=7.0,<8.0; python_version<'3.11'",
+    "dscript==0.2.8",
+    "fastdsd>=1.0.1",
+    "huggingface-hub>=0.26.1",
+    "recipe-cluster>=0.0.4",
+    "tornado>=6.4.2",
+    "transformers>=4.45.2",
 ]
-hmmer = "^3.4.0.0"
-matplotlib = "^3.9.2"
-networkx = "^3.4.2"
-pandas = "^2.2.3"
-scikit-learn = "^1.5.2"
-scipy= [
-    {version = "^1.14.1", python = ">=3.11"},
-    {version = "1.13.1", python = ">=3.8,<3.11"},
+
+[project.optional-dependencies]
+dev = [
+    "pip>=24.2",
+    "jupyter>=1.1.1",
+    "jupyterlab>=4.2.5",
+    "pre-commit>=4.0.1",
+    "ruff>=0.7.0",
+    "mypy>=1.13.0",
+    "pytest>=8.3.3",
+    "pytest-cov>=5.0.0",
 ]
-seaborn = "^0.13.2"
-tqdm = "^4.66.5"
-llm = "^0.16"
-loguru = "^0.7.2"
-typer = "^0.12.5"
-regex = "^2024.9.11"
-pulp= [
-    {version = "^2.9.0", python = ">=3.11"},
-    {version = "2.7.0", python = ">=3.8,<3.11"},
+colab = [
+    "loguru>=0.7.2",
+    "biopython>=1.84",
 ]
-snakemake = [
-    {version = "^8.24.0", python = ">=3.11"},
-    {version = "^7.0", python = ">=3.8,<3.11"}
+hpc = [
+    "snakemake-executor-plugin-slurm>=0.11.2; python_version>='3.11'",
 ]
-dscript = "0.2.8"
-fastdsd = "^1.0.1"
-huggingface-hub = "^0.26.1"
-recipe-cluster = "^0.0.4"
-tornado = "^6.4.2"
-transformers = "^4.45.2"
 
+[project.urls]
+Homepage = "https://github.com/samsledje/philharmonic"
 
-[tool.poetry.group.dev.dependencies]
-pip = "^24.2"
-jupyter = "^1.1.1"
-jupyterlab = "^4.2.5"
-pre-commit = "^4.0.1"
-ruff = "^0.7.0"
-mypy = "^1.13.0"
-pytest = "^8.3.3"
-pytest-cov = "^5.0.0"
-
-[tool.poetry.group.colab.dependencies]
-loguru = "^0.7.2"
-biopython = "^1.84"
-
-[tool.poetry.group.hpc.dependencies]
-snakemake-executor-plugin-slurm = {markers = "python_version >= '3.11'", version = "^0.11.2"}
-
-[tool.poetry.scripts]
+[project.scripts]
 philharmonic = "philharmonic.__main__:app"
 
 [tool.ruff]
@@ -87,5 +82,22 @@ style = "pep440"
 formats = {tagged = "{base}", distance = "{base}.dev{distance}+{commit}", dirty = "{base}.dev{distance}+{commit}.dirty"}
 
 [build-system]
-requires = ["poetry-core>=1.0.0", "dunamai>=1.19.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling>=1.18.0", "dunamai>=1.19.0"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "dunamai>=1.25.0",
+    "nbdime>=4.0.2",
+    "pip>=24.2",
+    "jupyter>=1.1.1",
+    "jupyterlab>=4.2.5",
+    "pre-commit>=4.0.1",
+    "ruff>=0.7.0",
+    "mypy>=1.13.0",
+    "pytest>=8.3.3",
+    "pytest-cov>=5.0.0",
+]
+
+[tool.hatch.version]
+path = "philharmonic/__init__.py"
