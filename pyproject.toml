@@ -1,6 +1,6 @@
 [project]
 name = "philharmonic"
-version = "0.8.1"
+version = "0.8.2.dev31+13046b8"
 description = "Decoding functional organization in non-model organisms"
 authors = [{name = "Samuel Sledzieski", email = "ssledzieski@mit.edu"}]
 license = {text = "MIT"}
@@ -61,7 +61,7 @@ Homepage = "https://github.com/samsledje/philharmonic"
 philharmonic = "philharmonic.__main__:app"
 
 [tool.ruff]
-target-version = "py311"
+target-version = "0.8.2.dev31+13046b8"
 line-length = 88
 indent-width = 4
 

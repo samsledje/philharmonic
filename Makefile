@@ -7,8 +7,8 @@ PYTHON_VERSION = 3.11
 PYTHON_INTERPRETER = python
 
 CURRENT_TAG := $(shell git describe --tags --abbrev=0)
-NEXT_MAJOR := $(shell echo $(CURRENT_TAG) | awk -F. '{print $$1"."$$2+1".0"}' | sed 's/v//')
-NEXT_MINOR := $(shell echo $(CURRENT_TAG) | awk -F. '{print $$1"."$$2"."$$3+1}' | sed 's/v//')
+NEXT_MAJOR := $(shell echo $(CURRENT_TAG) | awk -F. '{print $$1+1".0.0"}' | sed 's/v//')
+NEXT_MINOR := $(shell echo $(CURRENT_TAG) | awk -F. '{print $$1"."$$2+1".0"}' | sed 's/v//')
 NEXT_PATCH := $(shell echo $(CURRENT_TAG) | awk -F. '{print $$1"."$$2"."$$3+1}' | sed 's/v//')
 NEXT_DYNAMIC := $(shell uv run dunamai from git --style pep440 --bump)
 
@@ -53,6 +53,9 @@ bump-patch:
 bump-dynamic:
 	@echo "Current dynamic version is: $(NEXT_DYNAMIC)"
 	sed -i 's/version = ".*"/version = "$(NEXT_DYNAMIC)"/' pyproject.toml
+	git add pyproject.toml
+	git commit -m "build: bump version to $(NEXT_DYNAMIC)"
+	git tag -a "v$(NEXT_DYNAMIC)" -m "Release version $(NEXT_DYNAMIC
 
 ## Lock dependencies
 .PHONY: lock
