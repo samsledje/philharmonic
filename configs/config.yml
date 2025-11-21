@@ -19,7 +19,7 @@ hmmscan:
 dscript:
   path: dscript
   n_pairs: -1
-  model: samsl/dscript_human_v1 
+  model: samsl/dscript_human_v1
   device: 0
 
 # DSD Parameters

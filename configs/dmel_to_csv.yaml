@@ -1,0 +1,18 @@
+# Configuration file for Pocillopora damicornis
+
+JSON_FILE: "/mnt/home/ssledzieski/Projects/philharmonic-experiments/results/d_melanogaster/20240913-dmelaAll-phil_v0.2.0/dmel_clusters.llm.json"
+GO_FILE: "/mnt/home/ssledzieski/Projects/philharmonic-experiments/results/d_melanogaster/20240913-dmelaAll-phil_v0.2.0/20240912-dmelaAll-phil_v0.2.0_GO_map.csv"
+FASTA_FILE: "/mnt/home/ssledzieski/database/philharmonic/d_melanogaster/dmela_proteins.fasta"
+GFF_FILE: "/mnt/home/ssledzieski/database/philharmonic/d_melanogaster/dmel-all-r6.59.gff"
+GFF_FEATURE_TYPE: "polypeptide"
+GFF_ATTRIBUTE_KEY: "ID"
+GFF_ID_PREFACE: "7227."
+OUTFILE: "/mnt/home/ssledzieski/Projects/philharmonic-experiments/results/d_melanogaster/20251021_dmel_protein_extended_data.csv"
+
+SPECIES: "Drosophila melanogaster"
+GENUS: "Drosophila"
+FAMILY: "Drosophilidae"
+ORDER: "Diptera"
+CLASS: "Insecta"
+PHYLUM: "Arthropoda"
+DOMAIN: "Eukaryota"

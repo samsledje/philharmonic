@@ -1,0 +1,18 @@
+# Configuration file for Pocillopora damicornis
+
+JSON_FILE: "/mnt/home/ssledzieski/Projects/philharmonic-experiments/results/p_damicornis/20240917-pdamAll-phil_v0.3.0/pdam_clusters.llm.json"
+GO_FILE: "/mnt/home/ssledzieski/Projects/philharmonic-experiments/results/p_damicornis/20240917-pdamAll-phil_v0.3.0/20240917-pdamAll-phil_v0.3.0_GO_map.csv"
+FASTA_FILE: "/mnt/home/ssledzieski/database/philharmonic/p_damicornis/pdam_clean_50_800.fasta"
+GFF_FILE: "/mnt/home/ssledzieski/database/philharmonic/p_damicornis/pdam_annotation.gff3"
+GFF_FEATURE_TYPE: "mRNA"
+GFF_ATTRIBUTE_KEY: "ID"
+GFF_ID_PREFACE: ""
+OUTFILE: "/mnt/home/ssledzieski/Projects/philharmonic-experiments/results/p_damicornis/pdamicornis_protein_extended_data.csv"
+
+SPECIES: "Pocillopora damicornis"
+GENUS: "Pocillopora"
+FAMILY: "Pocilloporidae"
+ORDER: "Scleractinia"
+CLASS: "Hexacorallia"
+PHYLUM: "Cnidaria"
+DOMAIN: "Eukaryota"

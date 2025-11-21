@@ -1,0 +1,18 @@
+# Configuration file for Pocillopora damicornis
+
+JSON_FILE: "/mnt/home/ssledzieski/Projects/philharmonic-experiments/results/c_goreaui/20240926_philharmonic_v0.5.0_cgoreaui/cgor_clusters.llm.json"
+GO_FILE: "/mnt/home/ssledzieski/Projects/philharmonic-experiments/results/c_goreaui/20240926_philharmonic_v0.5.0_cgoreaui/20240926_cgoreaui_GO_map.csv"
+FASTA_FILE: "/mnt/home/ssledzieski/database/philharmonic/c_goreaui/SymbC1.Gene_Models.50.800.fa"
+GFF_FILE: "/mnt/home/ssledzieski/database/philharmonic/c_goreaui/SymbC1.Gene_Models.GFF3"
+GFF_FEATURE_TYPE: "gene"
+GFF_ATTRIBUTE_KEY: "ID"
+GFF_ID_PREFACE: ""
+OUTFILE: "/mnt/home/ssledzieski/Projects/philharmonic-experiments/results/c_goreaui/20251021_cgor_protein_extended_data.csv"
+
+SPECIES: "Cladicopium goreaui"
+GENUS: "Cladicopium"
+FAMILY: "Symbiodiniaceae"
+ORDER: "Suessiales"
+CLASS: "Dinophyceae"
+PHYLUM: "Dinoflagellata"
+DOMAIN: "Eukaryota"
