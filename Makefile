@@ -55,7 +55,7 @@ bump-dynamic:
 	sed -i 's/version = ".*"/version = "$(NEXT_DYNAMIC)"/' pyproject.toml
 	git add pyproject.toml
 	git commit -m "build: bump version to $(NEXT_DYNAMIC)"
-	git tag -a "v$(NEXT_DYNAMIC)" -m "Release version $(NEXT_DYNAMIC
+	git tag -a "v$(NEXT_DYNAMIC)" -m "Release version $(NEXT_DYNAMIC)"
 
 ## Lock dependencies
 .PHONY: lock
