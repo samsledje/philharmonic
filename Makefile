@@ -25,7 +25,7 @@ version:
 .PHONY: bump-major
 bump-major:
 	@echo "Current version will be bumped to: $(NEXT_MAJOR)"
-	sed -i 's/version = ".*"/version = "$(NEXT_MAJOR)"/' pyproject.toml
+	perl -i -pe 's/^version = ".*"/version = "$(NEXT_MAJOR)"/g' pyproject.toml
 	git add pyproject.toml
 	git commit -m "build: bump version to $(NEXT_MAJOR)"
 	git tag -a "v$(NEXT_MAJOR)" -m "Release version $(NEXT_MAJOR)"
@@ -34,7 +34,7 @@ bump-major:
 .PHONY: bump-minor
 bump-minor:
 	@echo "Current version will be bumped to: $(NEXT_MINOR)"
-	sed -i 's/version = ".*"/version = "$(NEXT_MINOR)"/' pyproject.toml
+	perl -i -pe 's/^version = ".*"/version = "$(NEXT_MINOR)"/g' pyproject.toml
 	git add pyproject.toml
 	git commit -m "build: bump version to $(NEXT_MINOR)"
 	git tag -a "v$(NEXT_MINOR)" -m "Release version $(NEXT_MINOR)"
@@ -43,7 +43,7 @@ bump-minor:
 .PHONY: bump-patch
 bump-patch:
 	@echo "Current version will be bumped to: $(NEXT_PATCH)"
-	sed -i 's/version = ".*"/version = "$(NEXT_PATCH)"/' pyproject.toml
+	perl -i -pe 's/^version = ".*"/version = "$(NEXT_PATCH)"/g' pyproject.toml
 	git add pyproject.toml
 	git commit -m "build: bump version to $(NEXT_PATCH)"
 	git tag -a "v$(NEXT_PATCH)" -m "Release version $(NEXT_PATCH)"
@@ -52,7 +52,7 @@ bump-patch:
 .PHONY: bump-dynamic
 bump-dynamic:
 	@echo "Current dynamic version is: $(NEXT_DYNAMIC)"
-	sed -i 's/version = ".*"/version = "$(NEXT_DYNAMIC)"/' pyproject.toml
+	perl -i -pe 's/^version = ".*"/version = "$(NEXT_DYNAMIC)"/g' pyproject.toml
 	git add pyproject.toml
 	git commit -m "build: bump version to $(NEXT_DYNAMIC)"
 	git tag -a "v$(NEXT_DYNAMIC)" -m "Release version $(NEXT_DYNAMIC)"
@@ -66,7 +66,7 @@ lock:
 ## Install the project using uv
 .PHONY: install
 install: pyproject.toml uv.lock
-	uv sync
+	uv sync --extra dev
 
 ## Publish the project to PyPI
 .PHONY: publish
@@ -76,10 +76,10 @@ publish: pyproject.toml uv.lock
 
 ## Create Snakemake DAG figure for README
 .PHONY: pipeline_figure
-pipeline_figure: config.yml
+pipeline_figure: configs/config.yml
 	touch sample_sequences.fasta;
-	snakemake --configfile config.yml --filegraph | dot -Tpng > img/pipeline.png;
-	snakemake --configfile config.yml --filegraph | dot -Tsvg > img/pipeline.svg;
+	uv run snakemake --configfile configs/config.yml --filegraph | dot -Tpng > img/pipeline.png;
+	uv run snakemake --configfile configs/config.yml --filegraph | dot -Tsvg > img/pipeline.svg;
 	rm sample_sequences.fasta;
 
 ## Run Ruff formatting and linting

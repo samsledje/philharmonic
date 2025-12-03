@@ -1,6 +1,6 @@
 [project]
 name = "philharmonic"
-version = "0.8.2.dev31+13046b8"
+version = "0.8.2.dev34+3bd1758"
 description = "Decoding functional organization in non-model organisms"
 authors = [{name = "Samuel Sledzieski", email = "ssledzieski@mit.edu"}]
 license = {text = "MIT"}
@@ -33,6 +33,7 @@ dependencies = [
     "recipe-cluster>=0.0.4",
     "tornado>=6.4.2",
     "transformers>=4.45.2",
+    "snakemake>=7.32.4",
 ]
 
 [project.optional-dependencies]
@@ -61,7 +62,7 @@ Homepage = "https://github.com/samsledje/philharmonic"
 philharmonic = "philharmonic.__main__:app"
 
 [tool.ruff]
-target-version = "0.8.2.dev31+13046b8"
+target-version = "py311"
 line-length = 88
 indent-width = 4
 
