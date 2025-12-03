@@ -28,7 +28,7 @@ def main(
         -1, "--paircount", help="Number of protein pairs to sample"
     ),
     go_filter: str = typer.Option(
-        ..., "--go_filter", help="GO terms by which to filter"
+        None, "--go_filter", help="GO terms by which to filter"
     ),
     go_map: str = typer.Option(
         ..., "--go_map", help="GO map file. Required if --go_filter is set"

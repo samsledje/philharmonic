@@ -9,8 +9,8 @@ from . import (
     cluster_network,
     conduct,
     generate_candidates,
-    json_to_csv,
     summarize_clusters,
+    write_protein_table,
 )
 
 app = typer.Typer(no_args_is_help=True)
@@ -52,7 +52,7 @@ app.command("add-cluster-functions")(add_cluster_functions.main)
 app.command("cluster-network")(cluster_network.main)
 app.command("build-cluster-graph")(build_cluster_graph.main)
 app.command("generate-candidates")(generate_candidates.main)
-app.command("json-to-csv")(json_to_csv.main)
+app.command("write-protein-table")(write_protein_table.main)
 
 if __name__ == "__main__":
     app()

@@ -1,9 +1,26 @@
 # User Specified
-run_name: philharmonic
-sequence_path: sample_sequences.fasta
+run_name: philharmonic_demo
+sequence_path: data/protein_seqs.fasta
 go_filter_path: assets/go_filter.txt
 work_dir: results
-use_llm: true
+use_llm: false
+
+# GFF Details
+gff:
+  path: data/pdam_annotation.gff3
+  feature_type: "CDS"
+  attribute_key: "protein_id"
+  id_preface: ""
+
+# Taxonomy
+taxonomy:
+  species: "Pocillopora damicornis"
+  genus: "Pocillopora"
+  family: "Pocilloporidae"
+  order: "Scleractinia"
+  class: "Hexacorallia"
+  phylum: "Cnidaria"
+  domain: "Eukaryota"
 
 ############################################
 

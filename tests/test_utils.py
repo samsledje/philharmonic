@@ -137,13 +137,7 @@ def test_subset_GO_graph(tmp_path):
 def test_parse_GO_database(tmp_path):
     go_db_file = tmp_path / "test_go_db.obo"
     go_db_file.write_text(
-        "[Term]\n"
-        "id: GO:0001\n"
-        "name: term1\n"
-        "\n"
-        "[Term]\n"
-        "id: GO:0002\n"
-        "name: term2\n"
+        "[Term]\nid: GO:0001\nname: term1\n\n[Term]\nid: GO:0002\nname: term2\n"
     )
     go_db = parse_GO_database(go_db_file)
     assert go_db == {"GO:0001": "term1", "GO:0002": "term2"}
