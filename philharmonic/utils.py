@@ -83,7 +83,8 @@ def print_cluster(
 
         description_string += f"Edges: {len(G.edges())}\n"
         description_string += f"Triangles: {calculate_graph_triangles(G)}\n"
-        description_string += f"Max Degree: {0 if not len(G.edges()) else max(G.degree(), key=lambda x: x[1])[1]}\n"
+        max_degree = 0 if not len(G.edges()) else max(G.degree(), key=lambda x: x[1])[1]
+        description_string += f"Max Degree: {max_degree}\n"
 
     if "GO_terms" in cluster:
         top_terms = get_cluster_top_terms(cluster, n_terms)

@@ -25,7 +25,7 @@ version:
 .PHONY: bump-major
 bump-major:
 	@echo "Current version will be bumped to: $(NEXT_MAJOR)"
-	sed -i 's/version = ".*"/version = "$(NEXT_MAJOR)"/' pyproject.toml
+	sed -i 's/^version = ".*"/version = "$(NEXT_MAJOR)"/' pyproject.toml
 	git add pyproject.toml
 	git commit -m "build: bump version to $(NEXT_MAJOR)"
 	git tag -a "v$(NEXT_MAJOR)" -m "Release version $(NEXT_MAJOR)"
@@ -34,7 +34,7 @@ bump-major:
 .PHONY: bump-minor
 bump-minor:
 	@echo "Current version will be bumped to: $(NEXT_MINOR)"
-	sed -i 's/version = ".*"/version = "$(NEXT_MINOR)"/' pyproject.toml
+	sed -i 's/^version = ".*"/version = "$(NEXT_MINOR)"/' pyproject.toml
 	git add pyproject.toml
 	git commit -m "build: bump version to $(NEXT_MINOR)"
 	git tag -a "v$(NEXT_MINOR)" -m "Release version $(NEXT_MINOR)"
@@ -43,7 +43,7 @@ bump-minor:
 .PHONY: bump-patch
 bump-patch:
 	@echo "Current version will be bumped to: $(NEXT_PATCH)"
-	sed -i 's/version = ".*"/version = "$(NEXT_PATCH)"/' pyproject.toml
+	sed -i 's/^version = ".*"/version = "$(NEXT_PATCH)"/' pyproject.toml
 	git add pyproject.toml
 	git commit -m "build: bump version to $(NEXT_PATCH)"
 	git tag -a "v$(NEXT_PATCH)" -m "Release version $(NEXT_PATCH)"
@@ -52,7 +52,7 @@ bump-patch:
 .PHONY: bump-dynamic
 bump-dynamic:
 	@echo "Current dynamic version is: $(NEXT_DYNAMIC)"
-	sed -i 's/version = ".*"/version = "$(NEXT_DYNAMIC)"/' pyproject.toml
+	sed -i 's/^version = ".*"/version = "$(NEXT_DYNAMIC)"/' pyproject.toml
 	git add pyproject.toml
 	git commit -m "build: bump version to $(NEXT_DYNAMIC)"
 	git tag -a "v$(NEXT_DYNAMIC)" -m "Release version $(NEXT_DYNAMIC)"

@@ -7,7 +7,7 @@ GFF_FILE: "/mnt/home/ssledzieski/database/philharmonic/c_goreaui/SymbC1.Gene_Mod
 GFF_FEATURE_TYPE: "gene"
 GFF_ATTRIBUTE_KEY: "ID"
 GFF_ID_PREFACE: ""
-OUTFILE: "/mnt/home/ssledzieski/Projects/philharmonic-experiments/results/c_goreaui/20251021_cgor_protein_extended_data.csv"
+OUTFILE: "/mnt/home/ssledzieski/Projects/philharmonic-experiments/results/c_goreaui/cgoreaui_protein_extended_data.csv"
 
 SPECIES: "Cladicopium goreaui"
 GENUS: "Cladicopium"

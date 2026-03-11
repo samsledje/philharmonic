@@ -7,7 +7,7 @@ GFF_FILE: "/mnt/home/ssledzieski/database/philharmonic/d_melanogaster/dmel-all-r
 GFF_FEATURE_TYPE: "polypeptide"
 GFF_ATTRIBUTE_KEY: "ID"
 GFF_ID_PREFACE: "7227."
-OUTFILE: "/mnt/home/ssledzieski/Projects/philharmonic-experiments/results/d_melanogaster/20251021_dmel_protein_extended_data.csv"
+OUTFILE: "/mnt/home/ssledzieski/Projects/philharmonic-experiments/results/d_melanogaster/dmelanogaster_protein_extended_data.csv"
 
 SPECIES: "Drosophila melanogaster"
 GENUS: "Drosophila"
