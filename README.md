@@ -105,7 +105,7 @@ run.zip
 |-- run_GO_map.tsv # Mapping between proteins and GO function labels
 ```
 
-Instructions for working with and evaluating these results can be found in [Interpreting the Results](#interpreting-the-results).
+Instructions for working with and evaluating these results can be found in [Interpreting the Results](#interpreting-the-results). Pre-computed zipped results can be downloaded from [Zenodo](https://zenodo.org/records/15066518) for _D. melanogaster_, _P. damicornis_, and _C. goreaui_, or explored interactively on [SeqHub](https://seqhub.org/samsl/collections/philharmonic-proteomes).
 
 ### Resource Usage
 
